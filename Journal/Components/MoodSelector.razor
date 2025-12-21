@@ -1,7 +1,8 @@
-﻿
+﻿@using Journal.Models
+
 <label>Primary Mood</label>
 <select class="form-select" @bind="PrimaryMood">
-    @foreach (var mood in Enum.GetValues<MoodType>())
+    @foreach (var mood in Enum.GetValues(typeof(MoodType)).Cast<MoodType>())
     {
         <option value="@mood">@mood</option>
     }
@@ -9,15 +10,15 @@
 
 <label class="mt-2">Secondary Mood</label>
 <select class="form-select" @bind="SecondaryMood">
-    <option value="">None</option>
-    @foreach (var mood in Enum.GetValues<MoodType>())
+    <option value="null">None</option>
+    @foreach (var mood in Enum.GetValues(typeof(MoodType)).Cast<MoodType>())
     {
         <option value="@mood">@mood</option>
     }
 </select>
 
 @code {
-    [Parameter] public MoodType PrimaryMood { get; set; }
-    [Parameter] public MoodType? SecondaryMood { get; set; }
+    // Parameters for external usage (remove if managed internally)
+    [Parameter] public MoodType PrimaryMood { get; set; } = MoodType.Happy; // Defaults to Happy
+    [Parameter] public MoodType? SecondaryMood { get; set; } = null;        // Defaults to None
 }
-

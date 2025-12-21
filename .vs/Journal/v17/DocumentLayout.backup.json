@@ -67,8 +67,7 @@
               "ViewState": "AgIAAAMAAAAAAAAAAAAuwA8AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-12-21T03:23:26.906Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Document",
@@ -80,8 +79,7 @@
               "RelativeToolTip": "Journal\\Models\\JournalEntry.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-21T03:26:37.189Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-21T03:26:37.189Z"
             },
             {
               "$type": "Document",
@@ -93,8 +91,7 @@
               "RelativeToolTip": "Journal\\Service\\JournalService.cs",
               "ViewState": "AgIAABIAAAAAAAAAAAAYwCMAAAAuAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-21T03:24:37.625Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-21T03:24:37.625Z"
             },
             {
               "$type": "Document",
@@ -106,8 +103,7 @@
               "RelativeToolTip": "Journal\\Models\\MoodType.cs",
               "ViewState": "AgIAAA4AAAAAAAAAAAAAwAoAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-21T03:21:52.615Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-21T03:21:52.615Z"
             },
             {
               "$type": "Document",
@@ -119,8 +115,7 @@
               "RelativeToolTip": "Journal\\MainPage.xaml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2025-12-21T03:15:13.836Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-21T03:15:13.836Z"
             },
             {
               "$type": "Document",
@@ -145,8 +140,7 @@
               "RelativeToolTip": "Journal\\Components\\TagSelector.razor",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAB4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-12-20T16:16:24.559Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-20T16:16:24.559Z"
             },
             {
               "$type": "Document",
@@ -158,8 +152,7 @@
               "RelativeToolTip": "Journal\\Components\\MoodSelector.razor",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-12-20T16:16:00.654Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-20T16:16:00.654Z"
             },
             {
               "$type": "Document",
@@ -171,8 +164,7 @@
               "RelativeToolTip": "Journal\\Components\\JournalEditor.razor",
               "ViewState": "AgIAAAUAAAAAAAAAAAAUwAcAAAAOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-12-20T16:15:32.855Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-20T16:15:32.855Z"
             },
             {
               "$type": "Document",

@@ -1,0 +1,30 @@
+﻿<input class="form-control"
+       placeholder="Add tag"
+       @bind="NewTag" />
+
+<button class="btn btn-primary mt-2" @onclick="AddTag">
+    Add Tag
+</button>
+
+<ul class="mt-2">
+    @foreach (var tag in Tags)
+    {
+        <li>@tag.Name</li>
+    }
+</ul>
+
+@code {
+    private string NewTag = string.Empty;
+
+    [Parameter]
+    public List<Tag> Tags { get; set; } = new();
+
+    private void AddTag()
+    {
+        if (!string.IsNullOrWhiteSpace(NewTag))
+        {
+            Tags.Add(new Tag { Name = NewTag });
+            NewTag = string.Empty;
+        }
+    }
+}

@@ -1,0 +1,10 @@
+﻿<textarea class="form-control"
+          rows="10"
+          placeholder="Write your journal here..."
+          @bind="Entry.Content">
+</textarea>
+
+@code {
+    [Parameter]
+    public JournalEntry Entry { get; set; } = new();
+}

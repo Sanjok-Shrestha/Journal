@@ -1,0 +1,23 @@
+﻿
+<label>Primary Mood</label>
+<select class="form-select" @bind="PrimaryMood">
+    @foreach (var mood in Enum.GetValues<MoodType>())
+    {
+        <option value="@mood">@mood</option>
+    }
+</select>
+
+<label class="mt-2">Secondary Mood</label>
+<select class="form-select" @bind="SecondaryMood">
+    <option value="">None</option>
+    @foreach (var mood in Enum.GetValues<MoodType>())
+    {
+        <option value="@mood">@mood</option>
+    }
+</select>
+
+@code {
+    [Parameter] public MoodType PrimaryMood { get; set; }
+    [Parameter] public MoodType? SecondaryMood { get; set; }
+}
+

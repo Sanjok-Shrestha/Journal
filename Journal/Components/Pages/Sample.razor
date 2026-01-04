@@ -1,0 +1,160 @@
+﻿@page "/sample-journal"
+@using Journal.Models
+
+<div class="container mt-4">
+    <h1 class="text-center mb-4"> Sample Journal Entry</h1>
+
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3>My Daily Journal</h3>
+            <p class="mb-0">Date: @SampleEntry.EntryDate.ToString("MMMM dd, yyyy")</p>
+        </div>
+
+        <div class="card-body">
+            <!-- Journal Content Section -->
+            <div class="mb-4">
+                <h5> Journal Content</h5>
+                <div class="journal-content-box p-3 bg-light rounded">
+                    <p>@SampleEntry.Content</p>
+                </div>
+            </div>
+
+            <!-- Mood Tracking Section -->
+            <div class="mb-4">
+                <h5> Mood Tracking</h5>
+                <div class="mood-display">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mood-card p-3 text-center">
+                                <strong>Primary Mood</strong>
+                                <div class="mood-badge mt-2">
+                                    <span class="badge bg-success fs-5">@SampleEntry.PrimaryMood</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (SampleEntry.SecondaryMood1.HasValue)
+                        {
+                            <div class="col-md-4">
+                                <div class="mood-card p-3 text-center">
+                                    <strong>Secondary Mood 1</strong>
+                                    <div class="mood-badge mt-2">
+                                        <span class="badge bg-info fs-5">@SampleEntry.SecondaryMood1</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        @if (SampleEntry.SecondaryMood2.HasValue)
+                        {
+                            <div class="col-md-4">
+                                <div class="mood-card p-3 text-center">
+                                    <strong>Secondary Mood 2</strong>
+                                    <div class="mood-badge mt-2">
+                                        <span class="badge bg-warning fs-5">@SampleEntry.SecondaryMood2</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tags Section -->
+            <div class="mb-4">
+                <h5> Tags</h5>
+                <div class="tags-display">
+                    @foreach (var tag in SampleEntry.Tags)
+                    {
+                        <span class="badge bg-primary me-2 mb-2 fs-6">@tag.Name</span>
+                    }
+                </div>
+            </div>
+
+            <!-- Metadata Section -->
+            <div class="mb-3">
+                <h5> Entry Information</h5>
+                <div class="info-box p-3 bg-light rounded">
+                    <p><strong>Created:</strong> @SampleEntry. CreatedAt.ToString("MMMM dd, yyyy hh:mm tt")</p>
+                    <p class="mb-0"><strong>Last Updated:</strong> @SampleEntry. UpdatedAt.ToString("MMMM dd, yyyy hh: mm tt")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer text-center">
+            <button class="btn btn-primary me-2"> Edit Entry</button>
+            <button class="btn btn-danger me-2"> Delete Entry</button>
+            <button class="btn btn-secondary">↩️ Back to Dashboard</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .journal-content-box {
+        min-height: 200px;
+        border: 1px solid #dee2e6;
+        font-size: 1.1rem;
+        line-height: 1.8;
+    }
+
+    .mood-card {
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        transition: transform 0.2s;
+    }
+
+    .mood-card:hover {
+        transform: scale(1.05);
+        border-color: #667eea;
+    }
+
+    .mood-badge {
+        font-size:  1.2rem;
+    }
+
+    .tags-display {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .info-box {
+        border: 1px solid #dee2e6;
+    }
+
+    .card {
+        border-radius: 15px;
+    }
+
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+</style>
+
+@code {
+    private JournalEntry SampleEntry = new JournalEntry
+    {
+        Id = 1,
+        EntryDate = DateTime.Today,
+        Content = @"Today was an incredibly productive day! I started my morning with a refreshing jog in the park, which really helped clear my mind and set a positive tone for the rest of the day.
+
+At work, I successfully completed the project presentation that I've been preparing for weeks. The client was very impressed with our approach, and we secured the deal!  This achievement has boosted my confidence significantly.
+
+In the evening, I spent quality time with my family.  We cooked dinner together and shared stories about our day.  These moments remind me of what truly matters in life.
+
+I'm feeling grateful for all the opportunities and the support system around me. Tomorrow, I plan to continue this momentum and tackle the new challenges ahead.",
+        PrimaryMood = MoodType.Happy,
+        SecondaryMood1 = MoodType.Calm,
+        SecondaryMood2 = null,
+        Tags = new List<Tag>
+        {
+            new Tag { Name = "Productive" },
+            new Tag { Name = "Work Success" },
+            new Tag { Name = "Family Time" },
+            new Tag { Name = "Fitness" },
+            new Tag { Name = "Gratitude" }
+        },
+        CreatedAt = DateTime.Now,
+        UpdatedAt = DateTime.Now
+    };
+}

@@ -1,6 +1,6 @@
 ﻿using Journal.Models;
 
-namespace Journal.Services
+namespace Journal.Services 
 {
     public class JournalService
     {
@@ -8,7 +8,7 @@ namespace Journal.Services
 
         public JournalEntry? GetEntryByDate(DateTime date)
         {
-            return _entries.FirstOrDefault(e => e.EntryDate == date.Date);
+            return _entries.FirstOrDefault(e => e.EntryDate.Date == date.Date);
         }
 
         public void SaveEntry(JournalEntry entry)
@@ -40,6 +40,11 @@ namespace Journal.Services
             {
                 _entries.Remove(entry);
             }
+        }
+
+        public List<JournalEntry> GetAllEntries()
+        {
+            return _entries.OrderByDescending(e => e.EntryDate).ToList();
         }
     }
 }

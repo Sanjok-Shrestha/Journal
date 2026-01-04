@@ -1,7 +1,7 @@
 ﻿@using Journal.Models
 
 <label>Primary Mood</label>
-<select class="form-select" @bind="PrimaryMood">
+<select class="form-select" @bind="PrimaryMood" @bind:after="OnPrimaryMoodChanged">
     @foreach (var mood in Enum.GetValues(typeof(MoodType)).Cast<MoodType>())
     {
         <option value="@mood">@mood</option>
@@ -9,8 +9,8 @@
 </select>
 
 <label class="mt-2">Secondary Mood</label>
-<select class="form-select" @bind="SecondaryMood">
-    <option value="null">None</option>
+<select class="form-select" value="@SecondaryMood" @onchange="OnSecondaryMoodChanged">
+    <option value="">None</option>
     @foreach (var mood in Enum.GetValues(typeof(MoodType)).Cast<MoodType>())
     {
         <option value="@mood">@mood</option>
@@ -18,7 +18,33 @@
 </select>
 
 @code {
-    // Parameters for external usage (remove if managed internally)
-    [Parameter] public MoodType PrimaryMood { get; set; } = MoodType.Happy; // Defaults to Happy
-    [Parameter] public MoodType? SecondaryMood { get; set; } = null;        // Defaults to None
+    [Parameter]
+    public MoodType PrimaryMood { get; set; } = MoodType.Happy;
+
+    [Parameter]
+    public EventCallback<MoodType> PrimaryMoodChanged { get; set; }
+
+    [Parameter]
+    public MoodType? SecondaryMood { get; set; }
+
+    [Parameter]
+    public EventCallback<MoodType?> SecondaryMoodChanged { get; set; }
+
+    private async Task OnPrimaryMoodChanged()
+    {
+        await PrimaryMoodChanged.InvokeAsync(PrimaryMood);
+    }
+
+    private async Task OnSecondaryMoodChanged(ChangeEventArgs e)
+    {
+        if (string.IsNullOrEmpty(e.Value?.ToString()))
+        {
+            SecondaryMood = null;
+        }
+        else
+        {
+            SecondaryMood = Enum.Parse<MoodType>(e.Value.ToString()!);
+        }
+        await SecondaryMoodChanged.InvokeAsync(SecondaryMood);
+    }
 }

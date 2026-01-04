@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Journal.Services;
+using Journal.Services;  // ← Make sure this line exists
 
 namespace Journal;
 
@@ -16,7 +16,6 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
             });
 
-        // ✅ Add Blazor WebView
         builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
@@ -24,7 +23,7 @@ public static class MauiProgram
         builder.Logging.AddDebug();
 #endif
 
-        // ✅ Register your services here
+        // Register JournalService
         builder.Services.AddSingleton<JournalService>();
 
         return builder.Build();

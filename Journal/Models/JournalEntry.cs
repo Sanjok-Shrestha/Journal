@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Journal.Models
+namespace Journal.Models  // ← Check this line
 {
     public class JournalEntry
     {

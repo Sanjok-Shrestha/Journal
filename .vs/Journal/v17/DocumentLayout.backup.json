@@ -3,12 +3,140 @@
   "WorkspaceRootPath": "C:\\Users\\Consumer\\source\\repos\\Journal\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\components\\pages\\sample.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\components\\pages\\sample.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\components\\routes.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\components\\routes.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\wwwroot\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\wwwroot\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\components\\shared\\tagselector.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\components\\shared\\tagselector.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\components\\_imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\components\\_imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\components\\layout\\mainlayout.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\components\\layout\\mainlayout.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\components\\shared\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\components\\shared\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\services\\pdfexportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\services\\pdfexportservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\components\\shared\\richtexteditor.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\components\\shared\\richtexteditor.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\components\\shared\\calenderview.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\components\\shared\\calenderview.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\components\\pages\\settings.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\components\\pages\\settings.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\components\\pages\\entryeditor.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\components\\pages\\entryeditor.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\components\\pages\\dashboard.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\components\\pages\\dashboard.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\components\\pages\\home.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\components\\pages\\home.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\components\\pages\\login.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\components\\pages\\login.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\services\\themeservice.cs.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\services\\themeservice.cs.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\services\\analyticsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\services\\analyticsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\services\\journalservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\services\\journalservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\services\\authenticationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\services\\authenticationservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\data\\journaldbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\data\\journaldbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\models\\tag.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\models\\tag.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\models\\streakdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\models\\streakdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\models\\moodtype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\models\\moodtype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\models\\journalentry.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\models\\journalentry.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\platforms\\windows\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\platforms\\windows\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\platforms\\windows\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\platforms\\windows\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\app.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\components\\pages\\component.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\components\\pages\\component.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\mauiprogram.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\mauiprogram.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\mainpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\mainpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\_import.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\_import.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|c:\\users\\consumer\\source\\repos\\journal\\journal\\components\\pages\\journalpage.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{E0C79DFA-5D64-4F20-A999-5CA36E4FD1BE}|Journal\\Journal.csproj|solutionrelative:journal\\components\\pages\\journalpage.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Consumer\\source\\repos\\Journal\\_Imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:_Imports.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -17,34 +145,462 @@
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "DockedWidth": 323,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Sample.razor",
-              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\Sample.razor",
-              "RelativeDocumentMoniker": "Journal\\Components\\Pages\\Sample.razor",
-              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\Sample.razor",
-              "RelativeToolTip": "Journal\\Components\\Pages\\Sample.razor",
-              "ViewState": "AgIAAI8AAAAAAAAAAAAmwJkAAAApAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-01-04T03:33:35.797Z",
+              "DocumentIndex": 1,
+              "Title": "index.html",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\wwwroot\\index.html",
+              "RelativeDocumentMoniker": "Journal\\wwwroot\\index.html",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\wwwroot\\index.html*",
+              "RelativeToolTip": "Journal\\wwwroot\\index.html*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACcAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-01-24T14:14:39.491Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
+              "Title": "Routes.razor",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Routes.razor",
+              "RelativeDocumentMoniker": "Journal\\Components\\Routes.razor",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Routes.razor*",
+              "RelativeToolTip": "Journal\\Components\\Routes.razor*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T13:59:58.861Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "RichTextEditor.razor",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Shared\\RichTextEditor.razor",
+              "RelativeDocumentMoniker": "Journal\\Components\\Shared\\RichTextEditor.razor",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Shared\\RichTextEditor.razor*",
+              "RelativeToolTip": "Journal\\Components\\Shared\\RichTextEditor.razor*",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAswIYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T11:27:37.857Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "TagSelector.razor",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Shared\\TagSelector.razor",
+              "RelativeDocumentMoniker": "Journal\\Components\\Shared\\TagSelector.razor",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Shared\\TagSelector.razor*",
+              "RelativeToolTip": "Journal\\Components\\Shared\\TagSelector.razor*",
+              "ViewState": "AgIAADsAAAAAAAAAAAAswFoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T10:38:59.839Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "PdfExportService.cs",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Services\\PdfExportService.cs",
+              "RelativeDocumentMoniker": "Journal\\Services\\PdfExportService.cs",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Services\\PdfExportService.cs*",
+              "RelativeToolTip": "Journal\\Services\\PdfExportService.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-24T13:42:30.921Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "NavMenu.razor",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Shared\\NavMenu.razor",
+              "RelativeDocumentMoniker": "Journal\\Components\\Shared\\NavMenu.razor",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Shared\\NavMenu.razor*",
+              "RelativeToolTip": "Journal\\Components\\Shared\\NavMenu.razor*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T12:20:12.58Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "MainLayout.razor",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Layout\\MainLayout.razor",
+              "RelativeDocumentMoniker": "Journal\\Components\\Layout\\MainLayout.razor",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Layout\\MainLayout.razor*",
+              "RelativeToolTip": "Journal\\Components\\Layout\\MainLayout.razor*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T12:19:20.342Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "_Imports.razor",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\_Imports.razor",
+              "RelativeDocumentMoniker": "Journal\\Components\\_Imports.razor",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\_Imports.razor*",
+              "RelativeToolTip": "Journal\\Components\\_Imports.razor*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T12:19:10.974Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "CalenderView.razor",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Shared\\CalenderView.razor",
+              "RelativeDocumentMoniker": "Journal\\Components\\Shared\\CalenderView.razor",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Shared\\CalenderView.razor*",
+              "RelativeToolTip": "Journal\\Components\\Shared\\CalenderView.razor*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T12:19:04.486Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Settings.razor",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\Settings.razor",
+              "RelativeDocumentMoniker": "Journal\\Components\\Pages\\Settings.razor",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\Settings.razor*",
+              "RelativeToolTip": "Journal\\Components\\Pages\\Settings.razor*",
+              "ViewState": "AgIAADsBAAAAAAAAAAAAAHwAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T13:48:35.219Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "EntryEditor.razor",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\EntryEditor.razor",
+              "RelativeDocumentMoniker": "Journal\\Components\\Pages\\EntryEditor.razor",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\EntryEditor.razor*",
+              "RelativeToolTip": "Journal\\Components\\Pages\\EntryEditor.razor*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T10:23:26.662Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "Dashboard.razor",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\Dashboard.razor",
+              "RelativeDocumentMoniker": "Journal\\Components\\Pages\\Dashboard.razor",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\Dashboard.razor*",
+              "RelativeToolTip": "Journal\\Components\\Pages\\Dashboard.razor*",
+              "ViewState": "AgIAAIQAAAAAAAAAAAAAABoAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T11:10:56.645Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Home.razor",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\Home.razor",
+              "RelativeDocumentMoniker": "Journal\\Components\\Pages\\Home.razor",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\Home.razor*",
+              "RelativeToolTip": "Journal\\Components\\Pages\\Home.razor*",
+              "ViewState": "AgIAAJQAAAAAAAAAAAAmwAwBAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T11:18:28.457Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "Login.razor",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\Login.razor",
+              "RelativeDocumentMoniker": "Journal\\Components\\Pages\\Login.razor",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\Login.razor*",
+              "RelativeToolTip": "Journal\\Components\\Pages\\Login.razor*",
+              "ViewState": "AgIAAH0BAAAAAAAAAAAAACgAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T13:44:13.912Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "AnalyticsService.cs",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Services\\AnalyticsService.cs",
+              "RelativeDocumentMoniker": "Journal\\Services\\AnalyticsService.cs",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Services\\AnalyticsService.cs*",
+              "RelativeToolTip": "Journal\\Services\\AnalyticsService.cs*",
+              "ViewState": "AgIAAF0AAAAAAAAAAAAmwHUAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-24T12:18:42.772Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "AuthenticationService.cs",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Services\\AuthenticationService.cs",
+              "RelativeDocumentMoniker": "Journal\\Services\\AuthenticationService.cs",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Services\\AuthenticationService.cs*",
+              "RelativeToolTip": "Journal\\Services\\AuthenticationService.cs*",
+              "ViewState": "AgIAAPMAAAAAAAAAAAAIwFsBAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-24T12:18:43.617Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "JournalDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Data\\JournalDbContext.cs",
+              "RelativeDocumentMoniker": "Journal\\Data\\JournalDbContext.cs",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Data\\JournalDbContext.cs*",
+              "RelativeToolTip": "Journal\\Data\\JournalDbContext.cs*",
+              "ViewState": "AgIAAGMAAAAAAAAAAAAqwHwAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-24T12:18:57.789Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "Tag.cs",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Models\\Tag.cs",
+              "RelativeDocumentMoniker": "Journal\\Models\\Tag.cs",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Models\\Tag.cs*",
+              "RelativeToolTip": "Journal\\Models\\Tag.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-24T12:18:16.46Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "ThemeService.cs.cs",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Services\\ThemeService.cs.cs",
+              "RelativeDocumentMoniker": "Journal\\Services\\ThemeService.cs.cs",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Services\\ThemeService.cs.cs*",
+              "RelativeToolTip": "Journal\\Services\\ThemeService.cs.cs*",
+              "ViewState": "AgIAABsAAAAAAAAAAAAmwEIAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-24T12:18:45.51Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "StreakData.cs",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Models\\StreakData.cs",
+              "RelativeDocumentMoniker": "Journal\\Models\\StreakData.cs",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Models\\StreakData.cs*",
+              "RelativeToolTip": "Journal\\Models\\StreakData.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-24T12:18:08.756Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "JournalService.cs",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Services\\JournalService.cs",
+              "RelativeDocumentMoniker": "Journal\\Services\\JournalService.cs",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Services\\JournalService.cs*",
+              "RelativeToolTip": "Journal\\Services\\JournalService.cs*",
+              "ViewState": "AgIAAOMAAAAAAAAAAAAuwO4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-24T12:18:44.605Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "MoodType.cs",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Models\\MoodType.cs",
+              "RelativeDocumentMoniker": "Journal\\Models\\MoodType.cs",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Models\\MoodType.cs*",
+              "RelativeToolTip": "Journal\\Models\\MoodType.cs*",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAAwDoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-24T12:18:10.068Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "JournalEntry.cs",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Models\\JournalEntry.cs",
+              "RelativeDocumentMoniker": "Journal\\Models\\JournalEntry.cs",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Models\\JournalEntry.cs*",
+              "RelativeToolTip": "Journal\\Models\\JournalEntry.cs*",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABAAAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-24T12:18:10.367Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Models\\User.cs",
+              "RelativeDocumentMoniker": "Journal\\Models\\User.cs",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Models\\User.cs*",
+              "RelativeToolTip": "Journal\\Models\\User.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-24T12:18:19.836Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "App.xaml",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Platforms\\Windows\\App.xaml",
+              "RelativeDocumentMoniker": "Journal\\Platforms\\Windows\\App.xaml",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Platforms\\Windows\\App.xaml*",
+              "RelativeToolTip": "Journal\\Platforms\\Windows\\App.xaml*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-01-24T11:19:06.748Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "App.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Platforms\\Windows\\App.xaml.cs",
+              "RelativeDocumentMoniker": "Journal\\Platforms\\Windows\\App.xaml.cs",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Platforms\\Windows\\App.xaml.cs*",
+              "RelativeToolTip": "Journal\\Platforms\\Windows\\App.xaml.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-24T10:47:23.519Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "App.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\App.xaml.cs",
+              "RelativeDocumentMoniker": "Journal\\App.xaml.cs",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\App.xaml.cs*",
+              "RelativeToolTip": "Journal\\App.xaml.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-24T11:30:17.756Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "App.xaml",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\App.xaml",
+              "RelativeDocumentMoniker": "Journal\\App.xaml",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\App.xaml*",
+              "RelativeToolTip": "Journal\\App.xaml*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAOAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-01-24T11:30:11.772Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "Component.razor",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\Component.razor",
+              "RelativeDocumentMoniker": "Journal\\Components\\Pages\\Component.razor",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\Component.razor",
+              "RelativeToolTip": "Journal\\Components\\Pages\\Component.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T11:18:26.817Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "MainPage.xaml",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\MainPage.xaml",
+              "RelativeDocumentMoniker": "Journal\\MainPage.xaml",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\MainPage.xaml",
+              "RelativeToolTip": "Journal\\MainPage.xaml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-01-24T11:30:13.398Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "_Import.razor",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\_Import.razor",
+              "RelativeDocumentMoniker": "Journal\\_Import.razor",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\_Import.razor*",
+              "RelativeToolTip": "Journal\\_Import.razor*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T10:41:32.694Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "MauiProgram.cs",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\MauiProgram.cs",
+              "RelativeDocumentMoniker": "Journal\\MauiProgram.cs",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\MauiProgram.cs",
+              "RelativeToolTip": "Journal\\MauiProgram.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-01-24T10:44:25.157Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
               "Title": "JournalPage.razor",
               "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\JournalPage.razor",
               "RelativeDocumentMoniker": "Journal\\Components\\Pages\\JournalPage.razor",
               "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Components\\Pages\\JournalPage.razor",
               "RelativeToolTip": "Journal\\Components\\Pages\\JournalPage.razor",
-              "ViewState": "AgIAACIAAAAAAAAAAAAEwDMAAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-12-28T04:15:27.316Z",
+              "WhenOpened": "2026-01-24T11:18:31.369Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "_Imports.razor",
+              "DocumentMoniker": "C:\\Users\\Consumer\\source\\repos\\Journal\\_Imports.razor",
+              "RelativeDocumentMoniker": "_Imports.razor",
+              "ToolTip": "C:\\Users\\Consumer\\source\\repos\\Journal\\_Imports.razor",
+              "RelativeToolTip": "_Imports.razor",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAB5AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-01-24T11:15:17.607Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
             }
           ]
         }

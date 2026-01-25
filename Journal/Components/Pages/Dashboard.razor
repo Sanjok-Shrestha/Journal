@@ -1,0 +1,168 @@
+﻿@page "/dashboard"
+@inject IAnalyticsService AnalyticsService
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
+
+<div class="dashboard-container">
+    <h1> Dashboard Analytics & Insights</h1>
+
+    @if (isLoading)
+    {
+        <div class="loading">Loading analytics...</div>
+    }
+    else if (analytics != null)
+    {
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"></div>
+                <div class="stat-value">@analytics.TotalEntries</div>
+                <div class="stat-label">Total Entries</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"></div>
+                <div class="stat-value">@analytics.TotalWords</div>
+                <div class="stat-label">Total Words</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"></div>
+                <div class="stat-value">@analytics.AverageWordCount</div>
+                <div class="stat-label">Avg Words/Entry</div>
+            </div>
+        </div>
+
+        <div class="analytics-section">
+            <h2>Mood Distribution</h2>
+            <div class="mood-distribution">
+                @foreach (var mood in analytics.MoodDistribution)
+                {
+                    <div class="mood-bar-item">
+                        <div class="mood-label">
+                            <span class="mood-emoji">@mood.Mood.GetEmoji()</span>
+                            <span>@mood.Mood</span>
+                        </div>
+                        <div class="mood-bar-container">
+                            <div class="mood-bar" 
+                                 style="width: @mood.Percentage%; background-color: @mood.Mood.GetColor()">
+                                <span class="mood-count">@mood.Count</span>
+                            </div>
+                        </div>
+                        <span class="mood-percentage">@mood.Percentage.ToString("F1")%</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="analytics-section">
+            <h2>Most Frequent Moods</h2>
+            <div class="frequent-moods">
+                @foreach (var (mood, index) in analytics.FrequentMoods.Select((m, i) => (m, i)))
+                {
+                    <div class="frequent-mood-card" style="border-color: @mood.Mood.GetColor()">
+                        <div class="rank">#@(index + 1)</div>
+                        <div class="mood-info">
+                            <div class="mood-emoji-large">@mood.Mood.GetEmoji()</div>
+                            <div class="mood-name">@mood.Mood</div>
+                            <div class="mood-stats">@mood.Count entries (@mood.Percentage%)</div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="analytics-section">
+            <h2>Most Used Tags</h2>
+            <div class="tags-cloud">
+                @foreach (var tag in analytics.MostUsedTags)
+                {
+                    <div class="tag-cloud-item" 
+                         style="font-size: @(12 + Math.Min(tag.Count * 2, 20))px; color: @tag.Color">
+                        #@tag.Name
+                        <span class="tag-count">(@tag.Count)</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="analytics-section">
+            <h2>Tag Breakdown</h2>
+            <div class="tag-breakdown">
+                @foreach (var tag in analytics.TagBreakdown.Take(10))
+                {
+                    <div class="tag-breakdown-item">
+                        <div class="tag-info">
+                            <span class="tag-name" style="color: @tag.Color">#@tag.Name</span>
+                            <span class="tag-stats">@tag.Count uses</span>
+                        </div>
+                        <div class="tag-progress-bar">
+                            <div class="tag-progress-fill" 
+                                 style="width: @GetTagPercentage(tag.Count)%; background-color: @tag.Color">
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="analytics-section">
+            <h2>Word Count Trends (Last 30 Days)</h2>
+            <div class="word-count-chart">
+                @if (analytics.WordCountTrends.Any())
+                {
+                    var maxWordCount = analytics.WordCountTrends.Max(w => w.WordCount);
+                    @foreach (var trend in analytics.WordCountTrends)
+                    {
+                        var height = maxWordCount > 0 ? (trend.WordCount * 100.0 / maxWordCount) : 0;
+                        <div class="word-bar-container">
+                            <div class="word-bar" style="height: @(height)%">
+                                <span class="word-value">@trend.WordCount</span>
+                            </div>
+                            <div class="word-date">@trend.Date.ToString("MM/dd")</div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">No data available for the last 30 days</p>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <p>No analytics data available. Start writing journal entries!</p>
+        </div>
+    }
+</div>
+
+@code {
+    private DashboardAnalytics? analytics;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!await AuthService.IsAuthenticatedAsync())
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        await LoadAnalytics();
+    }
+
+    private async Task LoadAnalytics()
+    {
+        isLoading = true;
+        analytics = await AnalyticsService.GetDashboardAnalyticsAsync();
+        isLoading = false;
+    }
+
+    private double GetTagPercentage(int count)
+    {
+        if (analytics?.TagBreakdown == null || !analytics.TagBreakdown.Any())
+            return 0;
+
+        var maxCount = analytics.TagBreakdown.Max(t => t.Count);
+        return maxCount > 0 ? (count * 100.0 / maxCount) : 0;
+    }
+}

@@ -1,0 +1,171 @@
+﻿@page "/editor"
+@page "/editor/{EntryId:int}"
+@using Journal.Components.Shared
+@using Microsoft.AspNetCore.Components.Forms
+@inject IJournalService JournalService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<div class="editor-container">
+    <div class="editor-header">
+        <button class="btn btn-secondary" @onclick="Cancel">← Back</button>
+        <h2>@(entry.Id == 0 ? "New Entry" : "Edit Entry")</h2>
+        <div class="editor-actions">
+            <button class="btn btn-success" @onclick="SaveEntry"> Save</button>
+            @if (entry.Id != 0)
+            {
+                <button class="btn btn-danger" @onclick="DeleteEntry"> Delete</button>
+            }
+        </div>
+    </div>
+
+    <EditForm Model="entry" OnValidSubmit="SaveEntry">
+        <div class="editor-body">
+            <div class="form-group">
+                <label>Entry Date</label>
+                <InputDate @bind-Value="entry.EntryDate" class="form-control" />
+            </div>
+
+            <div class="form-group">
+                <label>Title</label>
+                <InputText @bind-Value="entry.Title" class="form-control" 
+                           placeholder="Give your entry a title..." />
+            </div>
+
+            <MoodSelector @bind-PrimaryMood="entry.PrimaryMood"
+                          @bind-SecondaryMood1="entry.SecondaryMood1"
+                          @bind-SecondaryMood2="entry.SecondaryMood2" />
+
+            <div class="form-group">
+                <label>Content</label>
+                <RichTextEditor @ref="richTextEditor"
+                                @bind-Content="entry.Content"
+                                Placeholder="Write your journal entry here..."
+                                MinHeight="400" />
+            </div>
+
+            <TagSelector @bind-Tags="tagList" />
+
+            <div class="word-count-display">
+                <small>Word Count: @CalculateWordCount() words</small>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="alert alert-@(isError ? "danger" : "success")">
+                @message
+            </div>
+        }
+    </EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public int? EntryId { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? Date { get; set; }
+
+    private JournalEntry entry = new() { EntryDate = DateTime.Today };
+    private List<string> tagList = new();
+    private string message = string.Empty;
+    private bool isError = false;
+    private RichTextEditor? richTextEditor;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (EntryId.HasValue && EntryId.Value > 0)
+        {
+            var existingEntry = await JournalService.GetEntryByIdAsync(EntryId.Value);
+            if (existingEntry != null)
+            {
+                entry = existingEntry;
+                tagList = entry.TagList;
+            }
+        }
+        else if (!string.IsNullOrEmpty(Date) && DateTime.TryParse(Date, out var parsedDate))
+        {
+            entry.EntryDate = parsedDate;
+            var existingEntry = await JournalService.GetEntryByDateAsync(parsedDate);
+            if (existingEntry != null)
+            {
+                entry = existingEntry;
+                tagList = entry.TagList;
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && richTextEditor != null && !string.IsNullOrEmpty(entry.Content))
+        {
+            await Task.Delay(500);
+            await richTextEditor.SetContent(entry.Content);
+        }
+    }
+
+    private async Task SaveEntry()
+    {
+        message = string.Empty;
+        isError = false;
+
+        if (string.IsNullOrWhiteSpace(entry.Title))
+        {
+            message = "Title is required";
+            isError = true;
+            return;
+        }
+
+        if (richTextEditor != null)
+        {
+            entry.Content = await richTextEditor.GetContent();
+        }
+
+        if (string.IsNullOrWhiteSpace(entry.Content))
+        {
+            message = "Content is required";
+            isError = true;
+            return;
+        }
+
+        entry.TagList = tagList;
+
+        var success = await JournalService.SaveEntryAsync(entry);
+        if (success)
+        {
+            message = "Entry saved successfully! ";
+            await Task.Delay(1500);
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            message = "Failed to save entry. An entry for this date already exists.";
+            isError = true;
+        }
+    }
+
+    private async Task DeleteEntry()
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this entry?");
+        if (confirmed)
+        {
+            await JournalService.DeleteEntryAsync(entry.Id);
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private int CalculateWordCount()
+    {
+        if (string.IsNullOrWhiteSpace(entry.Content))
+            return 0;
+
+        var plainText = System.Text.RegularExpressions.Regex.Replace(entry.Content, "<.*?>", string.Empty);
+        return plainText.Split(new[] { ' ', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Length;
+    }
+}

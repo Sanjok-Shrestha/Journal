@@ -1,17 +1,55 @@
-﻿@inherits LayoutComponentBase
+﻿@using Journal.Components.Shared
+@using Journal.Components.NavMenu
+@inherits LayoutComponentBase
+@inject ThemeService ThemeService
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+<div class="page @ThemeService.CurrentTheme.ToLower()">
+    @if (isAuthenticated)
+    {
+        <div class="sidebar">
+            <NavMenu />
         </div>
 
-        <article class="content px-4">
+        <main>
+            <div class="top-row px-4">
+                <h2 class="app-title">My Journal</h2>
+            </div>
+
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    }
+    else
+    {
+        <article class="content-full">
             @Body
         </article>
-    </main>
+    }
 </div>
+
+@code {
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.OnThemeChanged += StateHasChanged;
+        isAuthenticated = await AuthService.IsAuthenticatedAsync();
+        
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        isAuthenticated = await AuthService.IsAuthenticatedAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnThemeChanged -= StateHasChanged;
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}

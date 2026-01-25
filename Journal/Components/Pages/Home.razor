@@ -1,5 +1,269 @@
 ﻿@page "/"
+@inject IJournalService JournalService
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
 
-<h1>Hello, world!</h1>
+<div class="home-container">
+    <div class="header-section">
+        <h1>📔 My Journal</h1>
+        <div class="header-actions">
+            <button class="btn btn-primary" @onclick="NavigateToEditor">
+                ➕ New Entry
+            </button>
+        </div>
+    </div>
 
-Welcome to your new app.
+    @if (streakData != null)
+    {
+        <div class="streak-cards">
+            <div class="stat-card">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-value">@streakData.CurrentStreak</div>
+                <div class="stat-label">Current Streak</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-value">@streakData.LongestStreak</div>
+                <div class="stat-label">Longest Streak</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-value">@streakData.TotalEntries</div>
+                <div class="stat-label">Total Entries</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏸️</div>
+                <div class="stat-value">@streakData.MissedDays</div>
+                <div class="stat-label">Missed Days</div>
+            </div>
+        </div>
+    }
+
+    <div class="search-filter-section">
+        <div class="search-box">
+            <input type="text" @bind="searchTerm" @bind:event="oninput" 
+                   @onkeyup="HandleSearch" class="form-control" 
+                   placeholder="🔍 Search entries..." />
+        </div>
+        <div class="filter-controls">
+            <select @bind="selectedMood" @onchange="ApplyFilters" class="form-control">
+                <option value="">All Moods</option>
+                @foreach (var mood in Enum.GetValues<MoodType>())
+                {
+                    <option value="@mood">@mood.GetEmoji() @mood</option>
+                }
+            </select>
+            <input type="date" @bind="filterStartDate" @onchange="ApplyFilters" class="form-control" />
+            <input type="date" @bind="filterEndDate" @onchange="ApplyFilters" class="form-control" />
+            <button class="btn btn-secondary" @onclick="ClearFilters">Clear Filters</button>
+        </div>
+    </div>
+
+    <div class="view-toggle">
+        <button class="btn @(showCalendar ? "btn-primary" : "btn-outline")" 
+                @onclick="() => showCalendar = true">
+            📅 Calendar
+        </button>
+        <button class="btn @(!showCalendar ? "btn-primary" : "btn-outline")" 
+                @onclick="() => showCalendar = false">
+            📋 List
+        </button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="loading">Loading...</div>
+    }
+    else
+    {
+        @if (showCalendar)
+        {
+            <CalendarView OnDateSelected="HandleDateSelected" />
+        }
+        else
+        {
+            @if (displayedEntries.Any())
+            {
+                <div class="entries-list">
+                    @foreach (var entry in displayedEntries)
+                    {
+                        <div class="entry-card" @onclick="() => ViewEntry(entry.Id)">
+                            <div class="entry-header">
+                                <h3>@entry.Title</h3>
+                                <span class="mood-badge" style="background-color: @entry.PrimaryMood.GetColor()">
+                                    @entry.PrimaryMood.GetEmoji() @entry.PrimaryMood
+                                </span>
+                            </div>
+                            <p class="entry-date">@entry.EntryDate.ToString("MMMM dd, yyyy")</p>
+                            <p class="entry-preview">@GetPreview(entry.Content)</p>
+                            <div class="entry-footer">
+                                <div class="entry-tags">
+                                    @foreach (var tag in entry.TagList.Take(3))
+                                    {
+                                        <span class="tag">@tag</span>
+                                    }
+                                </div>
+                                <span class="word-count">@entry.WordCount words</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="pagination">
+                    <button class="btn btn-outline" @onclick="PreviousPage" 
+                            disabled="@(currentPage == 1)">
+                        ← Previous
+                    </button>
+                    <span class="page-info">Page @currentPage of @totalPages</span>
+                    <button class="btn btn-outline" @onclick="NextPage" 
+                            disabled="@(currentPage >= totalPages)">
+                        Next →
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <p>📝 No entries found. Start writing your first journal entry!</p>
+                </div>
+            }
+        }
+    }
+</div>
+
+@code {
+    private List<JournalEntry> allEntries = new();
+    private List<JournalEntry> filteredEntries = new();
+    private List<JournalEntry> displayedEntries = new();
+    private StreakData? streakData;
+    private string searchTerm = string.Empty;
+    private string selectedMood = string.Empty;
+    private DateTime? filterStartDate;
+    private DateTime? filterEndDate;
+    private bool showCalendar = false;
+    private bool isLoading = true;
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalPages = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!await AuthService.IsAuthenticatedAsync())
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        isLoading = true;
+        allEntries = await JournalService.GetAllEntriesAsync();
+        filteredEntries = allEntries;
+        streakData = await JournalService.GetStreakDataAsync();
+        UpdatePagination();
+        isLoading = false;
+    }
+
+    private void UpdatePagination()
+    {
+        totalPages = (int)Math.Ceiling((double)filteredEntries.Count / pageSize);
+        displayedEntries = filteredEntries
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+    }
+
+    private async Task HandleSearch()
+    {
+        await ApplyFilters();
+    }
+
+    private async Task ApplyFilters()
+    {
+        filteredEntries = allEntries;
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            filteredEntries = filteredEntries.Where(e =>
+                e.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                e.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        if (!string.IsNullOrEmpty(selectedMood) && Enum.TryParse<MoodType>(selectedMood, out var mood))
+        {
+            filteredEntries = filteredEntries.Where(e =>
+                e.PrimaryMood == mood ||
+                e.SecondaryMood1 == mood ||
+                e.SecondaryMood2 == mood)
+                .ToList();
+        }
+
+        if (filterStartDate.HasValue)
+        {
+            filteredEntries = filteredEntries.Where(e => e.EntryDate >= filterStartDate.Value.Date).ToList();
+        }
+
+        if (filterEndDate.HasValue)
+        {
+            filteredEntries = filteredEntries.Where(e => e.EntryDate <= filterEndDate.Value.Date).ToList();
+        }
+
+        currentPage = 1;
+        UpdatePagination();
+        await Task.CompletedTask;
+    }
+
+    private void ClearFilters()
+    {
+        searchTerm = string.Empty;
+        selectedMood = string.Empty;
+        filterStartDate = null;
+        filterEndDate = null;
+        filteredEntries = allEntries;
+        currentPage = 1;
+        UpdatePagination();
+    }
+
+    private void NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            UpdatePagination();
+        }
+    }
+
+    private void PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            UpdatePagination();
+        }
+    }
+
+    private void HandleDateSelected(DateTime date)
+    {
+        Navigation.NavigateTo($"/editor?date={date:yyyy-MM-dd}");
+    }
+
+    private void NavigateToEditor()
+    {
+        Navigation.NavigateTo("/editor");
+    }
+
+    private void ViewEntry(int id)
+    {
+        Navigation.NavigateTo($"/editor/{id}");
+    }
+
+    private string GetPreview(string content)
+    {
+        var plainText = System.Text.RegularExpressions.Regex.Replace(content, "<.*?>", string.Empty);
+        return plainText.Length > 150 ? plainText.Substring(0, 150) + "..." : plainText;
+    }
+}

@@ -1,0 +1,382 @@
+﻿@page "/login"
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1> My Journal</h1>
+            <p class="subtitle">Your personal space for thoughts and reflections</p>
+        </div>
+
+        @if (showPinEntry)
+        {
+            <div class="pin-entry-section">
+                <h2> Unlock with PIN</h2>
+                <p class="text-muted">Enter your 4-digit PIN</p>
+
+                <div class="pin-input-container">
+                    <input type="password" 
+                           @bind="pinInput" 
+                           @bind:event="oninput"
+                           @onkeyup="HandlePinKeyUp"
+                           class="pin-input" 
+                           maxlength="4" 
+                           placeholder="••••"
+                           inputmode="numeric"
+                           pattern="[0-9]*"
+                           autofocus />
+                </div>
+
+                <button type="button" 
+                        class="btn btn-primary w-100 mt-3" 
+                        @onclick="HandlePinLogin"
+                        disabled="@(pinInput.Length != 4 || isLoading)">
+                    @if (isLoading)
+                    {
+                        <span>Unlocking...</span>
+                    }
+                    else
+                    {
+                        <span> Unlock</span>
+                    }
+                </button>
+
+                <button type="button" 
+                        class="btn btn-link w-100 mt-2" 
+                        @onclick="() => showPinEntry = false">
+                    Use Password Instead
+                </button>
+            </div>
+        }
+        else if (!hasAccount)
+        {
+            <h2>Create Account</h2>
+            <EditForm Model="@this" OnValidSubmit="HandleRegister">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" 
+                           @bind="username" 
+                           class="form-control" 
+                           placeholder="Choose a username"
+                           maxlength="100" />
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" 
+                           @bind="password" 
+                           class="form-control" 
+                           placeholder="Create a password (min 6 characters)" />
+                </div>
+
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" 
+                           @bind="confirmPassword" 
+                           class="form-control" 
+                           placeholder="Confirm your password" />
+                </div>
+
+                <div class="form-group">
+                    <label>Set PIN (Optional)</label>
+                    <input type="password" 
+                           @bind="pin" 
+                           class="form-control" 
+                           placeholder="Enter 4-digit PIN for quick access" 
+                           maxlength="4"
+                           inputmode="numeric"
+                           pattern="[0-9]*" />
+                    <small class="text-muted">PIN must be 4 digits (e.g., 1234)</small>
+                </div>
+
+                <button type="submit" 
+                        class="btn btn-primary w-100" 
+                        disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <span>Creating Account...</span>
+                    }
+                    else
+                    {
+                        <span> Create Account</span>
+                    }
+                </button>
+
+                <button type="button" 
+                        class="btn btn-link w-100 mt-2" 
+                        @onclick="() => hasAccount = true">
+                    Already have an account? <strong>Login</strong>
+                </button>
+            </EditForm>
+        }
+        else
+        {
+            <h2>Welcome Back</h2>
+            <EditForm Model="@this" OnValidSubmit="HandleLogin">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" 
+                           @bind="username" 
+                           class="form-control" 
+                           placeholder="Enter your username"
+                           autofocus />
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" 
+                           @bind="password" 
+                           class="form-control" 
+                           placeholder="Enter your password" />
+                </div>
+
+                <button type="submit" 
+                        class="btn btn-primary w-100" 
+                        disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <span>Logging in...</span>
+                    }
+                    else
+                    {
+                        <span> Login</span>
+                    }
+                </button>
+
+                @if (hasStoredPin)
+                {
+                    <button type="button" 
+                            class="btn btn-secondary w-100 mt-2" 
+                            @onclick="() => showPinEntry = true">
+                         Use PIN Instead
+                    </button>
+                }
+
+                <button type="button" 
+                        class="btn btn-link w-100 mt-2" 
+                        @onclick="() => hasAccount = false">
+                    Don't have an account? <strong>Register</strong>
+                </button>
+            </EditForm>
+        }
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger mt-3">
+                <strong> Error:</strong> @errorMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success mt-3">
+                <strong> Success:</strong> @successMessage
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private string username = string.Empty;
+    private string password = string.Empty;
+    private string confirmPassword = string.Empty;
+    private string pin = string.Empty;
+    private string pinInput = string.Empty;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+    private bool hasAccount = true;
+    private bool showPinEntry = false;
+    private bool hasStoredPin = false;
+    private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await AuthService.IsAuthenticatedAsync())
+        {
+            if (await AuthService.IsAppLockedAsync())
+            {
+                var hasPinAvailable = await AuthService.HasPinAsync();
+                if (hasPinAvailable)
+                {
+                    showPinEntry = true;
+                    hasStoredPin = true;
+                }
+                else
+                {
+                    Navigation.NavigateTo("/");
+                }
+            }
+            else
+            {
+                Navigation.NavigateTo("/");
+            }
+        }
+        else
+        {
+            hasStoredPin = await AuthService.HasPinAsync();
+        }
+    }
+
+    private async Task HandleRegister()
+    {
+        ClearMessages();
+        isLoading = true;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                errorMessage = "Username is required";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                errorMessage = "Password is required";
+                return;
+            }
+
+            if (password.Length < 6)
+            {
+                errorMessage = "Password must be at least 6 characters";
+                return;
+            }
+
+            if (password != confirmPassword)
+            {
+                errorMessage = "Passwords do not match";
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(pin))
+            {
+                if (pin.Length != 4)
+                {
+                    errorMessage = "PIN must be exactly 4 digits";
+                    return;
+                }
+
+                if (!int.TryParse(pin, out _))
+                {
+                    errorMessage = "PIN must contain only numbers";
+                    return;
+                }
+            }
+
+            var success = await AuthService.RegisterAsync(username, password, string.IsNullOrEmpty(pin) ? null : pin);
+
+            if (success)
+            {
+                successMessage = "Account created successfully!";
+                await Task.Delay(1000);
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = "Registration failed. Username may already exist.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        ClearMessages();
+        isLoading = true;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            {
+                errorMessage = "Username and password are required";
+                return;
+            }
+
+            var user = await AuthService.LoginAsync(username, password);
+
+            if (user != null)
+            {
+                successMessage = "Login successful!";
+                await Task.Delay(500);
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = "Invalid username or password";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Login failed: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandlePinLogin()
+    {
+        ClearMessages();
+        isLoading = true;
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(pinInput))
+            {
+                errorMessage = "Please enter your PIN";
+                return;
+            }
+
+            if (pinInput.Length != 4)
+            {
+                errorMessage = "PIN must be 4 digits";
+                return;
+            }
+
+            var success = await AuthService.LoginWithPinAsync(pinInput);
+
+            if (success)
+            {
+                successMessage = "Unlocked successfully!";
+                await Task.Delay(500);
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = "Invalid PIN";
+                pinInput = string.Empty;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Unlock failed: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandlePinKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && pinInput.Length == 4)
+        {
+            await HandlePinLogin();
+        }
+    }
+
+    private void ClearMessages()
+    {
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+    }
+}

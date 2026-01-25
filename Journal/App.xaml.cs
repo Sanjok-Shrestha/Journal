@@ -1,15 +1,13 @@
-﻿namespace Journal
+﻿
+namespace JournalApp
 {
     public partial class App : Application
     {
         public App()
         {
-            InitializeComponent();
-        }
+            throw new NotImplementedException();
 
-        protected override Window CreateWindow(IActivationState? activationState)
-        {
-            return new Window(new MainPage()) { Title = "Journal" };
+            MainPage = new MainPage();
         }
     }
 }

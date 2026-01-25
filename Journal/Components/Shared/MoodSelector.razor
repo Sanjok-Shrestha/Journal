@@ -1,0 +1,91 @@
+﻿@using JournalApp.Models
+
+<div class="mood-selector">
+    <div class="form-group">
+        <label>Primary Mood <span class="required">*</span></label>
+        <div class="mood-options">
+            @foreach (var mood in Enum.GetValues<MoodType>())
+            {
+                <button type="button" 
+                        class="mood-btn @(PrimaryMood == mood ? "selected" : "")"
+                        style="@(PrimaryMood == mood ? $"background-color: {mood.GetColor()}; color: white;" : "")"
+                        @onclick="() => SelectPrimaryMood(mood)">
+                    <span class="mood-name">@mood.GetEmoji()</span>
+                    <span class="mood-label">@mood</span>
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Secondary Moods (Optional - Max 2)</label>
+        <div class="mood-options">
+            @foreach (var mood in Enum.GetValues<MoodType>())
+            {
+                var isSelected = SecondaryMood1 == mood || SecondaryMood2 == mood;
+                var isDisabled = !isSelected && SecondaryMood1.HasValue && SecondaryMood2.HasValue;
+
+                <button type="button" 
+                        class="mood-btn secondary @(isSelected ? "selected" : "")"
+                        style="@(isSelected ? $"background-color: {mood.GetColor()}; color: white;" : "")"
+                        disabled="@isDisabled"
+                        @onclick="() => SelectSecondaryMood(mood)">
+                    <span class="mood-name">@mood.GetEmoji()</span>
+                    <span class="mood-label">@mood</span>
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public MoodType PrimaryMood { get; set; } = MoodType.Happy;
+
+    [Parameter]
+    public EventCallback<MoodType> PrimaryMoodChanged { get; set; }
+
+    [Parameter]
+    public MoodType? SecondaryMood1 { get; set; }
+
+    [Parameter]
+    public EventCallback<MoodType?> SecondaryMood1Changed { get; set; }
+
+    [Parameter]
+    public MoodType? SecondaryMood2 { get; set; }
+
+    [Parameter]
+    public EventCallback<MoodType?> SecondaryMood2Changed { get; set; }
+
+    private async Task SelectPrimaryMood(MoodType mood)
+    {
+        PrimaryMood = mood;
+        await PrimaryMoodChanged.InvokeAsync(mood);
+    }
+
+    private async Task SelectSecondaryMood(MoodType mood)
+    {
+        if (SecondaryMood1 == mood)
+        {
+            SecondaryMood1 = SecondaryMood2;
+            SecondaryMood2 = null;
+            await SecondaryMood1Changed.InvokeAsync(SecondaryMood1);
+            await SecondaryMood2Changed.InvokeAsync(SecondaryMood2);
+        }
+        else if (SecondaryMood2 == mood)
+        {
+            SecondaryMood2 = null;
+            await SecondaryMood2Changed.InvokeAsync(SecondaryMood2);
+        }
+        else if (!SecondaryMood1.HasValue)
+        {
+            SecondaryMood1 = mood;
+            await SecondaryMood1Changed.InvokeAsync(SecondaryMood1);
+        }
+        else if (!SecondaryMood2.HasValue)
+        {
+            SecondaryMood2 = mood;
+            await SecondaryMood2Changed.InvokeAsync(SecondaryMood2);
+        }
+    }
+}

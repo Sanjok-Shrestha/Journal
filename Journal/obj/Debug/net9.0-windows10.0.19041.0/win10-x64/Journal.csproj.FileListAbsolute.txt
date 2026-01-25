@@ -582,3 +582,12 @@ C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-windows10.0.1904
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-windows10.0.19041.0\win10-x64\qualifiers.txt
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-windows10.0.19041.0\win10-x64\qualifiers.txt.intermediate
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-windows10.0.19041.0\win10-x64\MultipleQualifiersPerDimensionFound.txt
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-windows10.0.19041.0\win10-x64\scopedcss\Components\Shared\NavMenu.razor.rz.scp.css
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-windows10.0.19041.0\win10-x64\compressed\b4o8bapt1r-y9h69czthp.gz
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-windows10.0.19041.0\win10-x64\compressed\s5zps3le29-63r2f8xpw5.gz
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-windows10.0.19041.0\win10-x64\compressed\1suj0y1rd1-eixj432om9.gz
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-windows10.0.19041.0\win10-x64\compressed\5a62ffeve3-eixj432om9.gz
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-windows10.0.19041.0\win10-x64\compressed\publish\b4o8bapt1r-y9h69czthp.br
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-windows10.0.19041.0\win10-x64\compressed\publish\s5zps3le29-63r2f8xpw5.br
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-windows10.0.19041.0\win10-x64\compressed\publish\1suj0y1rd1-eixj432om9.br
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-windows10.0.19041.0\win10-x64\compressed\publish\5a62ffeve3-eixj432om9.br

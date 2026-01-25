@@ -1,16 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SQLite;
+using System;
 
-namespace Journal.Models
+namespace JournalApp.Models
 {
-   public class Tag
+    [Table("Tags")]
+    public class Tag
     {
-      
-            public string Name { get; set; } = string.Empty;
-        
+        [PrimaryKey, AutoIncrement]
+        public int Id { get; set; }
 
+        public int UserId { get; set; }
+
+        [MaxLength(50)]
+        public string Name { get; set; } = string.Empty;
+
+        public string Color { get; set; } = "#3B82F6";
+
+        public int UsageCount { get; set; }
+
+        public DateTime CreatedAt { get; set; }
     }
 }

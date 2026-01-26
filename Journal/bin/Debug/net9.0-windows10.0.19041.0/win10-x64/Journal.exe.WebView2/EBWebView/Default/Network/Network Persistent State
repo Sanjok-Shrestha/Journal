@@ -1,1 +1,1 @@
-{"net":{"http_server_properties":{"servers":[],"supports_quic":{"address":"2001:df4:2b40:c3c9:c9a2:625b:93cd:854a","used_quic":true},"version":5},"network_qualities":{"CAASABiAgICA+P////8B":"4G"}}}
+{"net":{"http_server_properties":{"servers":[{"anonymization":["FAAAAA8AAABodHRwczovLzAuMC4wLjEA",false,0],"server":"https://cdn.quilljs.com","supports_spdy":true}],"version":5},"network_qualities":{"CAASABiAgICA+P////8B":"4G"}}}

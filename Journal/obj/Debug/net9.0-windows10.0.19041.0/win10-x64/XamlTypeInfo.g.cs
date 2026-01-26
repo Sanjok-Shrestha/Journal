@@ -10,7 +10,7 @@
 using System.Diagnostics.CodeAnalysis;
 
 
-namespace Journal.WinUI
+namespace JournalApp.Platforms.Windows
 {
     public partial class App : global::Microsoft.UI.Xaml.Markup.IXamlMetadataProvider
     {

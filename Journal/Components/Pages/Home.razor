@@ -5,10 +5,10 @@
 
 <div class="home-container">
     <div class="header-section">
-        <h1>📔 My Journal</h1>
+        <h1> My Journal</h1>
         <div class="header-actions">
             <button class="btn btn-primary" @onclick="NavigateToEditor">
-                ➕ New Entry
+                 New Entry
             </button>
         </div>
     </div>
@@ -17,22 +17,19 @@
     {
         <div class="streak-cards">
             <div class="stat-card">
-                <div class="stat-icon">🔥</div>
                 <div class="stat-value">@streakData.CurrentStreak</div>
                 <div class="stat-label">Current Streak</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">🏆</div>
                 <div class="stat-value">@streakData.LongestStreak</div>
                 <div class="stat-label">Longest Streak</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">📝</div>
+                <div class="stat-icon"></div>
                 <div class="stat-value">@streakData.TotalEntries</div>
                 <div class="stat-label">Total Entries</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">⏸️</div>
                 <div class="stat-value">@streakData.MissedDays</div>
                 <div class="stat-label">Missed Days</div>
             </div>
@@ -43,18 +40,18 @@
         <div class="search-box">
             <input type="text" @bind="searchTerm" @bind:event="oninput" 
                    @onkeyup="HandleSearch" class="form-control" 
-                   placeholder="🔍 Search entries..." />
+                   placeholder=" Search entries..." />
         </div>
         <div class="filter-controls">
-            <select @bind="selectedMood" @onchange="ApplyFilters" class="form-control">
+            <select @bind="selectedMood" @bind:after="ApplyFilters" class="form-control">
                 <option value="">All Moods</option>
                 @foreach (var mood in Enum.GetValues<MoodType>())
                 {
                     <option value="@mood">@mood.GetEmoji() @mood</option>
                 }
             </select>
-            <input type="date" @bind="filterStartDate" @onchange="ApplyFilters" class="form-control" />
-            <input type="date" @bind="filterEndDate" @onchange="ApplyFilters" class="form-control" />
+            <input type="date" @bind="filterStartDate" @bind:after="ApplyFilters" class="form-control" />
+            <input type="date" @bind="filterEndDate" @bind:after="ApplyFilters" class="form-control" />
             <button class="btn btn-secondary" @onclick="ClearFilters">Clear Filters</button>
         </div>
     </div>
@@ -62,11 +59,11 @@
     <div class="view-toggle">
         <button class="btn @(showCalendar ? "btn-primary" : "btn-outline")" 
                 @onclick="() => showCalendar = true">
-            📅 Calendar
+             Calendar
         </button>
         <button class="btn @(!showCalendar ? "btn-primary" : "btn-outline")" 
                 @onclick="() => showCalendar = false">
-            📋 List
+             List
         </button>
     </div>
 
@@ -112,19 +109,19 @@
                 <div class="pagination">
                     <button class="btn btn-outline" @onclick="PreviousPage" 
                             disabled="@(currentPage == 1)">
-                        ← Previous
+                         Previous
                     </button>
                     <span class="page-info">Page @currentPage of @totalPages</span>
                     <button class="btn btn-outline" @onclick="NextPage" 
                             disabled="@(currentPage >= totalPages)">
-                        Next →
+                        Next 
                     </button>
                 </div>
             }
             else
             {
                 <div class="empty-state">
-                    <p>📝 No entries found. Start writing your first journal entry!</p>
+                    <p> No entries found. Start writing your first journal entry!</p>
                 </div>
             }
         }

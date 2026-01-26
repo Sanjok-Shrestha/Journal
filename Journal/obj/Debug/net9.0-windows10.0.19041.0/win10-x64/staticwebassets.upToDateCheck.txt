@@ -1,9 +1,8 @@
+wwwroot\css\app.css
 wwwroot\css\bootstrap\bootstrap.min.css
 wwwroot\css\bootstrap\bootstrap.min.css.map
-wwwroot\css\app.css
 wwwroot\index.html
-wwwroot\js\richText.razor
+C:\Users\Consumer\source\repos\Journal\Journal\wwwroot\css\app.css
 C:\Users\Consumer\source\repos\Journal\Journal\wwwroot\css\bootstrap\bootstrap.min.css
 C:\Users\Consumer\source\repos\Journal\Journal\wwwroot\css\bootstrap\bootstrap.min.css.map
-C:\Users\Consumer\source\repos\Journal\Journal\wwwroot\css\app.css
 C:\Users\Consumer\source\repos\Journal\Journal\wwwroot\index.html

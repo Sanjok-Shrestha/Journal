@@ -1,13 +1,13 @@
 Components\Layout\MainLayout.razor.css
-Components\Layout\NavMenu.razor.css
+Components\Shared\NavMenu.razor.css
 wwwroot\Journal.styles.css.gz
 wwwroot\css\bootstrap\bootstrap.min.css.gz
-wwwroot\Journal.whonyfv058.bundle.scp.css.gz
+wwwroot\Journal.eixj432om9.bundle.scp.css.gz
 wwwroot\css\app.css.gz
 wwwroot\css\bootstrap\bootstrap.min.css.map.gz
 wwwroot\Journal.styles.css.br
 wwwroot\css\bootstrap\bootstrap.min.css.br
-wwwroot\Journal.whonyfv058.bundle.scp.css.br
+wwwroot\Journal.eixj432om9.bundle.scp.css.br
 wwwroot\css\app.css.br
 wwwroot\css\bootstrap\bootstrap.min.css.map.br
 wwwroot\index.html.br
@@ -70,7 +70,7 @@ splashSplashScreen.scale-150.png
 splashSplashScreen.scale-200.png
 splashSplashScreen.scale-400.png
 wwwroot\Journal.styles.css
-wwwroot\Journal.whonyfv058.bundle.scp.css
+wwwroot\Journal.eixj432om9.bundle.scp.css
 AboutAssets.txt
 wwwroot\css\app.css
 wwwroot\css\bootstrap\bootstrap.min.css

@@ -2,6 +2,7 @@
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
+using PdfColors = QuestPDF.Helpers.Colors;
 
 namespace JournalApp.Services
 {
@@ -25,12 +26,12 @@ namespace JournalApp.Services
                 {
                     page.Size(PageSizes.A4);
                     page.Margin(2, Unit.Centimetre);
-                    page.PageColor(Colors.White);
+                    page.PageColor(PdfColors.White);
                     page.DefaultTextStyle(x => x.FontSize(12));
 
                     page.Header()
                         .Text($"Journal Entries: {startDate:MMM dd, yyyy} - {endDate:MMM dd, yyyy}")
-                        .SemiBold().FontSize(20).FontColor(Colors.Blue.Medium);
+                        .SemiBold().FontSize(20).FontColor(PdfColors.Blue.Medium);
 
                     page.Content()
                         .PaddingVertical(1, Unit.Centimetre)
@@ -40,26 +41,26 @@ namespace JournalApp.Services
 
                             foreach (var entry in entries)
                             {
-                                column.Item().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingBottom(10);
+                                column.Item().BorderBottom(1).BorderColor(PdfColors.Grey.Lighten2).PaddingBottom(10);
 
                                 column.Item().Row(row =>
                                 {
                                     row.RelativeItem().Column(col =>
                                     {
                                         col.Item().Text(entry.Title).FontSize(16).SemiBold();
-                                        col.Item().Text($"Date: {entry.EntryDate:MMM dd, yyyy}").FontSize(10).FontColor(Colors.Grey.Medium);
+                                        col.Item().Text($"Date: {entry.EntryDate:MMM dd, yyyy}").FontSize(10).FontColor(PdfColors.Grey.Medium);
                                         col.Item().Text($"Mood: {entry.PrimaryMood.GetEmoji()} {entry.PrimaryMood}").FontSize(10);
 
                                         if (entry.TagList.Any())
                                         {
-                                            col.Item().Text($"Tags: {string.Join(", ", entry.TagList)}").FontSize(10).FontColor(Colors.Blue.Medium);
+                                            col.Item().Text($"Tags: {string.Join(", ", entry.TagList)}").FontSize(10).FontColor(PdfColors.Blue.Medium);
                                         }
                                     });
                                 });
 
                                 var plainContent = System.Text.RegularExpressions.Regex.Replace(entry.Content, "<.*?>", string.Empty);
                                 column.Item().PaddingTop(10).Text(plainContent).FontSize(11).LineHeight(1.5f);
-                                column.Item().Text($"Words: {entry.WordCount}").FontSize(9).FontColor(Colors.Grey.Medium).AlignRight();
+                                column.Item().Text($"Words: {entry.WordCount}").FontSize(9).FontColor(PdfColors.Grey.Medium).AlignRight();
                             }
                         });
 

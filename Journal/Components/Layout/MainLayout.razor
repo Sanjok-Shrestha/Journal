@@ -1,5 +1,4 @@
 ﻿@using Journal.Components.Shared
-@using Journal.Components.NavMenu
 @inherits LayoutComponentBase
 @inject ThemeService ThemeService
 @inject IAuthenticationService AuthService
@@ -37,7 +36,7 @@
     {
         ThemeService.OnThemeChanged += StateHasChanged;
         isAuthenticated = await AuthService.IsAuthenticatedAsync();
-        
+
         Navigation.LocationChanged += OnLocationChanged;
     }
 

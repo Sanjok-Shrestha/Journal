@@ -1,21 +1,20 @@
 ﻿@page "/journal"
-@using Journal.Models
-@using Journal.Services
-@inject JournalService JournalService
-
+@inject IJournalService JournalService
 
 <PageTitle>My Journal</PageTitle>
 
-<h1> My Journal</h1>
+<h1>My Journal</h1>
 
 <div class="journal-container mt-4">
     <h3>New Entry - @(DateTime.Today.ToString("MMMM dd, yyyy"))</h3>
     
     <div class="mt-3">
-        <MoodSelector PrimaryMood="@currentEntry.PrimaryMood" 
-                      PrimaryMoodChanged="@((value) => currentEntry.PrimaryMood = value)"
-                      SecondaryMood="@currentEntry.SecondaryMood1" 
-                      SecondaryMoodChanged="@((value) => currentEntry.SecondaryMood1 = value)" />
+        <MoodSelector PrimaryMood="@currentEntry.PrimaryMood"
+                      PrimaryMoodChanged="@OnPrimaryMoodChanged"
+                      SecondaryMood1="@currentEntry.SecondaryMood1"
+                      SecondaryMood1Changed="@OnSecondaryMood1Changed"
+                      SecondaryMood2="@currentEntry.SecondaryMood2"
+                      SecondaryMood2Changed="@OnSecondaryMood2Changed" />
     </div>
     
     <div class="mt-3">
@@ -28,35 +27,56 @@
     </div>
     
     <div class="mt-3">
-        <TagSelector Tags="@currentEntry.Tags" />
+        <TagSelector Tags="@currentEntry.TagList"
+                     TagsChanged="@OnTagsChanged" />
     </div>
     
-    <button class="btn btn-primary mt-3" @onclick="SaveEntry"> Save Entry</button>
+    <button class="btn btn-primary mt-3" @onclick="SaveEntry">Save Entry</button>
     
     @if (savedMessage)
     {
-        <div class="alert alert-success mt-3"> Entry saved successfully!</div>
+        <div class="alert alert-success mt-3">Entry saved successfully!</div>
     }
 </div>
 
 @code {
-    private JournalEntry currentEntry = new();
+    private JournalEntry currentEntry = new() { EntryDate = DateTime.Today };
     private bool savedMessage = false;
     
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        var existing = JournalService.GetEntryByDate(DateTime.Today);
+        var existing = await JournalService.GetEntryByDateAsync(DateTime.Today);
         if (existing != null)
         {
             currentEntry = existing;
         }
     }
     
+    private void OnPrimaryMoodChanged(MoodType value)
+    {
+        currentEntry.PrimaryMood = value;
+    }
+    
+    private void OnSecondaryMood1Changed(MoodType? value)
+    {
+        currentEntry.SecondaryMood1 = value;
+    }
+    
+    private void OnSecondaryMood2Changed(MoodType? value)
+    {
+        currentEntry.SecondaryMood2 = value;
+    }
+    
+    private void OnTagsChanged(List<string> value)
+    {
+        currentEntry.TagList = value;
+    }
+    
     private async Task SaveEntry()
     {
         try
         {
-            JournalService.SaveEntry(currentEntry);
+            await JournalService.SaveEntryAsync(currentEntry);
             savedMessage = true;
             StateHasChanged();
             

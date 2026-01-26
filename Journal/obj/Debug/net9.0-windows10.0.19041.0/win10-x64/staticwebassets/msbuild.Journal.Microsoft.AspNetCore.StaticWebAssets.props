@@ -72,12 +72,12 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>63r2f8xpw5</Fingerprint>
-      <Integrity>otTgnddCTrx74SmgzD6Gl+TYJxf7jK2/cYPqmVRS47M=</Integrity>
+      <Fingerprint>rnx42hxaqj</Fingerprint>
+      <Integrity>mcb+sUNtrx3GY3yyw8Apwi7D6ow4IKWJSInaJxD7AWc=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <FileLength>1173</FileLength>
-      <LastWriteTime>Sat, 24 Jan 2026 16:21:21 GMT</LastWriteTime>
+      <FileLength>642</FileLength>
+      <LastWriteTime>Mon, 26 Jan 2026 15:40:55 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\index.html'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\Journal.styles.css'))">
@@ -97,7 +97,7 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <FileLength>5481</FileLength>
-      <LastWriteTime>Sat, 24 Jan 2026 10:40:04 GMT</LastWriteTime>
+      <LastWriteTime>Mon, 26 Jan 2026 15:28:31 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\Journal.styles.css'))</OriginalItemSpec>
     </StaticWebAsset>
   </ItemGroup>

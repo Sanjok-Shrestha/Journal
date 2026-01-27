@@ -1,0 +1,132 @@
+﻿@page "/export"
+@using System
+@using JournalApp.Services
+@using JournalApp.Models
+@inject JournalService JournalService
+@inject IJSRuntime JS
+
+<div style="max-width: 900px; margin: 0 auto; padding: 1rem;">
+    <h2>Export Journal Entries</h2>
+    <p>Select a single entry to export, or choose a date range.</p>
+
+    <div class="card mb-3 p-3">
+        <label>Export single entry</label>
+        <select class="form-select" @bind="selectedEntryId">
+            <option value="0">-- Select entry --</option>
+            @foreach (var e in allEntries)
+            {
+                <option value="@e.Id">@e.Date.ToString("yyyy-MM-dd") - @e.Title</option>
+            }
+        </select>
+        <div class="mt-2">
+            <button class="btn btn-primary" @onclick="ExportSelected">Export Selected</button>
+        </div>
+    </div>
+
+    <div class="card p-3">
+        <label>Export by date range</label>
+        <div class="d-flex gap-2 align-items-end">
+            <div>
+                <label class="form-label">Start (yyyy-MM-dd)</label>
+                <input type="text" class="form-control" @bind="startDateText" placeholder="2024-01-01" />
+            </div>
+            <div>
+                <label class="form-label">End (yyyy-MM-dd)</label>
+                <input type="text" class="form-control" @bind="endDateText" placeholder="2024-12-31" />
+            </div>
+            <div>
+                <button class="btn btn-primary" @onclick="ExportRange">Export Range</button>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-info mt-3">@message</div>
+    }
+</div>
+
+@code {
+    private List<JournalEntry> allEntries = new();
+    private int selectedEntryId = 0;
+    private string message = "";
+    private string startDateText = "";
+    private string endDateText = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        allEntries = await JournalService.GetEntriesAsync();
+    }
+
+    private async Task ExportSelected()
+    {
+        message = "";
+        if (selectedEntryId <= 0)
+        {
+            message = "Please select an entry.";
+            return;
+        }
+
+        var entry = await JournalService.GetEntryAsync(selectedEntryId);
+        if (entry == null)
+        {
+            message = "Entry not found.";
+            return;
+        }
+
+        var html = BuildHtml(entry);
+        var filename = $"journal-{entry.Date:yyyy-MM-dd}.html";
+        await JS.InvokeVoidAsync("downloadFile", filename, html, "text/html");
+        message = "Export started.";
+    }
+
+    private async Task ExportRange()
+    {
+        message = "";
+
+        if (!DateTime.TryParse(startDateText, out var startDate))
+        {
+            message = "Please enter a valid start date (yyyy-MM-dd).";
+            return;
+        }
+
+        if (!DateTime.TryParse(endDateText, out var endDate))
+        {
+            message = "Please enter a valid end date (yyyy-MM-dd).";
+            return;
+        }
+
+        if (endDate < startDate)
+        {
+            message = "End date must be after start date.";
+            return;
+        }
+
+        var entries = await JournalService.GetEntriesByDateRangeAsync(startDate, endDate);
+        if (!entries.Any())
+        {
+            message = "No entries in the selected range.";
+            return;
+        }
+
+        // Build combined HTML
+        var combined = "<html><head><meta charset=\"utf-8\"><title>Journal Export</title></head><body>";
+        foreach (var e in entries.OrderBy(e => e.Date))
+        {
+            combined += BuildHtml(e);
+            combined += "<hr/>";
+        }
+        combined += "</body></html>";
+
+        var filename = $"journal-{startDate:yyyy-MM-dd}_to_{endDate:yyyy-MM-dd}.html";
+        await JS.InvokeVoidAsync("downloadFile", filename, combined, "text/html");
+        message = "Export started.";
+    }
+
+    private string BuildHtml(JournalEntry entry)
+    {
+        return $"<section><h2>{System.Net.WebUtility.HtmlEncode(entry.Title)}</h2><p><em>{entry.Date:dddd, MMMM dd, yyyy}</em></p><p><strong>Mood:</strong> {System.Net.WebUtility.HtmlEncode(entry.PrimaryMood)}" +
+               (!string.IsNullOrWhiteSpace(entry.SecondaryMoods) ? $" (Secondary: {System.Net.WebUtility.HtmlEncode(entry.SecondaryMoods)})" : "") +
+               $"</p><div>{entry.Content}</div></section>";
+    }
+}

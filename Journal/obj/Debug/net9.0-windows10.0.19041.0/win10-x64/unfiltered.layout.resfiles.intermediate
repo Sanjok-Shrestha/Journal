@@ -4,11 +4,13 @@ wwwroot\Journal.styles.css.gz
 wwwroot\css\bootstrap\bootstrap.min.css.gz
 wwwroot\Journal.eixj432om9.bundle.scp.css.gz
 wwwroot\css\app.css.gz
+wwwroot\js\quillEditor.js.gz
 wwwroot\css\bootstrap\bootstrap.min.css.map.gz
 wwwroot\Journal.styles.css.br
 wwwroot\css\bootstrap\bootstrap.min.css.br
 wwwroot\Journal.eixj432om9.bundle.scp.css.br
 wwwroot\css\app.css.br
+wwwroot\js\quillEditor.js.br
 wwwroot\css\bootstrap\bootstrap.min.css.map.br
 wwwroot\index.html.br
 wwwroot\index.html.gz
@@ -76,3 +78,4 @@ wwwroot\css\app.css
 wwwroot\css\bootstrap\bootstrap.min.css
 wwwroot\css\bootstrap\bootstrap.min.css.map
 wwwroot\index.html
+wwwroot\js\quillEditor.js

@@ -1,0 +1,292 @@
+﻿@page "/db-info"
+@using JournalApp.Services
+@using JournalApp.Models
+@inject JournalService JournalService
+
+<h1>Database Information</h1>
+
+<div class="db-info">
+    <h3>Database Status</h3>
+    <div class="info-item">
+        <strong>Database Path:</strong> <code>@dbPath</code>
+    </div>
+    <div class="info-item">
+        <strong>Directory Exists:</strong> <span class="@(directoryExists ? "success" : "error")">@directoryExists</span>
+    </div>
+    <div class="info-item">
+        <strong>Database File Exists:</strong> <span class="@(fileExists ? "success" : "error")">@fileExists</span>
+    </div>
+    <div class="info-item">
+        <strong>Connection Status:</strong> <span class="@(connectionOk ? "success" : "error")">@connectionStatus</span>
+    </div>
+    <div class="info-item">
+        <strong>Total Entries:</strong> @entryCount
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="error-message">@errorMessage</div>
+}
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="success-message">@successMessage</div>
+}
+
+<div class="db-actions">
+    <button @onclick="TestDatabase" class="test-btn">Test Database</button>
+    <button @onclick="CreateTestEntry" class="create-btn">Create Test Entry</button>
+    <button @onclick="ClearAllEntries" class="clear-btn">Clear All Entries</button>
+</div>
+
+@if (testEntries.Any())
+{
+    <div class="entries-list">
+        <h3>Recent Entries</h3>
+        @foreach (var entry in testEntries)
+        {
+            <div class="entry-item">
+                <h4>@entry.Title</h4>
+                <p><strong>Date:</strong> @entry.Date.ToShortDateString()</p>
+                <p><strong>Mood:</strong> @entry.PrimaryMood</p>
+                <p><strong>Content:</strong> @entry.Content?.Substring(0, Math.Min(100, entry.Content?.Length ?? 0))...</p>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private string dbPath = "Loading...";
+    private bool directoryExists = false;
+    private bool fileExists = false;
+    private bool connectionOk = false;
+    private string connectionStatus = "Testing...";
+    private int entryCount = 0;
+    private string errorMessage = "";
+    private string successMessage = "";
+    private List<JournalEntry> testEntries = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDatabaseInfo();
+    }
+
+    private async Task LoadDatabaseInfo()
+    {
+        try
+        {
+            // Get database path from service (we'll need to expose this)
+            dbPath = "Check MauiProgram.cs console output for path";
+
+            // For now, construct the path manually
+            var appData = Microsoft.Maui.Storage.FileSystem.AppDataDirectory;
+            dbPath = Path.Combine(appData, "journal.db");
+
+            directoryExists = Directory.Exists(Path.GetDirectoryName(dbPath));
+            fileExists = File.Exists(dbPath);
+
+            // Test connection
+            try
+            {
+                var entries = await JournalService.GetEntriesAsync();
+                entryCount = entries.Count;
+                connectionOk = true;
+                connectionStatus = "Connected";
+
+                // Load recent entries
+                testEntries = entries.OrderByDescending(e => e.CreatedAt).Take(3).ToList();
+            }
+            catch (Exception ex)
+            {
+                connectionOk = false;
+                connectionStatus = $"Error: {ex.Message}";
+                errorMessage = $"Database connection failed: {ex.Message}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading database info: {ex.Message}";
+        }
+    }
+
+    private async Task TestDatabase()
+    {
+        errorMessage = "";
+        successMessage = "";
+
+        try
+        {
+            var testEntry = new JournalEntry
+            {
+                Date = DateTime.Today,
+                Title = $"Test Entry {DateTime.Now:HH:mm:ss}",
+                Content = "This is a test entry to verify database functionality.",
+                PrimaryMood = "Happy",
+                Category = "Positive",
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            };
+
+            var result = await JournalService.SaveEntryAsync(testEntry);
+            if (result > 0)
+            {
+                successMessage = $"Test entry created successfully (ID: {testEntry.Id})";
+                await LoadDatabaseInfo(); // Refresh data
+            }
+            else
+            {
+                errorMessage = "Failed to create test entry";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Database test failed: {ex.Message}";
+        }
+    }
+
+    private async Task CreateTestEntry()
+    {
+        await TestDatabase();
+    }
+
+    private async Task ClearAllEntries()
+    {
+        errorMessage = "";
+        successMessage = "";
+
+        try
+        {
+            var entries = await JournalService.GetEntriesAsync();
+            int deletedCount = 0;
+
+            foreach (var entry in entries)
+            {
+                var result = await JournalService.DeleteEntryAsync(entry);
+                if (result > 0) deletedCount++;
+            }
+
+            successMessage = $"Deleted {deletedCount} entries";
+            await LoadDatabaseInfo(); // Refresh data
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to clear entries: {ex.Message}";
+        }
+    }
+}
+
+<style>
+    .db-info {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border: 1px solid #dee2e6;
+    }
+
+    .info-item {
+        margin: 10px 0;
+        padding: 8px;
+        background: white;
+        border-radius: 4px;
+    }
+
+        .info-item code {
+            background: #f1f3f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+    .success {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .error {
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .db-actions {
+        margin: 20px 0;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .test-btn {
+        padding: 10px 20px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .create-btn {
+        padding: 10px 20px;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .clear-btn {
+        padding: 10px 20px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+        .test-btn:hover, .create-btn:hover, .clear-btn:hover {
+            opacity: 0.8;
+        }
+
+    .entries-list {
+        margin: 20px 0;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .entry-item {
+        background: white;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+    }
+
+        .entry-item h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+
+        .entry-item p {
+            margin: 5px 0;
+            color: #6c757d;
+        }
+
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 12px;
+        border-radius: 5px;
+        margin: 10px 0;
+        border: 1px solid #f5c6cb;
+    }
+
+    .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 12px;
+        border-radius: 5px;
+        margin: 10px 0;
+        border: 1px solid #c3e6cb;
+    }
+</style>

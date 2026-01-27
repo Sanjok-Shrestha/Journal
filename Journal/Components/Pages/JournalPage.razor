@@ -1,93 +1,446 @@
 ﻿@page "/journal"
-@inject IJournalService JournalService
+@page "/journal/{EntryId:int}"
+@using JournalApp.Services
+@using JournalApp.Models
+@inject IJSRuntime JS
+@inject JournalService JournalService
+@inject NavigationManager Navigation
 
-<PageTitle>My Journal</PageTitle>
+<div style="max-width: 800px; margin: 0 auto; padding: 1rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 class="mb-4">📓 Daily Journal</h3>
+        <div>
+            <button class="btn btn-outline-secondary btn-sm" @onclick="BackToEntries">← Back to All Entries</button>
+            <button class="btn btn-outline-primary btn-sm ms-2" @onclick="ExportEntry">Export</button>
+        </div>
+    </div>
 
-<h1>My Journal</h1>
-
-<div class="journal-container mt-4">
-    <h3>New Entry - @(DateTime.Today.ToString("MMMM dd, yyyy"))</h3>
-    
-    <div class="mt-3">
-        <MoodSelector PrimaryMood="@currentEntry.PrimaryMood"
-                      PrimaryMoodChanged="@OnPrimaryMoodChanged"
-                      SecondaryMood1="@currentEntry.SecondaryMood1"
-                      SecondaryMood1Changed="@OnSecondaryMood1Changed"
-                      SecondaryMood2="@currentEntry.SecondaryMood2"
-                      SecondaryMood2Changed="@OnSecondaryMood2Changed" />
-    </div>
-    
-    <div class="mt-3">
-        <label>Journal Entry</label>
-        <textarea class="form-control" 
-                  rows="10"
-                  placeholder="Write your journal here..."
-                  @bind="currentEntry.Content">
-        </textarea>
-    </div>
-    
-    <div class="mt-3">
-        <TagSelector Tags="@currentEntry.TagList"
-                     TagsChanged="@OnTagsChanged" />
-    </div>
-    
-    <button class="btn btn-primary mt-3" @onclick="SaveEntry">Save Entry</button>
-    
-    @if (savedMessage)
+    @if (entry == null)
     {
-        <div class="alert alert-success mt-3">Entry saved successfully!</div>
+        <div class="empty-state p-4 text-center" style="border: 1px dashed #ccc; border-radius: 8px;">
+            <p class="text-muted">No entry for today.</p>
+            <button class="btn btn-primary mt-2" @onclick="CreateEntry">Start Writing</button>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-header bg-light">
+                <strong>@entry.Date.ToString("dddd, MMMM dd, yyyy")</strong>
+                @if (entry.UpdatedAt != default)
+                {
+                    <small class="d-block text-muted">Last saved: @entry.UpdatedAt.ToString("g")</small>
+                }
+            </div>
+            <div class="card-body">
+                <!-- Title -->
+                <div class="mb-3">
+                    <label class="form-label">Title</label>
+                    <input type="text" class="form-control" @bind="entry.Title" placeholder="Enter a title for your entry" maxlength="200" />
+                </div>
+
+                <!-- Mood -->
+                <div class="mb-3">
+                    <label class="form-label">How are you feeling today?</label>
+                    <select class="form-select" @bind="entry.PrimaryMood">
+                        <option value="">— Select —</option>
+                        <option value="Happy">😊 Happy</option>
+                        <option value="Excited">🎉 Excited</option>
+                        <option value="Grateful">🙏 Grateful</option>
+                        <option value="Confident">💪 Confident</option>
+                        <option value="Relaxed">😌 Relaxed</option>
+                        <option value="Calm">🧘 Calm</option>
+                        <option value="Thoughtful">🤔 Thoughtful</option>
+                        <option value="Curious">🧐 Curious</option>
+                        <option value="Nostalgic">💭 Nostalgic</option>
+                        <option value="Bored">😑 Bored</option>
+                        <option value="Sad">😢 Sad</option>
+                        <option value="Angry">😠 Angry</option>
+                        <option value="Stressed">😟 Stressed</option>
+                        <option value="Anxious">😰 Anxious</option>
+                        <option value="Lonely">😔 Lonely</option>
+                        <option value="Tired">😴 Tired</option>
+                    </select>
+
+                    <div class="mt-2">
+                        <label class="form-label">Secondary Moods (optional, up to 2)</label>
+                        <div class="d-flex gap-2">
+                            <select class="form-select" @bind="secondary1">
+                                <option value="">Select</option>
+                                @foreach (var m in SecondaryMoodOptions)
+                                {
+                                    <option value="@m">@m</option>
+                                }
+                            </select>
+                            <select class="form-select" @bind="secondary2">
+                                <option value="">Select</option>
+                                @foreach (var m in SecondaryMoodOptions)
+                                {
+                                    <option value="@m">@m</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content with Quill Editor -->
+                <div class="mb-3">
+                    <label class="form-label">Your thoughts for today</label>
+                    <div id="quill-editor" style="height: 300px; background: white;"></div>
+                </div>
+
+                <!-- Tags -->
+                <div class="mb-3">
+                    <label class="form-label">Tags (comma-separated)</label>
+                    <input type="text" class="form-control"
+                           @bind="entry.Tags"
+                           placeholder="e.g., work, family, gratitude" />
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex justify-content-end gap-2">
+                    @if (isEditing)
+                    {
+                        <button class="btn btn-outline-danger" @onclick="Delete">Delete</button>
+                    }
+                    <button class="btn btn-outline-secondary" @onclick="BackToEntries">Cancel</button>
+                    <button class="btn btn-success" @onclick="Save">Save</button>
+                </div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(statusMessage))
+        {
+            <div class="alert alert-info mt-3">@statusMessage</div>
+        }
     }
 </div>
 
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" style="position: fixed; top: 20px; right: 20px; z-index: 1000;" @onclick="ClearError">
+        @errorMessage
+        <button type="button" class="btn-close" @onclick="ClearError"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success" style="position: fixed; top: 20px; right: 20px; z-index: 1000;" @onclick="ClearSuccess">
+        @successMessage
+        <button type="button" class="btn-close" @onclick="ClearSuccess"></button>
+    </div>
+}
+
 @code {
-    private JournalEntry currentEntry = new() { EntryDate = DateTime.Today };
-    private bool savedMessage = false;
-    
+    [Parameter]
+    public int? EntryId { get; set; }
+
+    private JournalEntry? entry;
+    private string errorMessage = "";
+    private string successMessage = "";
+    private string statusMessage = "";
+    private bool isInitialized = false;
+
+    private string secondary1 = "";
+    private string secondary2 = "";
+
+    private bool forceNew = false;
+    private bool isEditing = false; // true when editing an existing entry
+
+    private static readonly string[] SecondaryMoodOptions = new[] { "Happy", "Excited", "Relaxed", "Grateful", "Confident", "Calm", "Thoughtful", "Curious", "Nostalgic", "Bored", "Sad", "Angry", "Stressed", "Lonely", "Anxious", "Tired" };
+
     protected override async Task OnInitializedAsync()
     {
-        var existing = await JournalService.GetEntryByDateAsync(DateTime.Today);
-        if (existing != null)
+        // Detect query parameter ?new=true
+        try
         {
-            currentEntry = existing;
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+            if (!string.IsNullOrEmpty(uri.Query) && uri.Query.Contains("new=true", StringComparison.OrdinalIgnoreCase))
+            {
+                forceNew = true;
+            }
+        }
+        catch { }
+
+        await LoadEntry();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && entry != null)
+        {
+            try
+            {
+                await Task.Delay(100);
+                await JS.InvokeVoidAsync("initQuillEditor", "quill-editor");
+
+                // Only set content when editing an existing entry
+                if (isEditing && !string.IsNullOrWhiteSpace(entry.Content))
+                {
+                    await JS.InvokeVoidAsync("setQuillContent", entry.Content);
+                }
+
+                isInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Editor initialization failed: {ex.Message}";
+                Console.WriteLine($"Quill init error: {ex}");
+            }
         }
     }
-    
-    private void OnPrimaryMoodChanged(MoodType value)
-    {
-        currentEntry.PrimaryMood = value;
-    }
-    
-    private void OnSecondaryMood1Changed(MoodType? value)
-    {
-        currentEntry.SecondaryMood1 = value;
-    }
-    
-    private void OnSecondaryMood2Changed(MoodType? value)
-    {
-        currentEntry.SecondaryMood2 = value;
-    }
-    
-    private void OnTagsChanged(List<string> value)
-    {
-        currentEntry.TagList = value;
-    }
-    
-    private async Task SaveEntry()
+
+    private async Task LoadEntry()
     {
         try
         {
-            await JournalService.SaveEntryAsync(currentEntry);
-            savedMessage = true;
-            StateHasChanged();
-            
-            // Hide message after 3 seconds
-            await Task.Delay(3000);
-            savedMessage = false;
-            StateHasChanged();
+            if (EntryId.HasValue && EntryId.Value > 0)
+            {
+                // Load existing entry for editing
+                entry = await JournalService.GetEntryAsync(EntryId.Value);
+                if (entry == null)
+                {
+                    errorMessage = "Entry not found.";
+                }
+                else
+                {
+                    isEditing = true;
+                    // populate secondary moods when editing
+                    if (!string.IsNullOrWhiteSpace(entry.SecondaryMoods))
+                    {
+                        var parts = entry.SecondaryMoods.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToArray();
+                        if (parts.Length > 0) secondary1 = parts[0];
+                        if (parts.Length > 1) secondary2 = parts[1];
+                    }
+                }
+            }
+            else if (forceNew)
+            {
+                // Explicit new entry requested — start with a blank entry
+                entry = new JournalEntry
+                {
+                    Date = DateTime.Today,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                };
+                secondary1 = "";
+                secondary2 = "";
+                isEditing = false;
+                statusMessage = "Creating new entry.";
+            }
+            else
+            {
+                // Default behavior: do NOT auto-load today's entry. Start with a blank form for new entry.
+                entry = new JournalEntry
+                {
+                    Date = DateTime.Today,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                };
+                secondary1 = "";
+                secondary2 = "";
+                isEditing = false;
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error saving entry: {ex.Message}");
+            errorMessage = $"Error loading entry: {ex.Message}";
+            Console.WriteLine($"LoadEntry error: {ex}");
+        }
+    }
+
+    private void CreateEntry()
+    {
+        entry = new JournalEntry 
+        { 
+            Date = DateTime.Today,
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now
+        };
+        secondary1 = "";
+        secondary2 = "";
+        isEditing = false;
+        statusMessage = "Creating new entry.";
+        StateHasChanged();
+    }
+
+    private async Task Save()
+    {
+        try
+        {
+            errorMessage = "";
+            successMessage = "";
+            statusMessage = "";
+
+            if (entry == null) return;
+
+            // Validate
+            if (string.IsNullOrWhiteSpace(entry.Title))
+            {
+                errorMessage = "Please enter a title.";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(entry.PrimaryMood))
+            {
+                errorMessage = "Please select your mood.";
+                return;
+            }
+
+            // Get content from Quill editor
+            if (isInitialized)
+            {
+                try
+                {
+                    entry.Content = await JS.InvokeAsync<string>("getQuillContent");
+                }
+                catch (Exception ex)
+                {
+                    errorMessage = $"Failed to get editor content: {ex.Message}";
+                    return;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(entry.Content))
+            {
+                errorMessage = "Please write some content.";
+                return;
+            }
+
+            // Set secondary moods
+            var sec = new[] { secondary1, secondary2 }.Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+            entry.SecondaryMoods = string.Join(",", sec);
+
+            // Set category based on mood
+            entry.Category = GetMoodCategory(entry.PrimaryMood);
+
+            // Determine whether save will update an existing entry for the date
+            var existingForDate = await JournalService.GetEntryByDateAsync(entry.Date == default ? DateTime.Today : entry.Date);
+            var willUpdate = existingForDate != null && existingForDate.Id != entry.Id;
+
+            // Save
+            var result = await JournalService.SaveEntryAsync(entry);
+            
+            if (result > 0)
+            {
+                successMessage = willUpdate || isEditing ? "Entry updated successfully!" : "Entry created successfully!";
+                statusMessage = willUpdate || isEditing ? "Updated existing entry." : "Created new entry.";
+
+                if (!string.IsNullOrWhiteSpace(entry.SecondaryMoods))
+                {
+                    statusMessage += $" Secondary moods: {entry.SecondaryMoods}.";
+                }
+
+                await Task.Delay(1000);
+                Navigation.NavigateTo("/entries");
+            }
+            else
+            {
+                errorMessage = "Failed to save entry.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving entry: {ex.Message}";
+            Console.WriteLine($"Save error: {ex}");
+        }
+    }
+
+    private async Task Delete()
+    {
+        try
+        {
+            if (entry == null || entry.Id == 0) return;
+
+            var confirmed = await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this entry?");
+            
+            if (confirmed)
+            {
+                await JournalService.DeleteEntryAsync(entry);
+                successMessage = "Entry deleted successfully!";
+                await Task.Delay(1000);
+                Navigation.NavigateTo("/entries");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting entry: {ex.Message}";
+        }
+    }
+
+    private void BackToEntries()
+    {
+        Navigation.NavigateTo("/entries");
+    }
+
+    private void ClearError()
+    {
+        errorMessage = "";
+    }
+
+    private void ClearSuccess()
+    {
+        successMessage = "";
+    }
+
+    private string GetMoodCategory(string mood)
+    {
+        var positive = new[] { "Happy", "Excited", "Relaxed", "Grateful", "Confident" };
+        var neutral = new[] { "Calm", "Thoughtful", "Curious", "Nostalgic", "Bored" };
+        var negative = new[] { "Sad", "Angry", "Stressed", "Lonely", "Anxious", "Tired" };
+
+        if (positive.Contains(mood)) return "Positive";
+        if (neutral.Contains(mood)) return "Neutral";
+        if (negative.Contains(mood)) return "Negative";
+        return "";
+    }
+
+    private async Task ExportEntry()
+    {
+        try
+        {
+            if (entry == null) return;
+
+            // Build simple HTML export
+            var html = $"<html><head><meta charset=\"utf-8\"><title>{System.Net.WebUtility.HtmlEncode(entry.Title)}</title></head><body>" +
+                       $"<h1>{System.Net.WebUtility.HtmlEncode(entry.Title)}</h1>" +
+                       $"<p><em>{entry.Date:dddd, MMMM dd, yyyy}</em></p>" +
+                       $"<p><strong>Mood:</strong> {System.Net.WebUtility.HtmlEncode(entry.PrimaryMood)}" +
+                       (!string.IsNullOrWhiteSpace(entry.SecondaryMoods) ? $" (Secondary: {System.Net.WebUtility.HtmlEncode(entry.SecondaryMoods)})" : "") +
+                       $"</p>" +
+                       $"<hr/>" +
+                       entry.Content +
+                       $"</body></html>";
+
+            var filename = $"journal-{entry.Date:yyyy-MM-dd}.html";
+            await JS.InvokeVoidAsync("downloadFile", filename, html, "text/html");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Export failed: {ex.Message}";
         }
     }
 }
+
+<style>
+    .empty-state {
+        background-color: #f9f9f9;
+    }
+
+    /* Quill editor custom styles */
+    #quill-editor {
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+    }
+
+    :global(.ql-toolbar) {
+        border-top-left-radius: 0.375rem;
+        border-top-right-radius: 0.375rem;
+    }
+
+    :global(.ql-container) {
+        border-bottom-left-radius: 0.375rem;
+        border-bottom-right-radius: 0.375rem;
+    }
+</style>

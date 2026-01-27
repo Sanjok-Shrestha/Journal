@@ -1,239 +1,201 @@
-﻿using JournalApp.Data;
+﻿using SQLite;
 using JournalApp.Models;
 
-namespace JournalApp.Services
+namespace JournalApp.Services;
+
+public class JournalService
 {
-    public interface IJournalService
+    private readonly SQLiteAsyncConnection _database;
+
+    public JournalService(string dbPath)
     {
-        Task<List<JournalEntry>> GetAllEntriesAsync();
-        Task<JournalEntry?> GetEntryByDateAsync(DateTime date);
-        Task<JournalEntry?> GetEntryByIdAsync(int id);
-        Task<bool> SaveEntryAsync(JournalEntry entry);
-        Task<bool> DeleteEntryAsync(int id);
-        Task<List<JournalEntry>> SearchEntriesAsync(string searchTerm);
-        Task<List<JournalEntry>> FilterEntriesAsync(DateTime? startDate, DateTime? endDate, MoodType? mood, List<string>? tags);
-        Task<List<JournalEntry>> GetPaginatedEntriesAsync(int page, int pageSize);
-        Task<int> GetTotalEntriesCountAsync();
-        Task<StreakData> GetStreakDataAsync();
-        Task<List<DateTime>> GetEntryDatesAsync(int year, int month);
+        try
+        {
+            _database = new SQLiteAsyncConnection(dbPath);
+            _database.CreateTableAsync<JournalEntry>().Wait();
+            Console.WriteLine($"Database initialized at: {dbPath}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Database initialization error: {ex.Message}");
+            throw;
+        }
     }
 
-    public class JournalService : IJournalService
+    public async Task<List<JournalEntry>> GetEntriesAsync()
     {
-        private readonly JournalDbContext _context;
-        private readonly IAuthenticationService _authService;
-
-        public JournalService(JournalDbContext context, IAuthenticationService authService)
+        try
         {
-            _context = context;
-            _authService = authService;
+            return await _database.Table<JournalEntry>()
+                .OrderByDescending(e => e.Date)
+                .ThenByDescending(e => e.CreatedAt)
+                .ToListAsync();
         }
-
-        private async Task<int> GetCurrentUserIdAsync()
+        catch (Exception ex)
         {
-            var user = await _authService.GetCurrentUserAsync();
-            return user?.Id ?? 0;
+            Console.WriteLine($"GetEntriesAsync error: {ex.Message}");
+            return new List<JournalEntry>();
         }
+    }
 
-        public async Task<List<JournalEntry>> GetAllEntriesAsync()
+    public async Task<JournalEntry?> GetEntryAsync(int id)
+    {
+        try
         {
-            var userId = await GetCurrentUserIdAsync();
-            return await _context.GetEntriesAsync(userId);
+            return await _database.Table<JournalEntry>()
+                .Where(e => e.Id == id)
+                .FirstOrDefaultAsync();
         }
-
-        public async Task<JournalEntry?> GetEntryByDateAsync(DateTime date)
+        catch (Exception ex)
         {
-            var userId = await GetCurrentUserIdAsync();
-            return await _context.GetEntryByDateAsync(userId, date.Date);
+            Console.WriteLine($"GetEntryAsync error: {ex.Message}");
+            return null;
         }
+    }
 
-        public Task<JournalEntry?> GetEntryByIdAsync(int id)
+    public async Task<List<JournalEntry>> GetEntriesByDateAsync(DateTime date)
+    {
+        try
         {
-            return _context.GetEntryByIdAsync(id);
+            // Use range comparison to ensure compatibility with SQLite translation
+            var start = date.Date;
+            var end = start.AddDays(1).AddTicks(-1);
+
+            return await _database.Table<JournalEntry>()
+                .Where(e => e.Date >= start && e.Date <= end)
+                .ToListAsync();
         }
-
-        public async Task<bool> SaveEntryAsync(JournalEntry entry)
+        catch (Exception ex)
         {
-            var userId = await GetCurrentUserIdAsync();
-            entry.UserId = userId;
-            entry.EntryDate = entry.EntryDate.Date;
-
-            if (entry.Id == 0)
-            {
-                var existing = await _context.GetEntryByDateAsync(userId, entry.EntryDate);
-                if (existing != null)
-                    return false;
-            }
-
-            await UpdateTagUsageAsync(entry.TagList);
-            await _context.SaveEntryAsync(entry);
-            return true;
+            Console.WriteLine($"GetEntriesByDateAsync error: {ex.Message}");
+            return new List<JournalEntry>();
         }
+    }
 
-        public async Task<bool> DeleteEntryAsync(int id)
+    public async Task<JournalEntry?> GetEntryByDateAsync(DateTime date)
+    {
+        try
         {
-            var entry = await _context.GetEntryByIdAsync(id);
+            var start = date.Date;
+            var end = start.AddDays(1).AddTicks(-1);
+            return await _database.Table<JournalEntry>()
+                .Where(e => e.Date >= start && e.Date <= end)
+                .FirstOrDefaultAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"GetEntryByDateAsync error: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async Task<int> SaveEntryAsync(JournalEntry entry)
+    {
+        try
+        {
             if (entry == null)
-                return false;
-
-            await _context.DeleteEntryAsync(entry);
-            return true;
-        }
-
-        public async Task<List<JournalEntry>> SearchEntriesAsync(string searchTerm)
-        {
-            var entries = await GetAllEntriesAsync();
-            if (string.IsNullOrWhiteSpace(searchTerm))
-                return entries;
-
-            return entries.Where(e =>
-                e.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                e.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
-
-        public async Task<List<JournalEntry>> FilterEntriesAsync(DateTime? startDate, DateTime? endDate, MoodType? mood, List<string>? tags)
-        {
-            var entries = await GetAllEntriesAsync();
-
-            if (startDate.HasValue)
-                entries = entries.Where(e => e.EntryDate >= startDate.Value.Date).ToList();
-
-            if (endDate.HasValue)
-                entries = entries.Where(e => e.EntryDate <= endDate.Value.Date).ToList();
-
-            if (mood.HasValue)
             {
-                entries = entries.Where(e =>
-                    e.PrimaryMood == mood.Value ||
-                    e.SecondaryMood1 == mood.Value ||
-                    e.SecondaryMood2 == mood.Value).ToList();
+                throw new ArgumentNullException(nameof(entry));
             }
 
-            if (tags != null && tags.Any())
+            if (entry.Id != 0)
             {
-                entries = entries.Where(e =>
-                    e.TagList.Any(t => tags.Contains(t, StringComparer.OrdinalIgnoreCase)))
-                    .ToList();
+                // Existing entry - update
+                entry.UpdatedAt = DateTime.Now;
+                var result = await _database.UpdateAsync(entry);
+                Console.WriteLine($"Entry updated. ID: {entry.Id}, Result: {result}");
+                return result;
+            }
+            else
+            {
+                // New entry - enforce single entry per day
+                var existing = await GetEntryByDateAsync(entry.Date == default ? DateTime.Today : entry.Date);
+                if (existing != null)
+                {
+                    // If an entry already exists for the date, update that entry instead of inserting a duplicate
+                    entry.Id = existing.Id;
+                    // Preserve original CreatedAt
+                    entry.CreatedAt = existing.CreatedAt == default ? DateTime.Now : existing.CreatedAt;
+                    entry.UpdatedAt = DateTime.Now;
+
+                    var updateResult = await _database.UpdateAsync(entry);
+                    Console.WriteLine($"Existing entry found for date {entry.Date.Date}. Updated ID: {entry.Id}, Result: {updateResult}");
+                    return updateResult;
+                }
+
+                // No existing entry for that date - insert
+                entry.CreatedAt = DateTime.Now;
+                entry.UpdatedAt = DateTime.Now;
+                var result = await _database.InsertAsync(entry);
+                Console.WriteLine($"Entry inserted. ID: {entry.Id}, Result: {result}");
+                return result;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"SaveEntryAsync error: {ex.Message}");
+            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+            throw;
+        }
+    }
+
+    public async Task<int> DeleteEntryAsync(JournalEntry entry)
+    {
+        try
+        {
+            return await _database.DeleteAsync(entry);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"DeleteEntryAsync error: {ex.Message}");
+            throw;
+        }
+    }
+
+    public async Task<List<JournalEntry>> SearchEntriesAsync(string query)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return await GetEntriesAsync();
             }
 
-            return entries;
-        }
+            query = query.ToLower();
+            var entries = await _database.Table<JournalEntry>().ToListAsync();
 
-        public async Task<List<JournalEntry>> GetPaginatedEntriesAsync(int page, int pageSize)
-        {
-            var entries = await GetAllEntriesAsync();
             return entries
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+                .Where(e =>
+                    e.Title.ToLower().Contains(query) ||
+                    e.Content.ToLower().Contains(query) ||
+                    e.Tags.ToLower().Contains(query) ||
+                    e.PrimaryMood.ToLower().Contains(query) ||
+                    e.SecondaryMoods.ToLower().Contains(query))
                 .ToList();
         }
-
-        public async Task<int> GetTotalEntriesCountAsync()
+        catch (Exception ex)
         {
-            var entries = await GetAllEntriesAsync();
-            return entries.Count;
+            Console.WriteLine($"SearchEntriesAsync error: {ex.Message}");
+            return new List<JournalEntry>();
         }
+    }
 
-        public async Task<StreakData> GetStreakDataAsync()
+    public async Task<List<JournalEntry>> GetEntriesByDateRangeAsync(DateTime start, DateTime end)
+    {
+        try
         {
-            var entries = await GetAllEntriesAsync();
-            if (!entries.Any())
-            {
-                return new StreakData
-                {
-                    CurrentStreak = 0,
-                    LongestStreak = 0,
-                    MissedDays = 0,
-                    TotalEntries = 0
-                };
-            }
+            var startDate = start.Date;
+            var endDate = end.Date.AddDays(1).AddTicks(-1);
 
-            var sortedDates = entries
-                .Select(e => e.EntryDate.Date)
-                .Distinct()
-                .OrderByDescending(d => d)
-                .ToList();
-
-            int currentStreak = 0;
-            int longestStreak = 0;
-            int tempStreak = 1;
-            int missedDays = 0;
-
-            var today = DateTime.Today;
-            var lastEntryDate = sortedDates.First();
-
-            if (lastEntryDate == today || lastEntryDate == today.AddDays(-1))
-            {
-                currentStreak = 1;
-                for (int i = 0; i < sortedDates.Count - 1; i++)
-                {
-                    var diff = (sortedDates[i] - sortedDates[i + 1]).Days;
-                    if (diff == 1)
-                        currentStreak++;
-                    else
-                        break;
-                }
-            }
-
-            for (int i = 0; i < sortedDates.Count - 1; i++)
-            {
-                var diff = (sortedDates[i] - sortedDates[i + 1]).Days;
-                if (diff == 1)
-                {
-                    tempStreak++;
-                }
-                else
-                {
-                    if (tempStreak > longestStreak)
-                        longestStreak = tempStreak;
-                    tempStreak = 1;
-                    missedDays += diff - 1;
-                }
-            }
-
-            if (tempStreak > longestStreak)
-                longestStreak = tempStreak;
-
-            return new StreakData
-            {
-                CurrentStreak = currentStreak,
-                LongestStreak = longestStreak,
-                MissedDays = missedDays,
-                TotalEntries = entries.Count
-            };
+            return await _database.Table<JournalEntry>()
+                .Where(e => e.Date >= startDate && e.Date <= endDate)
+                .OrderByDescending(e => e.Date)
+                .ToListAsync();
         }
-
-        public async Task<List<DateTime>> GetEntryDatesAsync(int year, int month)
+        catch (Exception ex)
         {
-            var entries = await GetAllEntriesAsync();
-            return entries
-                .Where(e => e.EntryDate.Year == year && e.EntryDate.Month == month)
-                .Select(e => e.EntryDate.Date)
-                .ToList();
-        }
-
-        private async Task UpdateTagUsageAsync(List<string> tags)
-        {
-            var userId = await GetCurrentUserIdAsync();
-            foreach (var tagName in tags)
-            {
-                var tag = await _context.GetTagByNameAsync(userId, tagName);
-                if (tag == null)
-                {
-                    tag = new Tag
-                    {
-                        UserId = userId,
-                        Name = tagName,
-                        UsageCount = 1
-                    };
-                }
-                else
-                {
-                    tag.UsageCount++;
-                }
-                await _context.SaveTagAsync(tag);
-            }
+            Console.WriteLine($"GetEntriesByDateRangeAsync error: {ex.Message}");
+            return new List<JournalEntry>();
         }
     }
 }

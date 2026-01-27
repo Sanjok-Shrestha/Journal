@@ -1,0 +1,186 @@
+﻿@page "/test-db"
+@using JournalApp.Services
+@using JournalApp.Models
+@inject JournalService JournalService
+@inject NavigationManager Navigation
+
+<h1>Database Test</h1>
+
+@if (testResults.Any())
+{
+    <div class="test-results">
+        <h3>Test Results:</h3>
+        @foreach (var result in testResults)
+        {
+            <div class="test-result @result.Status.ToLower()">
+                <strong>@result.Test:</strong> @result.Message
+            </div>
+        }
+    </div>
+}
+
+<div class="test-actions">
+    <button @onclick="RunDatabaseTests" class="test-btn">Run Database Tests</button>
+    <button @onclick='() => Navigation.NavigateTo("/")' class="back-btn">Back to Home</button>
+</div>
+
+@code {
+    private List<TestResult> testResults = new();
+
+    private class TestResult
+    {
+        public string Test { get; set; } = "";
+        public string Message { get; set; } = "";
+        public string Status { get; set; } = "info"; // success, error, info
+    }
+
+    private async Task RunDatabaseTests()
+    {
+        testResults.Clear();
+
+        try
+        {
+            // Test 1: Create a test entry
+            var testEntry = new JournalEntry
+            {
+                Date = DateTime.Today,
+                Title = "Database Test Entry",
+                Content = "This is a test entry to verify database functionality.",
+                PrimaryMood = "Happy",
+                Category = "Positive",
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            };
+
+            testResults.Add(new TestResult { Test = "Create Entry", Message = "Creating test entry...", Status = "info" });
+            StateHasChanged();
+
+            var saveResult = await JournalService.SaveEntryAsync(testEntry);
+            if (saveResult > 0)
+            {
+                testResults.Add(new TestResult { Test = "Create Entry", Message = $"? Entry saved successfully (ID: {testEntry.Id})", Status = "success" });
+            }
+            else
+            {
+                testResults.Add(new TestResult { Test = "Create Entry", Message = "? Failed to save entry", Status = "error" });
+            }
+
+            // Test 2: Retrieve entries
+            testResults.Add(new TestResult { Test = "Retrieve Entries", Message = "Retrieving all entries...", Status = "info" });
+            StateHasChanged();
+
+            var entries = await JournalService.GetEntriesAsync();
+            testResults.Add(new TestResult { Test = "Retrieve Entries", Message = $"? Retrieved {entries.Count} entries from database", Status = "success" });
+
+            // Test 3: Search entries
+            testResults.Add(new TestResult { Test = "Search Entries", Message = "Testing search functionality...", Status = "info" });
+            StateHasChanged();
+
+            var searchResults = await JournalService.SearchEntriesAsync("test");
+            testResults.Add(new TestResult { Test = "Search Entries", Message = $"? Found {searchResults.Count} entries matching 'test'", Status = "success" });
+
+            // Test 4: Get entries by date
+            testResults.Add(new TestResult { Test = "Get by Date", Message = "Testing date filtering...", Status = "info" });
+            StateHasChanged();
+
+            var todayEntries = await JournalService.GetEntriesByDateAsync(DateTime.Today);
+            testResults.Add(new TestResult { Test = "Get by Date", Message = $"? Found {todayEntries.Count} entries for today", Status = "success" });
+
+            // Test 5: Delete test entry
+            if (testEntry.Id > 0)
+            {
+                testResults.Add(new TestResult { Test = "Delete Entry", Message = "Cleaning up test entry...", Status = "info" });
+                StateHasChanged();
+
+                var deleteResult = await JournalService.DeleteEntryAsync(testEntry);
+                if (deleteResult > 0)
+                {
+                    testResults.Add(new TestResult { Test = "Delete Entry", Message = "? Test entry deleted successfully", Status = "success" });
+                }
+                else
+                {
+                    testResults.Add(new TestResult { Test = "Delete Entry", Message = "? Failed to delete test entry", Status = "error" });
+                }
+            }
+
+            testResults.Add(new TestResult { Test = "All Tests Complete", Message = "? Database is working correctly!", Status = "success" });
+
+        }
+        catch (Exception ex)
+        {
+            testResults.Add(new TestResult { Test = "Database Error", Message = $"? Error: {ex.Message}", Status = "error" });
+            Console.WriteLine($"Database test error: {ex}");
+        }
+
+        StateHasChanged();
+    }
+}
+
+<style>
+    .test-results {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #f9f9f9;
+    }
+
+    .test-result {
+        margin: 10px 0;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-family: monospace;
+    }
+
+        .test-result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .test-result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .test-result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+    .test-actions {
+        margin-top: 30px;
+        display: flex;
+        gap: 15px;
+    }
+
+    .test-btn {
+        padding: 12px 24px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+        .test-btn:hover {
+            background: #0056b3;
+        }
+
+    .back-btn {
+        padding: 12px 24px;
+        background: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+        .back-btn:hover {
+            background: #545b62;
+        }
+</style>

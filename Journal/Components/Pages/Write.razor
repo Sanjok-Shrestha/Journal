@@ -1,0 +1,365 @@
+﻿@page "/write"
+@using JournalApp.Services
+@using JournalApp.Models
+@inject JournalService JournalService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<div class="write-entry-layout improved-ui bw-theme">
+    <div class="write-entry-main">
+        <h1>New Entry - @DateTime.Today.ToString("MMMM dd, yyyy")</h1>
+        <label class="write-entry-label">
+            Title (max 60 characters)
+            <input class="write-entry-title" @bind="entry.Title" placeholder="Enter title here" maxlength="60" />
+        </label>
+        <label class="write-entry-label">
+            Content
+            <div id="quill-editor" class="quill-container"></div>
+        </label>
+        <div class="write-entry-meta">
+            <div>Created: @(entry.Id == 0 ? DateTime.Now.ToString("g") : entry.CreatedAt.ToString("g"))</div>
+            <div>Last Modified: @(entry.Id == 0 ? DateTime.Now.ToString("g") : entry.UpdatedAt.ToString("g"))</div>
+            <div>Word Count: @wordCount</div>
+        </div>
+        <div class="write-entry-actions">
+            <button class="secondary bw-btn" @onclick="Cancel">Cancel</button>
+            <button class="secondary bw-btn" @onclick="Back">← Back</button>
+        </div>
+    </div>
+    <form class="write-entry-details improved-details" autocomplete="off" @onsubmit="SaveEntry" @onsubmit:preventDefault="true">
+        <h2>Entry Details</h2>
+        <label>
+            Primary Mood *
+            <select @bind="entry.PrimaryMood">
+                <option value="">Select mood ▼</option>
+                <option value="Happy">Happy</option>
+                <option value="Excited">Excited</option>
+                <option value="Relaxed">Relaxed</option>
+                <option value="Grateful">Grateful</option>
+                <option value="Confident">Confident</option>
+                <option value="Calm">Calm</option>
+                <option value="Thoughtful">Thoughtful</option>
+                <option value="Curious">Curious</option>
+                <option value="Nostalgic">Nostalgic</option>
+                <option value="Bored">Bored</option>
+                <option value="Sad">Sad</option>
+                <option value="Angry">Angry</option>
+                <option value="Stressed">Stressed</option>
+                <option value="Lonely">Lonely</option>
+                <option value="Anxious">Anxious</option>
+            </select>
+            <div class="write-entry-mood-helper">@GetMoodCategory(entry.PrimaryMood)</div>
+        </label>
+        <label>
+            Secondary Moods (up to 2)
+            <div class="secondary-moods">
+                <select @bind="secondaryMood1">
+                    <option value="">Select</option>
+                    @foreach (var mood in GetSecondaryMoods())
+                    {
+                        <option value="@mood">@mood</option>
+                    }
+                </select>
+                <select @bind="secondaryMood2">
+                    <option value="">Select</option>
+                    @foreach (var mood in GetSecondaryMoods())
+                    {
+                        <option value="@mood">@mood</option>
+                    }
+                </select>
+            </div>
+        </label>
+        <label>
+            Tags (comma-separated)
+            <input class="write-entry-tags" @bind="tagsInput" placeholder="work, personal, goals" />
+            @if (!string.IsNullOrWhiteSpace(tagsInput))
+            {
+                <div class="write-entry-tags-list">
+                    @foreach (var tag in tagsInput.Split(',').Where(t => !string.IsNullOrWhiteSpace(t)))
+                    {
+                        <span class="tag-badge">@tag.Trim()</span>
+                    }
+                </div>
+            }
+        </label>
+        <div class="detail-actions">
+            <button type="button" class="secondary bw-btn" @onclick="SaveDraft">Save as Draft</button>
+            <button type="submit" class="savebtn bw-save">Save Entry</button>
+        </div>
+    </form>
+</div>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="error-message" @onclick="ClearError">
+        @errorMessage
+        <span class="error-close">✕</span>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="success-message" @onclick="ClearSuccess">
+        @successMessage
+        <span class="success-close">✕</span>
+    </div>
+}
+
+@code {
+    private JournalEntry entry = new JournalEntry { Date = DateTime.Today };
+    private string secondaryMood1 = "";
+    private string secondaryMood2 = "";
+    private string tagsInput = "";
+    private int wordCount = 0;
+    private string errorMessage = "";
+    private string successMessage = "";
+    private bool quillInitialized = false;
+    private DotNetObjectReference<WriteEntry>? dotNetRef;
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            // Initialize entry with current date
+            entry.Date = DateTime.Today;
+            entry.CreatedAt = DateTime.Now;
+            entry.UpdatedAt = DateTime.Now;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Initialization error: {ex.Message}";
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                dotNetRef = DotNetObjectReference.Create(this);
+                quillInitialized = await JS.InvokeAsync<bool>("initQuillEditor", "quill-editor", dotNetRef);
+                if (quillInitialized && !string.IsNullOrWhiteSpace(entry.Content))
+                {
+                    await JS.InvokeVoidAsync("setQuillContent", entry.Content);
+                }
+
+                // update word count after initialization
+                wordCount = await JS.InvokeAsync<int>("getQuillWordCount");
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Quill init error: {ex}");
+                // fall back silently
+            }
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnQuillTextChanged()
+    {
+        try
+        {
+            wordCount = await JS.InvokeAsync<int>("getQuillWordCount");
+            StateHasChanged();
+        }
+        catch { }
+    }
+
+    private async Task UpdateWordCountAsync()
+    {
+        try
+        {
+            if (quillInitialized)
+            {
+                wordCount = await JS.InvokeAsync<int>("getQuillWordCount");
+                StateHasChanged();
+            }
+        }
+        catch { }
+    }
+
+    private async Task SaveEntry()
+    {
+        try
+        {
+            ClearMessages();
+
+            // read content from quill if available
+            if (quillInitialized)
+            {
+                var content = await JS.InvokeAsync<string>("getQuillContent");
+                entry.Content = content ?? string.Empty;
+                wordCount = await JS.InvokeAsync<int>("getQuillWordCount");
+            }
+
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(entry.Title))
+            {
+                errorMessage = "Please enter a title.";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(entry.PrimaryMood))
+            {
+                errorMessage = "Please select a primary mood.";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(entry.Content))
+            {
+                errorMessage = "Please write some content for your entry.";
+                return;
+            }
+
+            // Set secondary moods
+            var secondaryMoodsList = new[] { secondaryMood1, secondaryMood2 }
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .ToList();
+            entry.SecondaryMoods = string.Join(",", secondaryMoodsList);
+
+            // Set tags
+            entry.Tags = string.IsNullOrWhiteSpace(tagsInput)
+                ? ""
+                : string.Join(",", tagsInput.Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrWhiteSpace(t)));
+
+            // Set category based on mood
+            entry.Category = GetMoodCategory(entry.PrimaryMood);
+
+            // Ensure date is set
+            if (entry.Date == default)
+            {
+                entry.Date = DateTime.Today;
+            }
+
+            // Save to database
+            var result = await JournalService.SaveEntryAsync(entry);
+
+            if (result > 0)
+            {
+                successMessage = "Entry saved successfully!";
+                await Task.Delay(1000); // Show success message briefly
+                Navigation.NavigateTo("/dashboard");
+            }
+            else
+            {
+                errorMessage = "Failed to save entry. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving entry: {ex.Message}";
+            Console.WriteLine($"SaveEntry Exception: {ex}");
+        }
+    }
+
+    private async Task SaveDraft()
+    {
+        try
+        {
+            ClearMessages();
+
+            // read content from quill if available
+            if (quillInitialized)
+            {
+                var content = await JS.InvokeAsync<string>("getQuillContent");
+                entry.Content = content ?? string.Empty;
+                wordCount = await JS.InvokeAsync<int>("getQuillWordCount");
+            }
+
+            // For draft, only require title
+            if (string.IsNullOrWhiteSpace(entry.Title))
+            {
+                errorMessage = "Please enter a title for the draft.";
+                return;
+            }
+
+            // Set secondary moods
+            var secondaryMoodsList = new[] { secondaryMood1, secondaryMood2 }
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .ToList();
+            entry.SecondaryMoods = string.Join(",", secondaryMoodsList);
+
+            // Set tags
+            entry.Tags = string.IsNullOrWhiteSpace(tagsInput)
+                ? ""
+                : string.Join(",", tagsInput.Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrWhiteSpace(t)));
+
+            // Set category
+            entry.Category = GetMoodCategory(entry.PrimaryMood);
+
+            // Ensure date is set
+            if (entry.Date == default)
+            {
+                entry.Date = DateTime.Today;
+            }
+
+            var result = await JournalService.SaveEntryAsync(entry);
+
+            if (result > 0)
+            {
+                successMessage = "Draft saved successfully!";
+            }
+            else
+            {
+                errorMessage = "Failed to save draft.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving draft: {ex.Message}";
+            Console.WriteLine($"SaveDraft Exception: {ex}");
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/dashboard");
+    }
+
+    private void Back()
+    {
+        Navigation.NavigateTo("/dashboard");
+    }
+
+    private void ClearMessages()
+    {
+        errorMessage = "";
+        successMessage = "";
+    }
+
+    private void ClearError()
+    {
+        errorMessage = "";
+    }
+
+    private void ClearSuccess()
+    {
+        successMessage = "";
+    }
+
+    private string GetMoodCategory(string mood)
+    {
+        if (string.IsNullOrWhiteSpace(mood))
+            return "";
+
+        var positive = new[] { "Happy", "Excited", "Relaxed", "Grateful", "Confident" };
+        var neutral = new[] { "Calm", "Thoughtful", "Curious", "Nostalgic", "Bored" };
+        var negative = new[] { "Sad", "Angry", "Stressed", "Lonely", "Anxious" };
+
+        if (positive.Contains(mood)) return "Positive";
+        if (neutral.Contains(mood)) return "Neutral";
+        if (negative.Contains(mood)) return "Negative";
+        return "";
+    }
+
+    private IEnumerable<string> GetSecondaryMoods()
+    {
+        return new[] {
+            "Happy", "Excited", "Relaxed", "Grateful", "Confident",
+            "Calm", "Thoughtful", "Curious", "Nostalgic", "Bored",
+            "Sad", "Angry", "Stressed", "Lonely", "Anxious"
+        };
+    }
+}

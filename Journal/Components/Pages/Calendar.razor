@@ -1,0 +1,136 @@
+﻿@page "/calendar"
+@using JournalApp.Services
+@using JournalApp.Models
+@inject JournalService JournalService
+@inject NavigationManager Navigation
+
+<div class="calendar-page">
+    <h1>?? Calendar View</h1>
+    <p>Navigate through your journal entries by date</p>
+
+    <div class="calendar-controls">
+        <button @onclick="PreviousMonth">? Previous</button>
+        <h2>@currentDate.ToString("MMMM yyyy")</h2>
+        <button @onclick="NextMonth">Next ?</button>
+    </div>
+
+    <div class="calendar-grid">
+        <!-- Day headers -->
+        @foreach (var day in new[] { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" })
+        {
+            <div class="calendar-day-header">@day</div>
+        }
+
+        <!-- Empty cells before first day of month -->
+        @for (int i = 0; i < firstDayOfMonth; i++)
+        {
+            <div class="calendar-day empty"></div>
+        }
+
+        <!-- Days of month -->
+        @for (int day = 1; day <= daysInMonth; day++)
+        {
+            var date = new DateTime(currentDate.Year, currentDate.Month, day);
+            var hasEntry = entryDates.Contains(date.Date);
+            var isToday = date.Date == DateTime.Today;
+            var cssClass = $"calendar-day {(hasEntry ? "has-entry" : "")} {(isToday ? "today" : "")}";
+
+            <div class="@cssClass" @onclick="() => SelectDate(date)">
+                <span class="day-number">@day</span>
+                @if (hasEntry)
+                {
+                    <span class="entry-indicator">?</span>
+                }
+            </div>
+        }
+    </div>
+
+    @if (selectedDateEntries.Any())
+    {
+        <div class="selected-date-entries">
+            <h3>Entries for @selectedDate.ToString("MMMM dd, yyyy")</h3>
+            @foreach (var entry in selectedDateEntries)
+            {
+                <div class="entry-preview" @onclick="() => ViewEntry(entry.Id)">
+                    <h4>@entry.Title</h4>
+                    <p>@GetMoodEmoji(entry.PrimaryMood) @entry.PrimaryMood</p>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private DateTime currentDate = DateTime.Today;
+    private DateTime selectedDate = DateTime.Today;
+    private List<DateTime> entryDates = new();
+    private List<JournalEntry> selectedDateEntries = new();
+    private int daysInMonth;
+    private int firstDayOfMonth;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCalendarData();
+    }
+
+    private async Task LoadCalendarData()
+    {
+        // Get all entries
+        var allEntries = await JournalService.GetEntriesAsync();
+        entryDates = allEntries.Select(e => e.Date.Date).Distinct().ToList();
+
+        // Calculate calendar data
+        daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
+        firstDayOfMonth = (int)new DateTime(currentDate.Year, currentDate.Month, 1).DayOfWeek;
+
+        // Load entries for selected date
+        await LoadEntriesForDate(selectedDate);
+    }
+
+    private async Task LoadEntriesForDate(DateTime date)
+    {
+        selectedDate = date;
+        selectedDateEntries = await JournalService.GetEntriesByDateAsync(date);
+    }
+
+    private async Task SelectDate(DateTime date)
+    {
+        await LoadEntriesForDate(date);
+    }
+
+    private async Task PreviousMonth()
+    {
+        currentDate = currentDate.AddMonths(-1);
+        await LoadCalendarData();
+    }
+
+    private async Task NextMonth()
+    {
+        currentDate = currentDate.AddMonths(1);
+        await LoadCalendarData();
+    }
+
+    private void ViewEntry(int id)
+    {
+        Navigation.NavigateTo($"/journal/{id}");
+    }
+
+    private string GetMoodEmoji(string mood)
+    {
+        return mood switch
+        {
+            "Happy" => "??",
+            "Sad" => "??",
+            "Calm" => "??",
+            "Excited" => "??",
+            "Anxious" => "??",
+            "Grateful" => "??",
+            "Tired" => "??",
+            "Angry" => "??",
+            "Stressed" => "??",
+            "Confident" => "??",
+            "Relaxed" => "??",
+            _ => "??"
+        };
+    }
+}

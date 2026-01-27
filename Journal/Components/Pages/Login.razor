@@ -1,382 +1,209 @@
 ﻿@page "/login"
-@inject IAuthenticationService AuthService
+@using JournalApp.Services
+@inject AuthService AuthenticationService
 @inject NavigationManager Navigation
 
 <div class="login-container">
-    <div class="login-card">
-        <div class="login-header">
-            <h1> My Journal</h1>
-            <p class="subtitle">Your personal space for thoughts and reflections</p>
-        </div>
+    <div class="login-box">
+        <h1>🔒 Daily Journal</h1>
 
-        @if (showPinEntry)
+        @if (isRegistrationMode)
         {
-            <div class="pin-entry-section">
-                <h2> Unlock with PIN</h2>
-                <p class="text-muted">Enter your 4-digit PIN</p>
+            <p>Create your account to get started</p>
 
-                <div class="pin-input-container">
-                    <input type="password" 
-                           @bind="pinInput" 
-                           @bind:event="oninput"
-                           @onkeyup="HandlePinKeyUp"
-                           class="pin-input" 
-                           maxlength="4" 
-                           placeholder="••••"
-                           inputmode="numeric"
-                           pattern="[0-9]*"
-                           autofocus />
+            <div class="registration-form">
+                <div class="input-group mb-3">
+                    <label class="form-label">Your Name</label>
+                    <input type="text"
+                           class="form-control"
+                           @bind="userName"
+                           placeholder="Enter your name"
+                           maxlength="50" />
                 </div>
 
-                <button type="button" 
-                        class="btn btn-primary w-100 mt-3" 
-                        @onclick="HandlePinLogin"
-                        disabled="@(pinInput.Length != 4 || isLoading)">
-                    @if (isLoading)
-                    {
-                        <span>Unlocking...</span>
-                    }
-                    else
-                    {
-                        <span> Unlock</span>
-                    }
-                </button>
-
-                <button type="button" 
-                        class="btn btn-link w-100 mt-2" 
-                        @onclick="() => showPinEntry = false">
-                    Use Password Instead
-                </button>
-            </div>
-        }
-        else if (!hasAccount)
-        {
-            <h2>Create Account</h2>
-            <EditForm Model="@this" OnValidSubmit="HandleRegister">
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" 
-                           @bind="username" 
-                           class="form-control" 
-                           placeholder="Choose a username"
-                           maxlength="100" />
-                </div>
-
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" 
-                           @bind="password" 
-                           class="form-control" 
-                           placeholder="Create a password (min 6 characters)" />
-                </div>
-
-                <div class="form-group">
-                    <label>Confirm Password</label>
-                    <input type="password" 
-                           @bind="confirmPassword" 
-                           class="form-control" 
-                           placeholder="Confirm your password" />
-                </div>
-
-                <div class="form-group">
-                    <label>Set PIN (Optional)</label>
-                    <input type="password" 
-                           @bind="pin" 
-                           class="form-control" 
-                           placeholder="Enter 4-digit PIN for quick access" 
+                <div class="input-group mb-3">
+                    <label class="form-label">Create 4-digit OTP</label>
+                    <input type="password"
+                           class="form-control"
+                           @bind="otpInput"
+                           placeholder="Enter 4-digit OTP"
                            maxlength="4"
-                           inputmode="numeric"
-                           pattern="[0-9]*" />
-                    <small class="text-muted">PIN must be 4 digits (e.g., 1234)</small>
+                           @onkeypress="HandleKeyPress" />
                 </div>
 
-                <button type="submit" 
-                        class="btn btn-primary w-100" 
-                        disabled="@isLoading">
-                    @if (isLoading)
-                    {
-                        <span>Creating Account...</span>
-                    }
-                    else
-                    {
-                        <span> Create Account</span>
-                    }
-                </button>
+                <div class="input-group mb-3">
+                    <label class="form-label">Confirm OTP</label>
+                    <input type="password"
+                           class="form-control"
+                           @bind="confirmOtp"
+                           placeholder="Confirm your OTP"
+                           maxlength="4"
+                           @onkeypress="HandleKeyPress" />
+                </div>
+            </div>
 
-                <button type="button" 
-                        class="btn btn-link w-100 mt-2" 
-                        @onclick="() => hasAccount = true">
-                    Already have an account? <strong>Login</strong>
-                </button>
-            </EditForm>
+            <button class="login-btn" @onclick="OnRegister">Create Account</button>
         }
         else
         {
-            <h2>Welcome Back</h2>
-            <EditForm Model="@this" OnValidSubmit="HandleLogin">
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" 
-                           @bind="username" 
-                           class="form-control" 
-                           placeholder="Enter your username"
-                           autofocus />
-                </div>
+            <p>Welcome back, @userNameDisplay!</p>
 
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" 
-                           @bind="password" 
-                           class="form-control" 
-                           placeholder="Enter your password" />
-                </div>
+            <div class="pin-input-group">
+                <input type="password"
+                       class="pin-input"
+                       @bind="otpInput"
+                       placeholder="Enter 4-digit OTP"
+                       maxlength="4"
+                       @onkeypress="HandleKeyPress" />
+            </div>
 
-                <button type="submit" 
-                        class="btn btn-primary w-100" 
-                        disabled="@isLoading">
-                    @if (isLoading)
-                    {
-                        <span>Logging in...</span>
-                    }
-                    else
-                    {
-                        <span> Login</span>
-                    }
-                </button>
-
-                @if (hasStoredPin)
-                {
-                    <button type="button" 
-                            class="btn btn-secondary w-100 mt-2" 
-                            @onclick="() => showPinEntry = true">
-                         Use PIN Instead
-                    </button>
-                }
-
-                <button type="button" 
-                        class="btn btn-link w-100 mt-2" 
-                        @onclick="() => hasAccount = false">
-                    Don't have an account? <strong>Register</strong>
-                </button>
-            </EditForm>
+            <button class="login-btn" @onclick="OnLogin">Unlock Journal</button>
         }
 
         @if (!string.IsNullOrEmpty(errorMessage))
         {
-            <div class="alert alert-danger mt-3">
-                <strong> Error:</strong> @errorMessage
-            </div>
+            <div class="error-message">@errorMessage</div>
         }
 
         @if (!string.IsNullOrEmpty(successMessage))
         {
-            <div class="alert alert-success mt-3">
-                <strong> Success:</strong> @successMessage
-            </div>
+            <div class="success-message">@successMessage</div>
         }
     </div>
 </div>
 
 @code {
-    private string username = string.Empty;
-    private string password = string.Empty;
-    private string confirmPassword = string.Empty;
-    private string pin = string.Empty;
-    private string pinInput = string.Empty;
-    private string errorMessage = string.Empty;
-    private string successMessage = string.Empty;
-    private bool hasAccount = true;
-    private bool showPinEntry = false;
-    private bool hasStoredPin = false;
-    private bool isLoading = false;
+    private bool isRegistrationMode = false;
+    private string userName = "";
+    private string otpInput = "";
+    private string confirmOtp = "";
+    private string errorMessage = "";
+    private string successMessage = "";
+    private string userNameDisplay = "User";
 
     protected override async Task OnInitializedAsync()
     {
-        if (await AuthService.IsAuthenticatedAsync())
+        await CheckUserStatus();
+    }
+
+    private async Task CheckUserStatus()
+    {
+        try
         {
-            if (await AuthService.IsAppLockedAsync())
+            isRegistrationMode = !(await AuthService.UserExistsAsync());
+            if (!isRegistrationMode)
             {
-                var hasPinAvailable = await AuthService.HasPinAsync();
-                if (hasPinAvailable)
-                {
-                    showPinEntry = true;
-                    hasStoredPin = true;
-                }
-                else
-                {
-                    Navigation.NavigateTo("/");
-                }
-            }
-            else
-            {
-                Navigation.NavigateTo("/");
+                userNameDisplay = AuthService.GetUserName();
             }
         }
-        else
+        catch (Exception ex)
         {
-            hasStoredPin = await AuthService.HasPinAsync();
+            errorMessage = $"Error checking user status: {ex.Message}";
         }
     }
 
-    private async Task HandleRegister()
+    private async Task HandleKeyPress(KeyboardEventArgs e)
     {
-        ClearMessages();
-        isLoading = true;
+        if (e.Key == "Enter")
+        {
+            if (isRegistrationMode)
+            {
+                await OnRegister();
+            }
+            else
+            {
+                await OnLogin();
+            }
+        }
+    }
+
+    private async Task OnRegister()
+    {
+        errorMessage = "";
+        successMessage = "";
+
+        // Validate inputs
+        if (string.IsNullOrWhiteSpace(userName))
+        {
+            errorMessage = "Please enter your name.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(otpInput) || otpInput.Length != 4)
+        {
+            errorMessage = "Please enter a valid 4-digit OTP.";
+            return;
+        }
+
+        if (!otpInput.All(char.IsDigit))
+        {
+            errorMessage = "OTP must contain only digits.";
+            return;
+        }
+
+        if (otpInput != confirmOtp)
+        {
+            errorMessage = "OTP confirmation does not match.";
+            return;
+        }
 
         try
         {
-            if (string.IsNullOrWhiteSpace(username))
-            {
-                errorMessage = "Username is required";
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(password))
-            {
-                errorMessage = "Password is required";
-                return;
-            }
-
-            if (password.Length < 6)
-            {
-                errorMessage = "Password must be at least 6 characters";
-                return;
-            }
-
-            if (password != confirmPassword)
-            {
-                errorMessage = "Passwords do not match";
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(pin))
-            {
-                if (pin.Length != 4)
-                {
-                    errorMessage = "PIN must be exactly 4 digits";
-                    return;
-                }
-
-                if (!int.TryParse(pin, out _))
-                {
-                    errorMessage = "PIN must contain only numbers";
-                    return;
-                }
-            }
-
-            var success = await AuthService.RegisterAsync(username, password, string.IsNullOrEmpty(pin) ? null : pin);
-
+            var success = await AuthService.RegisterUserAsync(userName, otpInput);
             if (success)
             {
                 successMessage = "Account created successfully!";
                 await Task.Delay(1000);
-                Navigation.NavigateTo("/");
+                isRegistrationMode = false;
+                userNameDisplay = userName;
+                otpInput = "";
+                confirmOtp = "";
+                userName = "";
+                StateHasChanged();
             }
             else
             {
-                errorMessage = "Registration failed. Username may already exist.";
+                errorMessage = "Failed to create account. Please try again.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"An error occurred: {ex.Message}";
-        }
-        finally
-        {
-            isLoading = false;
+            errorMessage = $"Registration error: {ex.Message}";
         }
     }
 
-    private async Task HandleLogin()
+    private async Task OnLogin()
     {
-        ClearMessages();
-        isLoading = true;
+        errorMessage = "";
+        successMessage = "";
+
+        if (string.IsNullOrWhiteSpace(otpInput))
+        {
+            errorMessage = "Please enter your OTP.";
+            return;
+        }
+
+        if (otpInput.Length != 4)
+        {
+            errorMessage = "OTP must be 4 digits.";
+            return;
+        }
 
         try
         {
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            if (await AuthService.ValidateOTPAsync(otpInput))
             {
-                errorMessage = "Username and password are required";
-                return;
-            }
-
-            var user = await AuthService.LoginAsync(username, password);
-
-            if (user != null)
-            {
-                successMessage = "Login successful!";
-                await Task.Delay(500);
-                Navigation.NavigateTo("/");
+                Navigation.NavigateTo("/dashboard");
             }
             else
             {
-                errorMessage = "Invalid username or password";
+                errorMessage = "Incorrect OTP. Please try again.";
+                otpInput = "";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Login failed: {ex.Message}";
+            errorMessage = $"Login error: {ex.Message}";
         }
-        finally
-        {
-            isLoading = false;
-        }
-    }
-
-    private async Task HandlePinLogin()
-    {
-        ClearMessages();
-        isLoading = true;
-
-        try
-        {
-            if (string.IsNullOrWhiteSpace(pinInput))
-            {
-                errorMessage = "Please enter your PIN";
-                return;
-            }
-
-            if (pinInput.Length != 4)
-            {
-                errorMessage = "PIN must be 4 digits";
-                return;
-            }
-
-            var success = await AuthService.LoginWithPinAsync(pinInput);
-
-            if (success)
-            {
-                successMessage = "Unlocked successfully!";
-                await Task.Delay(500);
-                Navigation.NavigateTo("/");
-            }
-            else
-            {
-                errorMessage = "Invalid PIN";
-                pinInput = string.Empty;
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Unlock failed: {ex.Message}";
-        }
-        finally
-        {
-            isLoading = false;
-        }
-    }
-
-    private async Task HandlePinKeyUp(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter" && pinInput.Length == 4)
-        {
-            await HandlePinLogin();
-        }
-    }
-
-    private void ClearMessages()
-    {
-        errorMessage = string.Empty;
-        successMessage = string.Empty;
     }
 }

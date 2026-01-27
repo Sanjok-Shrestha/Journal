@@ -1,54 +1,119 @@
-﻿@using Journal.Components.Shared
-@inherits LayoutComponentBase
-@inject ThemeService ThemeService
-@inject IAuthenticationService AuthService
+﻿@inherits LayoutComponentBase
+@using Daily_Journal_App.Services
 @inject NavigationManager Navigation
+@inject AuthService AuthService
+@inject ThemeService ThemeService
+@implements IDisposable
 
-<div class="page @ThemeService.CurrentTheme.ToLower()">
-    @if (isAuthenticated)
-    {
-        <div class="sidebar">
-            <NavMenu />
+<!-- Root wrapper with theme class -->
+<div class="dailyscript-layout @ThemeService.GetThemeClass()">
+
+    <!-- Sidebar -->
+    <nav class="ds-sidebar">
+        <div class="ds-sidebar-header">
+            <div class="ds-logo">📓 DailyScript</div>
         </div>
+        <div class="ds-nav">
+            @if (AuthService.IsAuthenticated)
+            {
+                <a class="ds-nav-link @(IsActive("/dashboard") ? "active" : "")" href="/dashboard">
+                    <span class="ds-nav-icon">📊</span> Dashboard
+                </a>
+                <!-- New Entry now explicitly indicates creation via query param -->
+                <a class="ds-nav-link @(IsActive("/journal") ? "active" : "")" href="/journal?new=true">
+                    <span class="ds-nav-icon">✍️</span> New Entry
+                </a>
+                <a class="ds-nav-link @(IsActive("/entries") ? "active" : "")" href="/entries">
+                    <span class="ds-nav-icon">📚</span> All Entries
+                </a>
+                <a class="ds-nav-link @(IsActive("/calendar") ? "active" : "")" href="/calendar">
+                    <span class="ds-nav-icon">📅</span> Calendar
+                </a>
+                <a class="ds-nav-link @(IsActive("/analytics") ? "active" : "")" href="/analytics">
+                    <span class="ds-nav-icon">📈</span> Analytics
+                </a>
+                <!-- Export page link -->
+                <a class="ds-nav-link @(IsActive("/export") ? "active" : "")" href="/export">
+                    <span class="ds-nav-icon">📤</span> Export
+                </a>
 
-        <main>
-            <div class="top-row px-4">
-                <h2 class="app-title">My Journal</h2>
-            </div>
+                <!-- Export page link -->
+                <a class="ds-nav-link @(IsActive("/db-info") ? "active" : "")" href="/db-info">
+                    <span class="ds-nav-icon">📤</span>db-info
+                </a>
+            }
+        </div>
+        <div class="ds-sidebar-footer">
+            <button class="ds-nav-link theme-toggle" @onclick="ToggleTheme">
+                <span class="ds-nav-icon">@(ThemeService.CurrentTheme == "dark" ? "☀️" : "🌙")</span> 
+                @(ThemeService.CurrentTheme == "dark" ? "Light" : "Dark") Mode
+            </button>
+            @if (AuthService.IsAuthenticated)
+            {
+                <button class="ds-nav-link logout-btn" @onclick="Logout">
+                    <span class="ds-nav-icon">🔒</span> Logout
+                </button>
+            }
+        </div>
+    </nav>
 
-            <article class="content px-4">
-                @Body
-            </article>
-        </main>
-    }
-    else
-    {
-        <article class="content-full">
+    <!-- Main Content Area -->
+    <div class="ds-main">
+        <main class="ds-content">
             @Body
-        </article>
-    }
+        </main>
+    </div>
 </div>
 
 @code {
-    private bool isAuthenticated = false;
-
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        ThemeService.OnThemeChanged += StateHasChanged;
-        isAuthenticated = await AuthService.IsAuthenticatedAsync();
-
         Navigation.LocationChanged += OnLocationChanged;
+        ThemeService.OnThemeChanged += StateHasChanged;
+        
+        // Redirect to login if not authenticated
+        if (!AuthService.IsAuthenticated && !Navigation.Uri.Contains("/login"))
+        {
+            Navigation.NavigateTo("/login");
+        }
     }
 
-    private async void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
-        isAuthenticated = await AuthService.IsAuthenticatedAsync();
-        await InvokeAsync(StateHasChanged);
+        // If user navigates to a protected route while not authenticated, redirect to login
+        var relative = Navigation.ToBaseRelativePath(e.Location);
+        if (!AuthService.IsAuthenticated && !relative.StartsWith("login", StringComparison.OrdinalIgnoreCase))
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        StateHasChanged();
+    }
+
+    private bool IsActive(string route)
+    {
+        var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
+        return relative.StartsWith(route.TrimStart('/'), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void ToggleTheme()
+    {
+        ThemeService.ToggleTheme();
+    }
+
+    private void Logout()
+    {
+        AuthService.Logout();
+        Navigation.NavigateTo("/login");
     }
 
     public void Dispose()
     {
-        ThemeService.OnThemeChanged -= StateHasChanged;
         Navigation.LocationChanged -= OnLocationChanged;
+        ThemeService.OnThemeChanged -= StateHasChanged;
+        dotNetRef?.Dispose();
     }
+
+    private DotNetObjectReference<MainLayout>? dotNetRef;
 }

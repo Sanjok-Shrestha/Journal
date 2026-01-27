@@ -1,0 +1,147 @@
+﻿.analytics-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.analytics-page h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.analytics-page p {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: #f9f9f9;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    border: 2px solid #ddd;
+}
+
+.stat-card h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.2rem;
+    color: #666;
+}
+
+.stat-value {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #000;
+    margin: 10px 0;
+}
+
+.stat-label {
+    color: #888;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.mood-section, .frequent-moods, .tags-section, .word-trend {
+    background: #f9f9f9;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    border: 2px solid #ddd;
+}
+
+.mood-section h2, .frequent-moods h2, .tags-section h2, .word-trend h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.mood-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.mood-category {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.mood-category h4 {
+    min-width: 150px;
+    margin: 0;
+}
+
+.mood-bar {
+    height: 30px;
+    border-radius: 15px;
+    transition: width 0.5s ease;
+}
+
+.mood-category span {
+    font-weight: 600;
+}
+
+.mood-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.mood-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+}
+
+.mood-count {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.tags-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.tag-item {
+    padding: 8px 16px;
+    background: #667eea;
+    color: white;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+/* Dark theme support */
+:global(.dark-theme) .stat-card,
+:global(.dark-theme) .mood-section,
+:global(.dark-theme) .frequent-moods,
+:global(.dark-theme) .tags-section,
+:global(.dark-theme) .word-trend {
+    background: #2d2d2d;
+    border-color: #444;
+}
+
+:global(.dark-theme) .stat-value {
+    color: #e0e0e0;
+}
+
+:global(.dark-theme) .stat-label,
+:global(.dark-theme) .analytics-page p {
+    color: #999;
+}
+
+:global(.dark-theme) .mood-item {
+    background: #1a1a1a;
+    border-color: #444;
+}

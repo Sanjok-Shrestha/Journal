@@ -70,11 +70,31 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Compile Include="Components\Pages\Calendar.razor.css" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="Components\Pages\Analytic.razor.css" />
+      <Content Include="Components\Pages\Dashboard.razor.css" />
+      <Content Include="Components\Pages\EntryEditor.razor.css" />
+      <Content Include="Components\Pages\Login.razor.css" />
+      <Content Include="Components\Pages\Write.razor.css" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" />
         <PackageReference Include="QuestPDF" Version="2025.12.3" />
         <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Data\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="Journal.csproj.user" />
     </ItemGroup>
 
 </Project>

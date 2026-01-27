@@ -1,4 +1,6 @@
 ﻿@page "/dashboard"
+@using JournalApp.Services
+@using JournalApp.Models
 @inject IAnalyticsService AnalyticsService
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
@@ -41,7 +43,7 @@
                             <span>@mood.Mood</span>
                         </div>
                         <div class="mood-bar-container">
-                            <div class="mood-bar" 
+                            <div class="mood-bar"
                                  style="width: @mood.Percentage%; background-color: @mood.Mood.GetColor()">
                                 <span class="mood-count">@mood.Count</span>
                             </div>
@@ -74,7 +76,7 @@
             <div class="tags-cloud">
                 @foreach (var tag in analytics.MostUsedTags)
                 {
-                    <div class="tag-cloud-item" 
+                    <div class="tag-cloud-item"
                          style="font-size: @(12 + Math.Min(tag.Count * 2, 20))px; color: @tag.Color">
                         #@tag.Name
                         <span class="tag-count">(@tag.Count)</span>
@@ -86,18 +88,11 @@
         <div class="analytics-section">
             <h2>Tag Breakdown</h2>
             <div class="tag-breakdown">
-                @foreach (var tag in analytics.TagBreakdown.Take(10))
+                @foreach (var tag in analytics.TagBreakdown)
                 {
                     <div class="tag-breakdown-item">
-                        <div class="tag-info">
-                            <span class="tag-name" style="color: @tag.Color">#@tag.Name</span>
-                            <span class="tag-stats">@tag.Count uses</span>
-                        </div>
-                        <div class="tag-progress-bar">
-                            <div class="tag-progress-fill" 
-                                 style="width: @GetTagPercentage(tag.Count)%; background-color: @tag.Color">
-                            </div>
-                        </div>
+                        <span class="tag-name">#@tag.Name</span>
+                        <span class="tag-stat">@tag.Count entries</span>
                     </div>
                 }
             </div>
@@ -105,33 +100,20 @@
 
         <div class="analytics-section">
             <h2>Word Count Trends (Last 30 Days)</h2>
-            <div class="word-count-chart">
-                @if (analytics.WordCountTrends.Any())
+            <div class="word-count-trends">
+                @foreach (var trend in analytics.WordCountTrends)
                 {
-                    var maxWordCount = analytics.WordCountTrends.Max(w => w.WordCount);
-                    @foreach (var trend in analytics.WordCountTrends)
-                    {
-                        var height = maxWordCount > 0 ? (trend.WordCount * 100.0 / maxWordCount) : 0;
-                        <div class="word-bar-container">
-                            <div class="word-bar" style="height: @(height)%">
-                                <span class="word-value">@trend.WordCount</span>
-                            </div>
-                            <div class="word-date">@trend.Date.ToString("MM/dd")</div>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <p class="text-muted">No data available for the last 30 days</p>
+                    <div class="trend-item">
+                        <span>@trend.Date.ToString("MMM dd")</span>
+                        <span>@trend.WordCount words</span>
+                    </div>
                 }
             </div>
         </div>
     }
     else
     {
-        <div class="empty-state">
-            <p>No analytics data available. Start writing journal entries!</p>
-        </div>
+        <p>No data available. Start writing journal entries to see analytics!</p>
     }
 </div>
 
@@ -141,28 +123,21 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (!await AuthService.IsAuthenticatedAsync())
+        try
         {
-            Navigation.NavigateTo("/login");
-            return;
+            if (!await AuthService.IsAuthenticatedAsync())
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+
+            analytics = await AnalyticsService.GetDashboardAnalyticsAsync();
+            isLoading = false;
         }
-
-        await LoadAnalytics();
-    }
-
-    private async Task LoadAnalytics()
-    {
-        isLoading = true;
-        analytics = await AnalyticsService.GetDashboardAnalyticsAsync();
-        isLoading = false;
-    }
-
-    private double GetTagPercentage(int count)
-    {
-        if (analytics?.TagBreakdown == null || !analytics.TagBreakdown.Any())
-            return 0;
-
-        var maxCount = analytics.TagBreakdown.Max(t => t.Count);
-        return maxCount > 0 ? (count * 100.0 / maxCount) : 0;
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading dashboard: {ex.Message}");
+            isLoading = false;
+        }
     }
 }

@@ -1,14 +1,16 @@
-﻿@page "/"
+﻿@page "/home"
+@using JournalApp.Services
+@using JournalApp.Models
 @inject IJournalService JournalService
 @inject IAuthenticationService AuthService
 @inject NavigationManager Navigation
 
 <div class="home-container">
     <div class="header-section">
-        <h1> My Journal</h1>
+        <h1>Welcome back!</h1>
         <div class="header-actions">
             <button class="btn btn-primary" @onclick="NavigateToEditor">
-                 New Entry
+                ✍️ New Entry
             </button>
         </div>
     </div>
@@ -25,7 +27,7 @@
                 <div class="stat-label">Longest Streak</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"></div>
+                <div class="stat-icon">📖</div>
                 <div class="stat-value">@streakData.TotalEntries</div>
                 <div class="stat-label">Total Entries</div>
             </div>
@@ -40,7 +42,7 @@
         <div class="search-box">
             <input type="text" @bind="searchTerm" @bind:event="oninput" 
                    @onkeyup="HandleSearch" class="form-control" 
-                   placeholder=" Search entries..." />
+                   placeholder="🔍 Search entries..." />
         </div>
         <div class="filter-controls">
             <select @bind="selectedMood" @bind:after="ApplyFilters" class="form-control">
@@ -59,11 +61,11 @@
     <div class="view-toggle">
         <button class="btn @(showCalendar ? "btn-primary" : "btn-outline")" 
                 @onclick="() => showCalendar = true">
-             Calendar
+            📅 Calendar
         </button>
         <button class="btn @(!showCalendar ? "btn-primary" : "btn-outline")" 
                 @onclick="() => showCalendar = false">
-             List
+            📋 List
         </button>
     </div>
 
@@ -87,41 +89,29 @@
                         <div class="entry-card" @onclick="() => ViewEntry(entry.Id)">
                             <div class="entry-header">
                                 <h3>@entry.Title</h3>
-                                <span class="mood-badge" style="background-color: @entry.PrimaryMood.GetColor()">
-                                    @entry.PrimaryMood.GetEmoji() @entry.PrimaryMood
-                                </span>
+                                <span class="entry-date">@entry.EntryDate.ToString("MMM dd, yyyy")</span>
                             </div>
-                            <p class="entry-date">@entry.EntryDate.ToString("MMMM dd, yyyy")</p>
-                            <p class="entry-preview">@GetPreview(entry.Content)</p>
-                            <div class="entry-footer">
+                            <div class="entry-content">
+                                <span class="mood-badge">@entry.PrimaryMood.GetEmoji()</span>
+                                <p>@GetPreview(entry.Content)</p>
+                            </div>
+                            @if (!string.IsNullOrEmpty(entry.Tags))
+                            {
                                 <div class="entry-tags">
-                                    @foreach (var tag in entry.TagList.Take(3))
+                                    @foreach (var tag in entry.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries))
                                     {
-                                        <span class="tag">@tag</span>
+                                        <span class="tag">@tag.Trim()</span>
                                     }
                                 </div>
-                                <span class="word-count">@entry.WordCount words</span>
-                            </div>
+                            }
                         </div>
                     }
-                </div>
-
-                <div class="pagination">
-                    <button class="btn btn-outline" @onclick="PreviousPage" 
-                            disabled="@(currentPage == 1)">
-                         Previous
-                    </button>
-                    <span class="page-info">Page @currentPage of @totalPages</span>
-                    <button class="btn btn-outline" @onclick="NextPage" 
-                            disabled="@(currentPage >= totalPages)">
-                        Next 
-                    </button>
                 </div>
             }
             else
             {
                 <div class="empty-state">
-                    <p> No entries found. Start writing your first journal entry!</p>
+                    <p>📝 No entries found. Start writing!</p>
                 </div>
             }
         }
@@ -130,24 +120,21 @@
 
 @code {
     private List<JournalEntry> allEntries = new();
-    private List<JournalEntry> filteredEntries = new();
     private List<JournalEntry> displayedEntries = new();
     private StreakData? streakData;
-    private string searchTerm = string.Empty;
-    private string selectedMood = string.Empty;
+    private bool isLoading = true;
+    private string searchTerm = "";
+    private string selectedMood = "";
     private DateTime? filterStartDate;
     private DateTime? filterEndDate;
     private bool showCalendar = false;
-    private bool isLoading = true;
-    private int currentPage = 1;
-    private int pageSize = 10;
-    private int totalPages = 1;
 
     protected override async Task OnInitializedAsync()
     {
-        if (!await AuthService.IsAuthenticatedAsync())
+        var user = await AuthService.GetCurrentUserAsync();
+        if (user == null)
         {
-            Navigation.NavigateTo("/login");
+            Navigation.NavigateTo("/");
             return;
         }
 
@@ -157,95 +144,20 @@
     private async Task LoadData()
     {
         isLoading = true;
-        allEntries = await JournalService.GetAllEntriesAsync();
-        filteredEntries = allEntries;
-        streakData = await JournalService.GetStreakDataAsync();
-        UpdatePagination();
-        isLoading = false;
-    }
-
-    private void UpdatePagination()
-    {
-        totalPages = (int)Math.Ceiling((double)filteredEntries.Count / pageSize);
-        displayedEntries = filteredEntries
-            .Skip((currentPage - 1) * pageSize)
-            .Take(pageSize)
-            .ToList();
-    }
-
-    private async Task HandleSearch()
-    {
-        await ApplyFilters();
-    }
-
-    private async Task ApplyFilters()
-    {
-        filteredEntries = allEntries;
-
-        if (!string.IsNullOrWhiteSpace(searchTerm))
+        try
         {
-            filteredEntries = filteredEntries.Where(e =>
-                e.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                e.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            allEntries = await JournalService.GetAllEntriesAsync();
+            displayedEntries = allEntries.OrderByDescending(e => e.EntryDate).ToList();
+            streakData = await JournalService.GetStreakDataAsync();
         }
-
-        if (!string.IsNullOrEmpty(selectedMood) && Enum.TryParse<MoodType>(selectedMood, out var mood))
+        catch (Exception ex)
         {
-            filteredEntries = filteredEntries.Where(e =>
-                e.PrimaryMood == mood ||
-                e.SecondaryMood1 == mood ||
-                e.SecondaryMood2 == mood)
-                .ToList();
+            Console.WriteLine($"Error loading data: {ex.Message}");
         }
-
-        if (filterStartDate.HasValue)
+        finally
         {
-            filteredEntries = filteredEntries.Where(e => e.EntryDate >= filterStartDate.Value.Date).ToList();
+            isLoading = false;
         }
-
-        if (filterEndDate.HasValue)
-        {
-            filteredEntries = filteredEntries.Where(e => e.EntryDate <= filterEndDate.Value.Date).ToList();
-        }
-
-        currentPage = 1;
-        UpdatePagination();
-        await Task.CompletedTask;
-    }
-
-    private void ClearFilters()
-    {
-        searchTerm = string.Empty;
-        selectedMood = string.Empty;
-        filterStartDate = null;
-        filterEndDate = null;
-        filteredEntries = allEntries;
-        currentPage = 1;
-        UpdatePagination();
-    }
-
-    private void NextPage()
-    {
-        if (currentPage < totalPages)
-        {
-            currentPage++;
-            UpdatePagination();
-        }
-    }
-
-    private void PreviousPage()
-    {
-        if (currentPage > 1)
-        {
-            currentPage--;
-            UpdatePagination();
-        }
-    }
-
-    private void HandleDateSelected(DateTime date)
-    {
-        Navigation.NavigateTo($"/editor?date={date:yyyy-MM-dd}");
     }
 
     private void NavigateToEditor()
@@ -258,9 +170,60 @@
         Navigation.NavigateTo($"/editor/{id}");
     }
 
+    private void HandleSearch()
+    {
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        var filtered = allEntries.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            filtered = filtered.Where(e =>
+                e.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                e.Content.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (!string.IsNullOrEmpty(selectedMood) && Enum.TryParse<MoodType>(selectedMood, out var mood))
+        {
+            filtered = filtered.Where(e => e.PrimaryMood == mood);
+        }
+
+        if (filterStartDate.HasValue)
+        {
+            filtered = filtered.Where(e => e.EntryDate.Date >= filterStartDate.Value.Date);
+        }
+
+        if (filterEndDate.HasValue)
+        {
+            filtered = filtered.Where(e => e.EntryDate.Date <= filterEndDate.Value.Date);
+        }
+
+        displayedEntries = filtered.OrderByDescending(e => e.EntryDate).ToList();
+    }
+
+    private void ClearFilters()
+    {
+        searchTerm = "";
+        selectedMood = "";
+        filterStartDate = null;
+        filterEndDate = null;
+        displayedEntries = allEntries.OrderByDescending(e => e.EntryDate).ToList();
+    }
+
+    private void HandleDateSelected(DateTime date)
+    {
+        filterStartDate = date;
+        filterEndDate = date;
+        ApplyFilters();
+        showCalendar = false;
+    }
+
     private string GetPreview(string content)
     {
-        var plainText = System.Text.RegularExpressions.Regex.Replace(content, "<.*?>", string.Empty);
-        return plainText.Length > 150 ? plainText.Substring(0, 150) + "..." : plainText;
+        if (string.IsNullOrWhiteSpace(content)) return "No content";
+        return content.Length > 150 ? content.Substring(0, 150) + "..." : content;
     }
 }

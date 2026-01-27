@@ -1,0 +1,262 @@
+﻿@page "/analytics"
+@using JournalApp.Services
+@using JournalApp.Models
+@inject JournalService JournalService
+
+<div class="analytics-page">
+    <h1>Analytics & Insights</h1>
+    <p>Track your journaling habits and emotional patterns</p>
+
+    <div class="stats-grid">
+        <!-- Streak Stats -->
+        <div class="stat-card">
+            <h3>Current Streak</h3>
+            <div class="stat-value">@currentStreak days</div>
+            <p class="stat-label">Keep it up!</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>Longest Streak</h3>
+            <div class="stat-value">@longestStreak days</div>
+            <p class="stat-label">Personal best</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>Total Entries</h3>
+            <div class="stat-value">@totalEntries</div>
+            <p class="stat-label">Journal entries</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>Total Words</h3>
+            <div class="stat-value">@totalWords.ToString("N0")</div>
+            <p class="stat-label">Words written</p>
+        </div>
+    </div>
+
+    <!-- Mood Distribution -->
+    <div class="mood-section">
+        <h2>Mood Distribution</h2>
+        <div class="mood-stats">
+            <div class="mood-category">
+                <h4>Positive (@positiveCount)</h4>
+                <div class="mood-bar" style="width: @(GetPercentage(positiveCount))%; background: #000;"></div>
+                <span>@GetPercentage(positiveCount)%</span>
+            </div>
+            <div class="mood-category">
+                <h4>Neutral (@neutralCount)</h4>
+                <div class="mood-bar" style="width: @(GetPercentage(neutralCount))%; background: #666;"></div>
+                <span>@GetPercentage(neutralCount)%</span>
+            </div>
+            <div class="mood-category">
+                <h4>Negative (@negativeCount)</h4>
+                <div class="mood-bar" style="width: @(GetPercentage(negativeCount))%; background: #333;"></div>
+                <span>@GetPercentage(negativeCount)%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Most Frequent Moods -->
+    <div class="frequent-moods">
+        <h2>Most Frequent Moods</h2>
+        <div class="mood-list">
+            @foreach (var mood in topMoods.Take(5))
+            {
+                <div class="mood-item">
+                    <span>@GetMoodEmoji(mood.Key) @mood.Key</span>
+                    <span class="mood-count">@mood.Value entries</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Most Used Tags -->
+    <div class="tags-section">
+        <h2>Most Used Tags</h2>
+        <div class="tags-cloud">
+            @foreach (var tag in topTags.Take(10))
+            {
+                <span class="tag-item" style="font-size: @(GetTagSize(tag.Value))rem;">
+                    @tag.Key (@tag.Value)
+                </span>
+            }
+        </div>
+    </div>
+
+    <!-- Word Count Trend -->
+    <div class="word-trend">
+        <h2>Average Word Count</h2>
+        <div class="stat-value">@averageWordCount words per entry</div>
+        <p class="stat-label">Based on @totalEntries entries</p>
+    </div>
+</div>
+
+@code {
+    private int currentStreak = 0;
+    private int longestStreak = 0;
+    private int totalEntries = 0;
+    private int totalWords = 0;
+    private int positiveCount = 0;
+    private int neutralCount = 0;
+    private int negativeCount = 0;
+    private int averageWordCount = 0;
+
+    private List<KeyValuePair<string, int>> topMoods = new();
+    private List<KeyValuePair<string, int>> topTags = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAnalytics();
+    }
+
+    private async Task LoadAnalytics()
+    {
+        var entries = await JournalService.GetEntriesAsync();
+        
+        totalEntries = entries.Count;
+        totalWords = entries.Sum(e => GetWordCount(e.Content));
+        averageWordCount = totalEntries > 0 ? totalWords / totalEntries : 0;
+
+        // Calculate streaks
+        CalculateStreaks(entries);
+
+        // Count mood categories
+        positiveCount = entries.Count(e => IsPositiveMood(e.PrimaryMood));
+        neutralCount = entries.Count(e => IsNeutralMood(e.PrimaryMood));
+        negativeCount = entries.Count(e => IsNegativeMood(e.PrimaryMood));
+
+        // Calculate top moods
+        var moodCounts = new Dictionary<string, int>();
+        foreach (var entry in entries)
+        {
+            if (!string.IsNullOrEmpty(entry.PrimaryMood))
+            {
+                if (!moodCounts.ContainsKey(entry.PrimaryMood))
+                    moodCounts[entry.PrimaryMood] = 0;
+                moodCounts[entry.PrimaryMood]++;
+            }
+        }
+        topMoods = moodCounts.OrderByDescending(x => x.Value).ToList();
+
+        // Calculate top tags
+        var tagCounts = new Dictionary<string, int>();
+        foreach (var entry in entries)
+        {
+            if (!string.IsNullOrEmpty(entry.Tags))
+            {
+                var tags = entry.Tags.Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrWhiteSpace(t));
+                foreach (var tag in tags)
+                {
+                    if (!tagCounts.ContainsKey(tag))
+                        tagCounts[tag] = 0;
+                    tagCounts[tag]++;
+                }
+            }
+        }
+        topTags = tagCounts.OrderByDescending(x => x.Value).ToList();
+    }
+
+    private void CalculateStreaks(List<JournalEntry> entries)
+    {
+        if (!entries.Any())
+        {
+            currentStreak = 0;
+            longestStreak = 0;
+            return;
+        }
+
+        var dates = entries.Select(e => e.Date.Date).Distinct().OrderByDescending(d => d).ToList();
+        
+        // Calculate current streak
+        var today = DateTime.Today;
+        if (dates.Contains(today) || dates.Contains(today.AddDays(-1)))
+        {
+            currentStreak = 1;
+            var checkDate = dates.Contains(today) ? today.AddDays(-1) : today.AddDays(-2);
+            
+            while (dates.Contains(checkDate))
+            {
+                currentStreak++;
+                checkDate = checkDate.AddDays(-1);
+            }
+        }
+
+        // Calculate longest streak
+        longestStreak = 0;
+        int tempStreak = 1;
+        var sortedDates = dates.OrderBy(d => d).ToList();
+        
+        for (int i = 1; i < sortedDates.Count; i++)
+        {
+            if ((sortedDates[i] - sortedDates[i - 1]).Days == 1)
+            {
+                tempStreak++;
+            }
+            else
+            {
+                longestStreak = Math.Max(longestStreak, tempStreak);
+                tempStreak = 1;
+            }
+        }
+        longestStreak = Math.Max(longestStreak, tempStreak);
+    }
+
+    private int GetWordCount(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+            return 0;
+        var text = System.Text.RegularExpressions.Regex.Replace(content, "<.*?>", " ");
+        return text.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length;
+    }
+
+    private double GetPercentage(int count)
+    {
+        if (totalEntries == 0) return 0;
+        return Math.Round((double)count / totalEntries * 100, 1);
+    }
+
+    private double GetTagSize(int count)
+    {
+        var maxCount = topTags.Any() ? topTags.Max(t => t.Value) : 1;
+        return 0.9 + (count / (double)maxCount) * 1.5;
+    }
+
+    private bool IsPositiveMood(string mood)
+    {
+        return new[] { "Happy", "Excited", "Relaxed", "Grateful", "Confident" }.Contains(mood);
+    }
+
+    private bool IsNeutralMood(string mood)
+    {
+        return new[] { "Calm", "Thoughtful", "Curious", "Nostalgic", "Bored" }.Contains(mood);
+    }
+
+    private bool IsNegativeMood(string mood)
+    {
+        return new[] { "Sad", "Angry", "Stressed", "Lonely", "Anxious", "Tired" }.Contains(mood);
+    }
+
+    private string GetMoodEmoji(string mood)
+    {
+        return mood switch
+        {
+            "Happy" => "??",
+            "Sad" => "??",
+            "Calm" => "??",
+            "Excited" => "??",
+            "Anxious" => "??",
+            "Grateful" => "??",
+            "Tired" => "??",
+            "Angry" => "??",
+            "Stressed" => "??",
+            "Confident" => "??",
+            "Relaxed" => "??",
+            "Thoughtful" => "??",
+            "Curious" => "??",
+            "Nostalgic" => "??",
+            "Bored" => "??",
+            "Lonely" => "??",
+            _ => "??"
+        };
+    }
+}

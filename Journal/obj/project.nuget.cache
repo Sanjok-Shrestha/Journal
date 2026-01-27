@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "t8jaHRl63HE=",
+  "dgSpecHash": "NBsL5eonqfw=",
   "success": true,
   "projectFilePath": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Journal.csproj",
   "expectedPackageFiles": [
@@ -146,8 +146,7 @@
     "C:\\Users\\Consumer\\.nuget\\packages\\xamarin.kotlinx.coroutines.core\\1.9.0.3\\xamarin.kotlinx.coroutines.core.1.9.0.3.nupkg.sha512",
     "C:\\Users\\Consumer\\.nuget\\packages\\xamarin.kotlinx.coroutines.core.jvm\\1.9.0.3\\xamarin.kotlinx.coroutines.core.jvm.1.9.0.3.nupkg.sha512",
     "C:\\Users\\Consumer\\.nuget\\packages\\xamarin.kotlinx.serialization.core\\1.7.3.4\\xamarin.kotlinx.serialization.core.1.7.3.4.nupkg.sha512",
-    "C:\\Users\\Consumer\\.nuget\\packages\\xamarin.kotlinx.serialization.core.jvm\\1.7.3.4\\xamarin.kotlinx.serialization.core.jvm.1.7.3.4.nupkg.sha512",
-    "C:\\Users\\Consumer\\.nuget\\packages\\microsoft.windows.sdk.net.ref\\10.0.19041.57\\microsoft.windows.sdk.net.ref.10.0.19041.57.nupkg.sha512"
+    "C:\\Users\\Consumer\\.nuget\\packages\\xamarin.kotlinx.serialization.core.jvm\\1.7.3.4\\xamarin.kotlinx.serialization.core.jvm.1.7.3.4.nupkg.sha512"
   ],
   "logs": []
 }

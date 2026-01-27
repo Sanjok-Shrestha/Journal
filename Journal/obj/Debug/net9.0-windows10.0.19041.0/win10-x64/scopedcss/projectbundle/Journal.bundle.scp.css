@@ -76,6 +76,19 @@ main[b-wyqhynbrrg] {
         padding-right: 1.5rem !important;
     }
 }
+/* /Components/Pages/Calendar.razor.rz.scp.css */
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Journal.Components.Pages[b-rz1zphcms4]
+{
+    public class Calendar
+    {
+    }
+}
 /* /Components/Shared/NavMenu.razor.rz.scp.css */
 .navbar-toggler[b-ggdgc5siyk] {
     appearance: none;

@@ -1,0 +1,69 @@
+# .gitignore for .NET MAUI + Blazor Hybrid project
+
+# Build output
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.cache
+*.dotnet/
+
+# MAUI-specific
+/Platforms/Android/bin/
+/Platforms/Android/obj/
+/Platforms/iOS/bin/
+/Platforms/iOS/obj/
+/Platforms/MacCatalyst/bin/
+/Platforms/MacCatalyst/obj/
+/Platforms/Windows/bin/
+/Platforms/Windows/obj/
+/Platforms/Tizen/bin/
+/Platforms/Tizen/obj/
+
+# Blazor-specific (Client-side / WASM or Hybrid)
+/wwwroot/_framework/
+/wwwroot/service-worker-assets.js
+/wwwroot/service-worker.js
+/wwwroot/service-worker.published.js
+
+# Visual Studio workspace (not .sln!)
+.vs/
+.vscode/
+*.csproj.user
+*.sln.docstates
+
+# Rider IDE
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# Node.js (if used for tooling, e.g., npm in Blazor)
+/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# .NET
+*.nupkg
+*.snk
+*.Publish.xml
+*.deps.json
+*.runtimeconfig.json
+*.pdb
+*.md
+
+# Exclude local user secrets (if using)
+/secrets.json
+/appsettings.Development.json
+
+# Optional: exclude MAUI cache (safe to ignore)
+/.maui/

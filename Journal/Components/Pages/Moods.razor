@@ -1,0 +1,201 @@
+﻿@page "/moods"
+@using JournalApp.Models
+
+@using JournalApp.Services
+@using Microsoft.JSInterop
+@inject MoodService MoodService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h4">Moods</h1>
+        <button class="btn btn-primary" @onclick="CreateNew">+ New Mood</button>
+    </div>
+
+    <div class="row">
+        <div class="col-md-7 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">All Moods</h5>
+
+                    <div class="mb-2 d-flex gap-2">
+                        <select class="form-select form-select-sm" @bind="filterMoodType">
+                            <option value="">All Types</option>
+                            <option value="Positive">Positive</option>
+                            <option value="Neutral">Neutral</option>
+                            <option value="Negative">Negative</option>
+                        </select>
+                        <input class="form-control form-control-sm" placeholder="Search by name..." @bind="search" />
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:60px">Id</th>
+                                    <th>Name</th>
+                                    <th style="width:120px">Category</th>
+                                    <th style="width:140px">Mood Type</th>
+                                    <th style="width:140px">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var m in FilteredMoods)
+                                {
+                                        <tr>
+                                            <td>@m.Id</td>
+                                            <td>@m.Name</td>
+                                            <td>@m.Category</td>
+                                            <td>@m.MoodType</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => Edit(m.Id)">Edit</button>
+                                                <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmDelete(m.Id)">Delete</button>
+                                            </td>
+                                        </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">@((editingMood.Id == 0) ? "Create Mood" : "Edit Mood")</h5>
+
+                    @if (!string.IsNullOrEmpty(message))
+                    {
+                            <div class="alert @messageClass">@message</div>
+                    }
+
+                    <div class="mb-2">
+                        <label class="form-label">Name</label>
+                        <input class="form-control" @bind="editingMood.Name" />
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" @bind="editingMood.Category">
+                            <option value="">Select category</option>
+                            <option value="Primary">Primary</option>
+                            <option value="Secondary">Secondary</option>
+                        </select>
+                        <div class="form-text">Category determines whether mood is available as a primary mood or a secondary mood.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Mood Type</label>
+                        <select class="form-select" @bind="editingMood.MoodType">
+                            <option value="">Select type</option>
+                            <option value="Positive">Positive</option>
+                            <option value="Neutral">Neutral</option>
+                            <option value="Negative">Negative</option>
+                        </select>
+                        <div class="form-text">MoodType is used for analytics (Positive / Neutral / Negative).</div>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+                        <button class="btn btn-success" @onclick="Save">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    public  List<Mood> moods = new();
+    private Mood editingMood = new Mood();
+    private string search = string.Empty;
+    private string filterMoodType = string.Empty;
+    private string message = string.Empty;
+    private string messageClass = "alert-success";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        moods = await MoodService.GetAllMoodsAsync();
+    }
+
+    private IEnumerable<Mood> FilteredMoods
+    {
+        get
+        {
+            var list = moods.AsEnumerable();
+            if (!string.IsNullOrWhiteSpace(filterMoodType))
+            {
+                list = list.Where(m => string.Equals(m.MoodType, filterMoodType, StringComparison.OrdinalIgnoreCase));
+            }
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var q = search.Trim();
+                list = list.Where(m => m.Name.Contains(q, StringComparison.OrdinalIgnoreCase) || (m.MoodType ?? string.Empty).Contains(q, StringComparison.OrdinalIgnoreCase));
+            }
+            return list.OrderBy(m => m.MoodType).ThenBy(m => m.Category).ThenBy(m => m.Name);
+        }
+    }
+
+    private void CreateNew()
+    {
+        editingMood = new Mood();
+        message = string.Empty;
+    }
+
+    private async Task Edit(int id)
+    {
+        var m = await MoodService.GetMoodByIdAsync(id);
+        if (m != null) editingMood = new Mood { Id = m.Id, Name = m.Name, Category = m.Category, MoodType = m.MoodType };
+    }
+
+    private async Task Save()
+    {
+        message = string.Empty;
+        if (string.IsNullOrWhiteSpace(editingMood.Name))
+        {
+            message = "Name is required.";
+            messageClass = "alert-danger";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(editingMood.Category))
+        {
+            message = "Category is required.";
+            messageClass = "alert-danger";
+            return;
+        }
+        if (string.IsNullOrWhiteSpace(editingMood.MoodType))
+        {
+            message = "Mood Type is required.";
+            messageClass = "alert-danger";
+            return;
+        }
+
+        await MoodService.SaveMoodAsync(editingMood);
+        await Load();
+        message = "Mood saved.";
+        messageClass = "alert-success";
+        editingMood = new Mood();
+    }
+
+    private void Cancel()
+    {
+        editingMood = new Mood();
+        message = string.Empty;
+    }
+
+    private async Task ConfirmDelete(int id)
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm", "Delete this mood? This action cannot be undone.");
+        if (!confirmed) return;
+        await MoodService.DeleteMoodAsync(id);
+        await Load();
+    }
+}

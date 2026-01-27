@@ -85,6 +85,10 @@
               "version": "[9.0.9, )",
               "autoReferenced": true
             },
+            "MudBlazor": {
+              "target": "Package",
+              "version": "[8.15.0, )"
+            },
             "QuestPDF": {
               "target": "Package",
               "version": "[2025.12.3, )"
@@ -105,6 +109,14 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "frameworkReferences": {
+            "Microsoft.Android": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         },
         "net9.0-ios18.5": {
@@ -128,6 +140,10 @@
               "version": "[9.0.9, )",
               "autoReferenced": true
             },
+            "MudBlazor": {
+              "target": "Package",
+              "version": "[8.15.0, )"
+            },
             "QuestPDF": {
               "target": "Package",
               "version": "[2025.12.3, )"
@@ -148,6 +164,14 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "frameworkReferences": {
+            "Microsoft.iOS": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         },
         "net9.0-maccatalyst18.5": {
@@ -171,6 +195,10 @@
               "version": "[9.0.9, )",
               "autoReferenced": true
             },
+            "MudBlazor": {
+              "target": "Package",
+              "version": "[8.15.0, )"
+            },
             "QuestPDF": {
               "target": "Package",
               "version": "[2025.12.3, )"
@@ -192,6 +220,14 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "frameworkReferences": {
+            "Microsoft.MacCatalyst": {
+              "privateAssets": "all"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         },
         "net9.0-windows10.0.19041": {
@@ -208,6 +244,10 @@
             "Microsoft.Maui.Controls": {
               "target": "Package",
               "version": "[9.0.82, )"
+            },
+            "MudBlazor": {
+              "target": "Package",
+              "version": "[8.15.0, )"
             },
             "QuestPDF": {
               "target": "Package",
@@ -229,6 +269,20 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.Windows.SDK.NET.Ref",
+              "version": "[10.0.19041.57, 10.0.19041.57]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            },
+            "Microsoft.Windows.SDK.NET.Ref.Windows": {
+              "privateAssets": "all"
+            }
+          },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305\\RuntimeIdentifierGraph.json"
         }
       },

@@ -21,8 +21,8 @@
       "PackagePath": "staticwebassets\\index.html"
     },
     {
-      "Id": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\wwwroot\\js\\quillEditor.js",
-      "PackagePath": "staticwebassets\\js\\quillEditor.js"
+      "Id": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\wwwroot\\js\\quill.js",
+      "PackagePath": "staticwebassets\\js\\quill.js"
     },
     {
       "Id": "obj\\Debug\\net9.0-android\\staticwebassets\\msbuild.Journal.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",

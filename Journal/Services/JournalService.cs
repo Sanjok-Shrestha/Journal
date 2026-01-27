@@ -1,5 +1,6 @@
 ﻿using SQLite;
 using JournalApp.Models;
+using System.Linq;
 
 namespace JournalApp.Services;
 
@@ -38,6 +39,9 @@ public class JournalService
         }
     }
 
+    // Alias used by some components
+    public Task<JournalEntry?> GetEntryByIdAsync(int id) => GetEntryAsync(id);
+
     public async Task<JournalEntry?> GetEntryAsync(int id)
     {
         try
@@ -53,11 +57,29 @@ public class JournalService
         }
     }
 
+    // 🟢 ADD THIS METHOD (for a single entry by date)
+    public async Task<JournalEntry?> GetEntryByDateAsync(DateTime date)
+    {
+        try
+        {
+            var start = date.Date;
+            var end = start.AddDays(1).AddTicks(-1);
+
+            return await _database.Table<JournalEntry>()
+                .Where(e => e.Date >= start && e.Date <= end)
+                .FirstOrDefaultAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"GetEntryByDateAsync error: {ex.Message}");
+            return null;
+        }
+    }
+
     public async Task<List<JournalEntry>> GetEntriesByDateAsync(DateTime date)
     {
         try
         {
-            // Use range comparison to ensure compatibility with SQLite translation
             var start = date.Date;
             var end = start.AddDays(1).AddTicks(-1);
 
@@ -72,23 +94,6 @@ public class JournalService
         }
     }
 
-    public async Task<JournalEntry?> GetEntryByDateAsync(DateTime date)
-    {
-        try
-        {
-            var start = date.Date;
-            var end = start.AddDays(1).AddTicks(-1);
-            return await _database.Table<JournalEntry>()
-                .Where(e => e.Date >= start && e.Date <= end)
-                .FirstOrDefaultAsync();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"GetEntryByDateAsync error: {ex.Message}");
-            return null;
-        }
-    }
-
     public async Task<int> SaveEntryAsync(JournalEntry entry)
     {
         try
@@ -98,9 +103,12 @@ public class JournalService
                 throw new ArgumentNullException(nameof(entry));
             }
 
+            entry.WordCount = string.IsNullOrWhiteSpace(entry.Content)
+                ? 0
+                : entry.Content.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length;
+
             if (entry.Id != 0)
             {
-                // Existing entry - update
                 entry.UpdatedAt = DateTime.Now;
                 var result = await _database.UpdateAsync(entry);
                 Console.WriteLine($"Entry updated. ID: {entry.Id}, Result: {result}");
@@ -108,13 +116,10 @@ public class JournalService
             }
             else
             {
-                // New entry - enforce single entry per day
-                var existing = await GetEntryByDateAsync(entry.Date == default ? DateTime.Today : entry.Date);
+                var existing = await GetEntryByDateAsync(entry.Date == default ? DateTime.Today : entry.Date); // Uses the new method
                 if (existing != null)
                 {
-                    // If an entry already exists for the date, update that entry instead of inserting a duplicate
                     entry.Id = existing.Id;
-                    // Preserve original CreatedAt
                     entry.CreatedAt = existing.CreatedAt == default ? DateTime.Now : existing.CreatedAt;
                     entry.UpdatedAt = DateTime.Now;
 
@@ -123,7 +128,6 @@ public class JournalService
                     return updateResult;
                 }
 
-                // No existing entry for that date - insert
                 entry.CreatedAt = DateTime.Now;
                 entry.UpdatedAt = DateTime.Now;
                 var result = await _database.InsertAsync(entry);
@@ -197,5 +201,50 @@ public class JournalService
             Console.WriteLine($"GetEntriesByDateRangeAsync error: {ex.Message}");
             return new List<JournalEntry>();
         }
+    }
+
+    // Added: compute streak data for Home.razor
+    public async Task<StreakData> GetStreakDataAsync()
+    {
+        var entries = await GetEntriesAsync();
+        var dates = entries.Select(e => e.Date.Date).Distinct().OrderByDescending(d => d).ToList();
+
+        var result = new StreakData();
+        if (!dates.Any()) return result;
+
+        // Current streak
+        var today = DateTime.Today;
+        int current = 0;
+        var check = today;
+        while (dates.Contains(check))
+        {
+            current++;
+            check = check.AddDays(-1);
+        }
+
+        // Longest streak
+        int longest = 0;
+        int temp = 1;
+        var sortedAsc = dates.OrderBy(d => d).ToList();
+        for (int i = 1; i < sortedAsc.Count; i++)
+        {
+            if ((sortedAsc[i] - sortedAsc[i - 1]).Days == 1)
+            {
+                temp++;
+            }
+            else
+            {
+                longest = Math.Max(longest, temp);
+                temp = 1;
+            }
+        }
+        longest = Math.Max(longest, temp);
+
+        result.CurrentStreak = current;
+        result.LongestStreak = longest;
+        result.TotalEntries = entries.Count;
+        result.MissedDays = Math.Max(0, (int)(DateTime.Today - dates.Min()).TotalDays + 1 - entries.Count);
+
+        return result;
     }
 }

@@ -1,7 +1,9 @@
-﻿@inherits LayoutComponentBase
-@using Daily_Journal_App.Services
+﻿@namespace JournalApp.Components
+@inherits LayoutComponentBase
+@using JournalApp.Services
+@using Microsoft.JSInterop
 @inject NavigationManager Navigation
-@inject AuthService AuthService
+@inject AuthService AuthSvc
 @inject ThemeService ThemeService
 @implements IDisposable
 
@@ -11,35 +13,35 @@
     <!-- Sidebar -->
     <nav class="ds-sidebar">
         <div class="ds-sidebar-header">
-            <div class="ds-logo">📓 DailyScript</div>
+            <div class="ds-logo"> DailyScript</div>
         </div>
         <div class="ds-nav">
-            @if (AuthService.IsAuthenticated)
+            @if (AuthSvc.IsAuthenticated)
             {
                 <a class="ds-nav-link @(IsActive("/dashboard") ? "active" : "")" href="/dashboard">
-                    <span class="ds-nav-icon">📊</span> Dashboard
+                    <span class="ds-nav-icon"></span> Dashboard
                 </a>
                 <!-- New Entry now explicitly indicates creation via query param -->
                 <a class="ds-nav-link @(IsActive("/journal") ? "active" : "")" href="/journal?new=true">
-                    <span class="ds-nav-icon">✍️</span> New Entry
+                    <span class="ds-nav-icon"></span> New Entry
                 </a>
                 <a class="ds-nav-link @(IsActive("/entries") ? "active" : "")" href="/entries">
-                    <span class="ds-nav-icon">📚</span> All Entries
+                    <span class="ds-nav-icon"></span> All Entries
                 </a>
                 <a class="ds-nav-link @(IsActive("/calendar") ? "active" : "")" href="/calendar">
-                    <span class="ds-nav-icon">📅</span> Calendar
+                    <span class="ds-nav-icon"></span> Calendar
                 </a>
                 <a class="ds-nav-link @(IsActive("/analytics") ? "active" : "")" href="/analytics">
-                    <span class="ds-nav-icon">📈</span> Analytics
+                    <span class="ds-nav-icon"></span> Analytics
                 </a>
                 <!-- Export page link -->
                 <a class="ds-nav-link @(IsActive("/export") ? "active" : "")" href="/export">
-                    <span class="ds-nav-icon">📤</span> Export
+                    <span class="ds-nav-icon"></span> Export
                 </a>
 
                 <!-- Export page link -->
                 <a class="ds-nav-link @(IsActive("/db-info") ? "active" : "")" href="/db-info">
-                    <span class="ds-nav-icon">📤</span>db-info
+                    <span class="ds-nav-icon"></span>db-info
                 </a>
             }
         </div>
@@ -48,10 +50,10 @@
                 <span class="ds-nav-icon">@(ThemeService.CurrentTheme == "dark" ? "☀️" : "🌙")</span> 
                 @(ThemeService.CurrentTheme == "dark" ? "Light" : "Dark") Mode
             </button>
-            @if (AuthService.IsAuthenticated)
+            @if (AuthSvc.IsAuthenticated)
             {
                 <button class="ds-nav-link logout-btn" @onclick="Logout">
-                    <span class="ds-nav-icon">🔒</span> Logout
+                    <span class="ds-nav-icon"></span> Logout
                 </button>
             }
         </div>
@@ -72,7 +74,7 @@
         ThemeService.OnThemeChanged += StateHasChanged;
         
         // Redirect to login if not authenticated
-        if (!AuthService.IsAuthenticated && !Navigation.Uri.Contains("/login"))
+        if (!AuthSvc.IsAuthenticated && !Navigation.Uri.Contains("/login"))
         {
             Navigation.NavigateTo("/login");
         }
@@ -82,7 +84,7 @@
     {
         // If user navigates to a protected route while not authenticated, redirect to login
         var relative = Navigation.ToBaseRelativePath(e.Location);
-        if (!AuthService.IsAuthenticated && !relative.StartsWith("login", StringComparison.OrdinalIgnoreCase))
+        if (!AuthSvc.IsAuthenticated && !relative.StartsWith("login", StringComparison.OrdinalIgnoreCase))
         {
             Navigation.NavigateTo("/login");
             return;
@@ -104,7 +106,7 @@
 
     private void Logout()
     {
-        AuthService.Logout();
+        AuthSvc.Logout();
         Navigation.NavigateTo("/login");
     }
 

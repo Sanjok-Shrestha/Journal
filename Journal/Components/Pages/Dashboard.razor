@@ -1,8 +1,8 @@
 ﻿@page "/dashboard"
 @using JournalApp.Services
 @using JournalApp.Models
-@inject IAnalyticsService AnalyticsService
-@inject IAuthenticationService AuthService
+@inject AuthService AuthService
+@inject AnalyticsService AnalyticsService
 @inject NavigationManager Navigation
 
 <div class="dashboard-container">
@@ -118,7 +118,7 @@
 </div>
 
 @code {
-    private DashboardAnalytics? analytics;
+    public DashboardAnalytics? analytics;
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()

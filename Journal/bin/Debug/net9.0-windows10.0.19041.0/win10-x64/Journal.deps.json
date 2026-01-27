@@ -12,6 +12,7 @@
           "Microsoft.AspNetCore.Components.WebView.Maui": "9.0.82",
           "Microsoft.Extensions.Logging.Debug": "9.0.5",
           "Microsoft.Maui.Controls": "9.0.82",
+          "MudBlazor": "8.15.0",
           "QuestPDF": "2025.12.3",
           "sqlite-net-pcl": "1.9.172",
           "Microsoft.Web.WebView2.Core.Projection": "1.0.3179.45",
@@ -256,6 +257,28 @@
           "lib/net9.0/Microsoft.Extensions.FileSystemGlobbing.dll": {
             "assemblyVersion": "9.0.0.0",
             "fileVersion": "9.0.525.21509"
+          }
+        }
+      },
+      "Microsoft.Extensions.Localization/9.0.1": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.5",
+          "Microsoft.Extensions.Localization.Abstractions": "9.0.1",
+          "Microsoft.Extensions.Logging.Abstractions": "9.0.5",
+          "Microsoft.Extensions.Options": "9.0.5"
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.Localization.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.124.61009"
+          }
+        }
+      },
+      "Microsoft.Extensions.Localization.Abstractions/9.0.1": {
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.Localization.Abstractions.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.124.61009"
           }
         }
       },
@@ -676,6 +699,19 @@
           }
         }
       },
+      "MudBlazor/8.15.0": {
+        "dependencies": {
+          "Microsoft.AspNetCore.Components": "9.0.5",
+          "Microsoft.AspNetCore.Components.Web": "9.0.5",
+          "Microsoft.Extensions.Localization": "9.0.1"
+        },
+        "runtime": {
+          "lib/net9.0/MudBlazor.dll": {
+            "assemblyVersion": "8.15.0.0",
+            "fileVersion": "8.15.0.0"
+          }
+        }
+      },
       "QuestPDF/2025.12.3": {
         "runtime": {
           "lib/net8.0/QuestPDF.dll": {
@@ -918,6 +954,20 @@
       "path": "microsoft.extensions.filesystemglobbing/9.0.5",
       "hashPath": "microsoft.extensions.filesystemglobbing.9.0.5.nupkg.sha512"
     },
+    "Microsoft.Extensions.Localization/9.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-UgvX4Yb2T3tEsKT30ktZr0H7kTRPapCgEH0bdTwxiEGSdA39/hAQMvvb+vgHpqmevDU5+puyI9ujRkmmbF946w==",
+      "path": "microsoft.extensions.localization/9.0.1",
+      "hashPath": "microsoft.extensions.localization.9.0.1.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Localization.Abstractions/9.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-CABog43lyaZQMjmlktuImCy6zmAzRBaXqN81uPaMQjlp//ISDVYItZPh6KWpWRF4MY/B67X5oDc3JTUpfdocZw==",
+      "path": "microsoft.extensions.localization.abstractions/9.0.1",
+      "hashPath": "microsoft.extensions.localization.abstractions.9.0.1.nupkg.sha512"
+    },
     "Microsoft.Extensions.Logging/9.0.5": {
       "type": "package",
       "serviceable": true,
@@ -1057,6 +1107,13 @@
       "sha512": "sha512-K5QqtDmMEa6Jy2PLAXKj9XWZoldG21IX5+TPe2XjxtNL/xLlciaqlOe22mjyET26Ry0gEVw0xOaQcpwtLCbMog==",
       "path": "microsoft.windowsappsdk/1.7.250513003",
       "hashPath": "microsoft.windowsappsdk.1.7.250513003.nupkg.sha512"
+    },
+    "MudBlazor/8.15.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-iOJEnQ6tYGQPfPJaUazyC8H6pcczgaMX7vhUzrJPpB0WqEXNozwMfSzoOe2/JZmVWJcUfYZgKBeBU2Z27XY7Sw==",
+      "path": "mudblazor/8.15.0",
+      "hashPath": "mudblazor.8.15.0.nupkg.sha512"
     },
     "QuestPDF/2025.12.3": {
       "type": "package",

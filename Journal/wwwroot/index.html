@@ -2,14 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Journal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Journal App</title>
     <base href="/" />
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="JournalApp.styles.css" />
+
+    <!-- Quill.js CSS -->
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+
+    <link rel="icon" href="data:,">
 </head>
 
 <body>
+
+    <div class="status-bar-safe-area"></div>
+
     <div id="app">Loading...</div>
 
     <div id="blazor-error-ui">
@@ -19,5 +28,12 @@
     </div>
 
     <script src="_framework/blazor.webview.js" autostart="false"></script>
+
+    <!-- Quill.js Library -->
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
+    <!-- Custom Quill.js helpers -->
+    <script src="js/quill.js"></script>
 </body>
+
 </html>

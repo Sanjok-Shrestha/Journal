@@ -1,6 +1,11 @@
-﻿<Router AppAssembly="@typeof(MauiProgram).Assembly">
+﻿@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using JournalApp.Components
+
+<Router AppAssembly="@typeof(JournalApp.MauiProgram).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(JournalApp.Components.MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
 </Router>

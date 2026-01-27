@@ -3,7 +3,7 @@
 @using JournalApp.Services
 @using JournalApp.Models
 @using Microsoft.AspNetCore.Components.Forms
-@inject IJournalService JournalService
+@inject JournalService JournalService
 @inject NavigationManager Navigation
 
 <div style="padding: 20px;">
@@ -81,7 +81,7 @@
                 {
                     entryDate = entry.EntryDate;
                     title = entry.Title;
-                    mood = entry.PrimaryMood.ToString();
+                    mood = entry.PrimaryMood ?? "Happy";
                     content = entry.Content;
                     tags = entry.Tags;
                 }
@@ -107,20 +107,17 @@
                 Tags = tags,
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now,
-                WordCount = content.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length
+                WordCount = string.IsNullOrWhiteSpace(content) ? 0 : content.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length
             };
 
-            // Parse mood
-            if (Enum.TryParse<MoodType>(mood, out var moodType))
-            {
-                entry.PrimaryMood = moodType;
-            }
+            // store mood as string
+            entry.PrimaryMood = mood;
 
             await JournalService.SaveEntryAsync(entry);
             message = "Entry saved successfully!";
             isError = false;
 
-            await Task.Delay(1500);
+            await Task.Delay(800);
             Navigation.NavigateTo("/");
         }
         catch (Exception ex)

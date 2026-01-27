@@ -1,0 +1,148 @@
+﻿@page "/streaks"
+@using JournalApp.Services
+@using JournalApp.Models
+@inject JournalService JournalService
+
+<div class="streaks-page container mt-4" style="max-width: 1000px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-6">Streaks</h1>
+            <p class="text-muted">Track your journaling consistency and see missed days.</p>
+        </div>
+        <div class="text-end">
+            <button class="btn btn-outline-primary" @onclick="Refresh">Refresh</button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3">
+                <h4>Current Streak</h4>
+                <div class="display-5 fw-bold">@currentStreak</div>
+                <p class="text-muted">Days in a row with entries</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3">
+                <h4>Longest Streak</h4>
+                <div class="display-5 fw-bold">@longestStreak</div>
+                <p class="text-muted">Best historical run</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3">
+                <h4>Missed Days</h4>
+                <div class="display-5 fw-bold">@missedDays</div>
+                <p class="text-muted">Total days without entries</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h3>Recent entries</h3>
+        <div class="list-group">
+            @foreach (var e in recentEntries.Take(30))
+            {
+                <div class="list-group-item d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="fw-bold">@e.Date.ToString("yyyy-MM-dd") - @e.Title</div>
+                        <div class="text-muted">@GetPreview(e.Content, 120)</div>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted">Words: @GetWordCount(e.Content)</small>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private int currentStreak = 0;
+    private int longestStreak = 0;
+    private int missedDays = 0;
+
+    private List<JournalEntry> allEntries = new();
+    private List<JournalEntry> recentEntries = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        allEntries = await JournalService.GetEntriesAsync();
+        CalculateStreaks(allEntries);
+        recentEntries = allEntries.OrderByDescending(e => e.Date).ToList();
+    }
+
+    private async Task Refresh()
+    {
+        await Load();
+    }
+
+    private void CalculateStreaks(List<JournalEntry> entries)
+    {
+        if (!entries.Any())
+        {
+            currentStreak = 0;
+            longestStreak = 0;
+            missedDays = 0;
+            return;
+        }
+
+        var dates = entries.Select(e => e.Date.Date).Distinct().OrderBy(d => d).ToList();
+
+        // current streak calculation (ending today)
+        currentStreak = 0;
+        var today = DateTime.Today;
+        var idx = dates.FindLastIndex(d => d <= today);
+        if (idx >= 0)
+        {
+            var check = today;
+            while (idx >= 0 && dates[idx] == check)
+            {
+                currentStreak++;
+                idx--;
+                check = check.AddDays(-1);
+            }
+        }
+
+        // longest streak
+        longestStreak = 0;
+        int temp = 1;
+        for (int i = 1; i < dates.Count; i++)
+        {
+            if ((dates[i] - dates[i - 1]).Days == 1)
+            {
+                temp++;
+            }
+            else
+            {
+                longestStreak = Math.Max(longestStreak, temp);
+                temp = 1;
+            }
+        }
+        longestStreak = Math.Max(longestStreak, temp);
+
+        // missed days in range between earliest and today
+        var spanDays = (DateTime.Today - dates.First()).Days + 1;
+        missedDays = spanDays - dates.Count;
+    }
+
+    private int GetWordCount(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return 0;
+        var text = System.Text.RegularExpressions.Regex.Replace(content, "<.*?>", " ");
+        return text.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length;
+    }
+
+    private string GetPreview(string content, int maxLength = 150)
+    {
+        if (string.IsNullOrWhiteSpace(content)) return string.Empty;
+        var text = System.Text.RegularExpressions.Regex.Replace(content, "<.*?>", " ").Trim();
+        if (text.Length <= maxLength) return text;
+        return text.Substring(0, maxLength) + "...";
+    }
+}

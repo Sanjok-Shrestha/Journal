@@ -1,0 +1,190 @@
+﻿@page "/moodtracker"
+@using JournalApp.Services
+@using JournalApp.Models
+@inject JournalService JournalService
+@inject MoodService MoodService
+
+<div class="mood-tracker container mt-4" style="max-width: 1100px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="display-6">Mood Tracker</h1>
+            <p class="text-muted">Detailed breakdown of moods across your journal entries.</p>
+        </div>
+        <div>
+            <select class="form-select" style="width: 220px; display: inline-block;" @bind="selectedRange">
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 90 days</option>
+                <option value="365">Last 365 days</option>
+                <option value="all">All time</option>
+            </select>
+            <button class="btn btn-outline-primary ms-2" @onclick="Refresh">Refresh</button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm p-3">
+                <h5>Total Entries</h5>
+                <div class="display-6 fw-bold">@totalEntries</div>
+                <p class="text-muted">Entries in selected range</p>
+            </div>
+
+            <div class="card shadow-sm p-3 mt-3">
+                <h5>Unique Moods</h5>
+                <div class="display-6 fw-bold">@uniqueMoodCount</div>
+                <p class="text-muted">Distinct primary moods used</p>
+            </div>
+
+            <div class="card shadow-sm p-3 mt-3">
+                <h5>Top Tags</h5>
+                <div>
+                    @foreach (var t in topTags.Take(8))
+                    {
+                        <span class="badge bg-secondary me-1 mb-1">@t.Key (@t.Value)</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm p-3">
+                <h5>Mood Distribution</h5>
+                <div class="mood-distribution mt-3">
+                    @foreach (var kv in moodCounts)
+                    {
+                        <div class="d-flex align-items-center mb-2">
+                            <div style="width: 160px;">@kv.Key</div>
+                            <div class="progress flex-grow-1 me-2" style="height: 18px; background: #f1f3f5;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: @(GetPercentage(kv.Value))%"></div>
+                            </div>
+                            <div style="width: 60px; text-align: right;">@kv.Value</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card shadow-sm p-3 mt-3">
+                <h5>Secondary Moods Breakdown</h5>
+                <div class="secondary-list mt-3">
+                    @foreach (var kv in secondaryCounts)
+                    {
+                        <div class="mb-2 d-flex justify-content-between">
+                            <div>@kv.Key</div>
+                            <div class="text-muted">@kv.Value</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card shadow-sm p-3 mt-3">
+                <h5>Mood by Tag</h5>
+                <div class="mt-2">
+                    @foreach (var kv in tagMoodCounts)
+                    {
+                        <div class="mb-2">
+                            <strong>@kv.Key</strong>
+                            <div class="d-flex gap-2 mt-1">
+                                @foreach (var t in kv.Value.OrderByDescending(x => x.Value).Take(3))
+                                {
+                                    <div class="badge bg-info text-dark">@t.Key (@t.Value)</div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int totalEntries = 0;
+    private int uniqueMoodCount = 0;
+
+    private Dictionary<string, int> moodCounts = new(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, int> secondaryCounts = new(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<string, Dictionary<string, int>> tagMoodCounts = new(StringComparer.OrdinalIgnoreCase);
+    private List<KeyValuePair<string, int>> topTags = new();
+
+    private string selectedRange = "90"; // days or 'all'
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        var entries = await JournalService.GetEntriesAsync();
+
+        IEnumerable<JournalEntry> rangeEntries = entries;
+        if (selectedRange != "all")
+        {
+            var days = int.Parse(selectedRange);
+            var cutoff = DateTime.Today.AddDays(-days);
+            rangeEntries = entries.Where(e => e.Date >= cutoff);
+        }
+
+        var list = rangeEntries.ToList();
+        totalEntries = list.Count;
+
+        // primary moods
+        moodCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var e in list)
+        {
+            var primary = (e.PrimaryMood ?? "").Trim();
+            if (string.IsNullOrEmpty(primary)) continue;
+            if (!moodCounts.ContainsKey(primary)) moodCounts[primary] = 0;
+            moodCounts[primary]++;
+
+            // secondary moods
+            if (!string.IsNullOrWhiteSpace(e.SecondaryMoods))
+            {
+                foreach (var s in e.SecondaryMoods.Split(',').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)))
+                {
+                    if (!secondaryCounts.ContainsKey(s)) secondaryCounts[s] = 0;
+                    secondaryCounts[s]++;
+                }
+            }
+
+            // tags mapping
+            if (!string.IsNullOrWhiteSpace(e.Tags))
+            {
+                foreach (var t in e.Tags.Split(',').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)))
+                {
+                    if (!tagMoodCounts.ContainsKey(t)) tagMoodCounts[t] = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+                    if (!tagMoodCounts[t].ContainsKey(primary)) tagMoodCounts[t][primary] = 0;
+                    tagMoodCounts[t][primary]++;
+                }
+            }
+        }
+
+        uniqueMoodCount = moodCounts.Keys.Count;
+
+        // top tags
+        var tagCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var e in list)
+        {
+            if (!string.IsNullOrWhiteSpace(e.Tags))
+            {
+                foreach (var t in e.Tags.Split(',').Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)))
+                {
+                    if (!tagCounts.ContainsKey(t)) tagCounts[t] = 0;
+                    tagCounts[t]++;
+                }
+            }
+        }
+        topTags = tagCounts.OrderByDescending(x => x.Value).ToList();
+    }
+
+    private async Task Refresh()
+    {
+        await Load();
+    }
+
+    private double GetPercentage(int count)
+    {
+        if (totalEntries == 0) return 0;
+        return Math.Round((double)count / totalEntries * 100, 1);
+    }
+}

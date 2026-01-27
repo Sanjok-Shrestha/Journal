@@ -52,7 +52,7 @@ namespace JournalApp
                 }
             });
 
-            // Register UserService
+            // Register UserService (single registration with factory)
             builder.Services.AddSingleton<UserService>(s =>
             {
                 try
@@ -67,7 +67,8 @@ namespace JournalApp
             });
 
             // Register Auth and Theme services
-            builder.Services.AddSingleton<AuthService>();
+            builder.Services.AddScoped<AuthService>();
+            builder.Services.AddScoped<AnalyticsService>();
             builder.Services.AddSingleton<ThemeService>();
 
             return builder.Build();

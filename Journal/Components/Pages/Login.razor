@@ -1,16 +1,16 @@
 ﻿@page "/login"
+@using Microsoft.AspNetCore.Components.Web
 @using JournalApp.Services
-@inject AuthService AuthenticationService
+@inject AuthService AuthService
 @inject NavigationManager Navigation
 
 <div class="login-container">
     <div class="login-box">
-        <h1>🔒 Daily Journal</h1>
+        <h1>Daily Journal</h1>
 
         @if (isRegistrationMode)
         {
             <p>Create your account to get started</p>
-
             <div class="registration-form">
                 <div class="input-group mb-3">
                     <label class="form-label">Your Name</label>
@@ -20,7 +20,6 @@
                            placeholder="Enter your name"
                            maxlength="50" />
                 </div>
-
                 <div class="input-group mb-3">
                     <label class="form-label">Create 4-digit OTP</label>
                     <input type="password"
@@ -30,7 +29,6 @@
                            maxlength="4"
                            @onkeypress="HandleKeyPress" />
                 </div>
-
                 <div class="input-group mb-3">
                     <label class="form-label">Confirm OTP</label>
                     <input type="password"
@@ -41,13 +39,14 @@
                            @onkeypress="HandleKeyPress" />
                 </div>
             </div>
-
             <button class="login-btn" @onclick="OnRegister">Create Account</button>
+            <div class="hint-text">
+                Already registered? <a href="#" @onclick="()=>SwitchMode(false)">Sign in</a>
+            </div>
         }
         else
         {
             <p>Welcome back, @userNameDisplay!</p>
-
             <div class="pin-input-group">
                 <input type="password"
                        class="pin-input"
@@ -56,15 +55,16 @@
                        maxlength="4"
                        @onkeypress="HandleKeyPress" />
             </div>
-
             <button class="login-btn" @onclick="OnLogin">Unlock Journal</button>
+            <div class="hint-text">
+                New user? <a href="#" @onclick="()=>SwitchMode(true)">Create account</a>
+            </div>
         }
 
         @if (!string.IsNullOrEmpty(errorMessage))
         {
             <div class="error-message">@errorMessage</div>
         }
-
         @if (!string.IsNullOrEmpty(successMessage))
         {
             <div class="success-message">@successMessage</div>
@@ -86,14 +86,28 @@
         await CheckUserStatus();
     }
 
+    private void SwitchMode(bool register)
+    {
+        isRegistrationMode = register;
+        errorMessage = "";
+        successMessage = "";
+        userName = "";
+        otpInput = "";
+        confirmOtp = "";
+        if (!register)
+        {
+            userNameDisplay = AuthService.GetUserName(); // Uses the injected AuthService INSTANCE
+        }
+    }
+
     private async Task CheckUserStatus()
     {
         try
         {
-            isRegistrationMode = !(await AuthService.UserExistsAsync());
+            isRegistrationMode = !(await AuthService.UserExistsAsync()); // Uses the injected instance
             if (!isRegistrationMode)
             {
-                userNameDisplay = AuthService.GetUserName();
+                userNameDisplay = AuthService.GetUserName(); // Uses the injected instance
             }
         }
         catch (Exception ex)
@@ -107,13 +121,9 @@
         if (e.Key == "Enter")
         {
             if (isRegistrationMode)
-            {
                 await OnRegister();
-            }
             else
-            {
                 await OnLogin();
-            }
         }
     }
 
@@ -122,25 +132,21 @@
         errorMessage = "";
         successMessage = "";
 
-        // Validate inputs
         if (string.IsNullOrWhiteSpace(userName))
         {
             errorMessage = "Please enter your name.";
             return;
         }
-
         if (string.IsNullOrWhiteSpace(otpInput) || otpInput.Length != 4)
         {
             errorMessage = "Please enter a valid 4-digit OTP.";
             return;
         }
-
         if (!otpInput.All(char.IsDigit))
         {
             errorMessage = "OTP must contain only digits.";
             return;
         }
-
         if (otpInput != confirmOtp)
         {
             errorMessage = "OTP confirmation does not match.";
@@ -149,11 +155,11 @@
 
         try
         {
-            var success = await AuthService.RegisterUserAsync(userName, otpInput);
+            var success = await AuthService.RegisterUserAsync(userName, otpInput); // Uses instance!
             if (success)
             {
                 successMessage = "Account created successfully!";
-                await Task.Delay(1000);
+                await Task.Delay(900);
                 isRegistrationMode = false;
                 userNameDisplay = userName;
                 otpInput = "";
@@ -182,7 +188,6 @@
             errorMessage = "Please enter your OTP.";
             return;
         }
-
         if (otpInput.Length != 4)
         {
             errorMessage = "OTP must be 4 digits.";
@@ -191,7 +196,7 @@
 
         try
         {
-            if (await AuthService.ValidateOTPAsync(otpInput))
+            if (await AuthService.ValidateOTPAsync(otpInput)) // Uses injected instance!
             {
                 Navigation.NavigateTo("/dashboard");
             }

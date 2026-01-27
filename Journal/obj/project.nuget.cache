@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "NBsL5eonqfw=",
+  "dgSpecHash": "v3/A9coTqs4=",
   "success": true,
   "projectFilePath": "C:\\Users\\Consumer\\source\\repos\\Journal\\Journal\\Journal.csproj",
   "expectedPackageFiles": [
@@ -25,6 +25,8 @@
     "C:\\Users\\Consumer\\.nuget\\packages\\microsoft.extensions.fileproviders.embedded\\9.0.5\\microsoft.extensions.fileproviders.embedded.9.0.5.nupkg.sha512",
     "C:\\Users\\Consumer\\.nuget\\packages\\microsoft.extensions.fileproviders.physical\\9.0.5\\microsoft.extensions.fileproviders.physical.9.0.5.nupkg.sha512",
     "C:\\Users\\Consumer\\.nuget\\packages\\microsoft.extensions.filesystemglobbing\\9.0.5\\microsoft.extensions.filesystemglobbing.9.0.5.nupkg.sha512",
+    "C:\\Users\\Consumer\\.nuget\\packages\\microsoft.extensions.localization\\9.0.1\\microsoft.extensions.localization.9.0.1.nupkg.sha512",
+    "C:\\Users\\Consumer\\.nuget\\packages\\microsoft.extensions.localization.abstractions\\9.0.1\\microsoft.extensions.localization.abstractions.9.0.1.nupkg.sha512",
     "C:\\Users\\Consumer\\.nuget\\packages\\microsoft.extensions.logging\\9.0.5\\microsoft.extensions.logging.9.0.5.nupkg.sha512",
     "C:\\Users\\Consumer\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\9.0.5\\microsoft.extensions.logging.abstractions.9.0.5.nupkg.sha512",
     "C:\\Users\\Consumer\\.nuget\\packages\\microsoft.extensions.logging.debug\\9.0.5\\microsoft.extensions.logging.debug.9.0.5.nupkg.sha512",
@@ -46,6 +48,7 @@
     "C:\\Users\\Consumer\\.nuget\\packages\\microsoft.web.webview2\\1.0.3179.45\\microsoft.web.webview2.1.0.3179.45.nupkg.sha512",
     "C:\\Users\\Consumer\\.nuget\\packages\\microsoft.windows.sdk.buildtools\\10.0.22621.756\\microsoft.windows.sdk.buildtools.10.0.22621.756.nupkg.sha512",
     "C:\\Users\\Consumer\\.nuget\\packages\\microsoft.windowsappsdk\\1.7.250513003\\microsoft.windowsappsdk.1.7.250513003.nupkg.sha512",
+    "C:\\Users\\Consumer\\.nuget\\packages\\mudblazor\\8.15.0\\mudblazor.8.15.0.nupkg.sha512",
     "C:\\Users\\Consumer\\.nuget\\packages\\questpdf\\2025.12.3\\questpdf.2025.12.3.nupkg.sha512",
     "C:\\Users\\Consumer\\.nuget\\packages\\sqlite-net-pcl\\1.9.172\\sqlite-net-pcl.1.9.172.nupkg.sha512",
     "C:\\Users\\Consumer\\.nuget\\packages\\sqlitepclraw.bundle_green\\2.1.2\\sqlitepclraw.bundle_green.2.1.2.nupkg.sha512",
@@ -146,7 +149,8 @@
     "C:\\Users\\Consumer\\.nuget\\packages\\xamarin.kotlinx.coroutines.core\\1.9.0.3\\xamarin.kotlinx.coroutines.core.1.9.0.3.nupkg.sha512",
     "C:\\Users\\Consumer\\.nuget\\packages\\xamarin.kotlinx.coroutines.core.jvm\\1.9.0.3\\xamarin.kotlinx.coroutines.core.jvm.1.9.0.3.nupkg.sha512",
     "C:\\Users\\Consumer\\.nuget\\packages\\xamarin.kotlinx.serialization.core\\1.7.3.4\\xamarin.kotlinx.serialization.core.1.7.3.4.nupkg.sha512",
-    "C:\\Users\\Consumer\\.nuget\\packages\\xamarin.kotlinx.serialization.core.jvm\\1.7.3.4\\xamarin.kotlinx.serialization.core.jvm.1.7.3.4.nupkg.sha512"
+    "C:\\Users\\Consumer\\.nuget\\packages\\xamarin.kotlinx.serialization.core.jvm\\1.7.3.4\\xamarin.kotlinx.serialization.core.jvm.1.7.3.4.nupkg.sha512",
+    "C:\\Users\\Consumer\\.nuget\\packages\\microsoft.windows.sdk.net.ref\\10.0.19041.57\\microsoft.windows.sdk.net.ref.10.0.19041.57.nupkg.sha512"
   ],
   "logs": []
 }

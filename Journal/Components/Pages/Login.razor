@@ -1,74 +1,91 @@
-﻿@page "/login"
+@page "/login"
 @using JournalApp.Services
 @using Microsoft.AspNetCore.Components.Web
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 
-<div class="login-container">
-    <div class="login-box">
-        <h1> Daily Journal</h1>
-        
+<div class="@($"login-container {(IsDark ? "dark" : "light")}")">
+    <div class="login-box" role="dialog" aria-labelledby="appTitle">
+        <div class="theme-toggle">
+            <button class="theme-btn" @onclick="ToggleDarkMode" aria-pressed="@IsDark" title="Toggle theme">
+                @(IsDark ? "" : "")
+            </button>
+        </div>
+
+        <h1 id="appTitle">Daily Journal</h1>
+
         @if (isRegistrationMode)
         {
-            <p>Create your account to get started</p>
-            
+            <p class="lead">Create your account to get started</p>
+
             <div class="registration-form">
-                <div class="input-group mb-3">
-                    <label class="form-label">Your Name</label>
-                    <input type="text" 
-                           class="form-control" 
-                           @bind="userName" 
-                           placeholder="Enter your name"
-                           maxlength="50" />
-                </div>
-                
-                <div class="input-group mb-3">
-                    <label class="form-label">Create 4-digit OTP</label>
-                    <input type="password" 
-                           class="form-control" 
-                           @bind="otpInput" 
-                           placeholder="Enter 4-digit OTP"
+                <label class="form-label">Your name</label>
+                <input type="text"
+                       class="form-control"
+                       @bind="userName"
+                       placeholder="Enter your name"
+                       maxlength="50"
+                       autocomplete="name"
+                       @onkeydown="HandleKeyDown" />
+
+                <label class="form-label mt-2">Create 4-digit PIN</label>
+                <div class="pin-row">
+                    <input type="@OtpInputType" inputmode="numeric" pattern="[0-9]*"
+                           class="form-control pin-input"
+                           @bind="otpInput"
+                           placeholder="••••"
                            maxlength="4"
-                           @onkeypress="HandleKeyPress" />
+                           @onkeydown="HandleKeyDown" />
+                    <button class="icon-btn" @onclick="ToggleShowOtp" title="Show / hide PIN">@((showOtp) ? "🙈" : "👁️")</button>
                 </div>
-                
-                <div class="input-group mb-3">
-                    <label class="form-label">Confirm OTP</label>
-                    <input type="password" 
-                           class="form-control" 
-                           @bind="confirmOtp" 
-                           placeholder="Confirm your OTP"
-                           maxlength="4"
-                           @onkeypress="HandleKeyPress" />
-                </div>
+
+                <label class="form-label mt-2">Confirm PIN</label>
+                <input type="@OtpInputType" inputmode="numeric" pattern="[0-9]*"
+                       class="form-control"
+                       @bind="confirmOtp"
+                       placeholder="Confirm PIN"
+                       maxlength="4"
+                       @onkeydown="HandleKeyDown" />
             </div>
-            
-            <button class="login-btn" @onclick="OnRegister">Create Account</button>
+
+            <div class="actions">
+                <button class="btn primary" @onclick="OnRegister" disabled="@isProcessing">
+                    @(isProcessing ? "Creating..." : "Create Account")
+                </button>
+                <button class="link-btn" @onclick="() => SwitchMode(false)" disabled="@isProcessing">Have an account? Sign in</button>
+            </div>
         }
         else
         {
-            <p>Welcome back, @userNameDisplay!</p>
-            
+            <p class="lead">Welcome back, <strong>@userNameDisplay</strong></p>
+
             <div class="pin-input-group">
-                <input type="password" 
-                       class="pin-input" 
-                       @bind="otpInput" 
-                       placeholder="Enter 4-digit OTP"
+                <input type="@OtpInputType" inputmode="numeric" pattern="[0-9]*"
+                       class="form-control pin-input-lg"
+                       @bind="otpInput"
+                       placeholder="Enter 4-digit PIN"
                        maxlength="4"
-                       @onkeypress="HandleKeyPress" />
+                       @onkeydown="HandleKeyDown"
+                       autofocus />
+                <button class="icon-btn" @onclick="ToggleShowOtp" title="Show / hide PIN">@((showOtp) ? "🙈" : "👁️")</button>
             </div>
-            
-            <button class="login-btn" @onclick="OnLogin">Unlock Journal</button>
+
+            <div class="actions">
+                <button class="btn primary" @onclick="OnLogin" disabled="@isProcessing">
+                    @(isProcessing ? "Checking..." : "Unlock Journal")
+                </button>
+                <button class="link-btn" @onclick="() => SwitchMode(true)" disabled="@isProcessing">Create an account</button>
+            </div>
         }
 
         @if (!string.IsNullOrEmpty(errorMessage))
         {
-            <div class="error-message">@errorMessage</div>
+            <div class="toast toast-error" role="alert" @onclick="ClearError" tabindex="0">@errorMessage <button class="toast-close" @onclick="ClearError">✕</button></div>
         }
 
         @if (!string.IsNullOrEmpty(successMessage))
         {
-            <div class="success-message">@successMessage</div>
+            <div class="toast toast-success" role="status" @onclick="ClearSuccess" tabindex="0">@successMessage <button class="toast-close" @onclick="ClearSuccess">✕</button></div>
         }
     </div>
 </div>
@@ -81,7 +98,11 @@
     private string errorMessage = "";
     private string successMessage = "";
     private string userNameDisplay = "User";
-     private bool IsDark = false;
+    private bool IsDark = false;
+    private bool isProcessing = false;
+    private bool showOtp = false;
+
+    private string OtpInputType => showOtp ? "text" : "password";
 
     protected override async Task OnInitializedAsync()
     {
@@ -95,7 +116,7 @@
             isRegistrationMode = !(await AuthService.UserExistsAsync());
             if (!isRegistrationMode)
             {
-                userNameDisplay = AuthService.GetUserName();
+                userNameDisplay = AuthService.GetUserName() ?? "User";
             }
         }
         catch (Exception ex)
@@ -104,64 +125,69 @@
         }
     }
 
-    private async Task HandleKeyPress(KeyboardEventArgs e)
+    private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
             if (isRegistrationMode)
-            {
                 await OnRegister();
-            }
             else
-            {
                 await OnLogin();
-            }
         }
+    }
+
+    private void ToggleShowOtp()
+    {
+        showOtp = !showOtp;
+    }
+
+    private void SwitchMode(bool toRegister)
+    {
+        errorMessage = "";
+        successMessage = "";
+        isRegistrationMode = toRegister;
+        otpInput = "";
+        confirmOtp = "";
     }
 
     private async Task OnRegister()
     {
         errorMessage = "";
         successMessage = "";
+        if (isProcessing) return;
 
-        // Validate inputs
+        // Validate
         if (string.IsNullOrWhiteSpace(userName))
         {
             errorMessage = "Please enter your name.";
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(otpInput) || otpInput.Length != 4)
+        if (string.IsNullOrWhiteSpace(otpInput) || otpInput.Length != 4 || !otpInput.All(char.IsDigit))
         {
-            errorMessage = "Please enter a valid 4-digit OTP.";
-            return;
-        }
-
-        if (!otpInput.All(char.IsDigit))
-        {
-            errorMessage = "OTP must contain only digits.";
+            errorMessage = "Please enter a valid 4-digit PIN (numbers only).";
             return;
         }
 
         if (otpInput != confirmOtp)
         {
-            errorMessage = "OTP confirmation does not match.";
+            errorMessage = "PIN confirmation does not match.";
             return;
         }
 
+        isProcessing = true;
         try
         {
-            var success = await AuthService.RegisterUserAsync(userName, otpInput);
+            var success = await AuthService.RegisterUserAsync(userName.Trim(), otpInput);
             if (success)
             {
-                successMessage = "Account created successfully!";
-                await Task.Delay(1000);
+                successMessage = "Account created successfully. Please sign in.";
+                // switch to login mode and prefill display name
                 isRegistrationMode = false;
-                userNameDisplay = userName;
+                userNameDisplay = userName.Trim();
+                userName = "";
                 otpInput = "";
                 confirmOtp = "";
-                userName = "";
-                StateHasChanged();
             }
             else
             {
@@ -172,34 +198,37 @@
         {
             errorMessage = $"Registration error: {ex.Message}";
         }
+        finally
+        {
+            isProcessing = false;
+        }
     }
 
     private async Task OnLogin()
     {
         errorMessage = "";
         successMessage = "";
+        if (isProcessing) return;
 
-        if (string.IsNullOrWhiteSpace(otpInput))
+        if (string.IsNullOrWhiteSpace(otpInput) || otpInput.Length != 4 || !otpInput.All(char.IsDigit))
         {
-            errorMessage = "Please enter your OTP.";
+            errorMessage = "Please enter your 4-digit PIN.";
+            otpInput = "";
             return;
         }
 
-        if (otpInput.Length != 4)
-        {
-            errorMessage = "OTP must be 4 digits.";
-            return;
-        }
-
+        isProcessing = true;
         try
         {
-            if (await AuthService.ValidateOTPAsync(otpInput))
+            var ok = await AuthService.ValidateOTPAsync(otpInput);
+            if (ok)
             {
-                Navigation.NavigateTo("/dashboard");
+                // navigate to dashboard
+                Navigation.NavigateTo("/dashboard", forceLoad: false);
             }
             else
             {
-                errorMessage = "Incorrect OTP. Please try again.";
+                errorMessage = "Incorrect PIN. Please try again.";
                 otpInput = "";
             }
         }
@@ -207,11 +236,149 @@
         {
             errorMessage = $"Login error: {ex.Message}";
         }
+        finally
+        {
+            isProcessing = false;
+        }
     }
-    
 
-    private void ToggleDarkMode()
-    {
-        IsDark = !IsDark;
-    }
+    private void ClearError() => errorMessage = "";
+    private void ClearSuccess() => successMessage = "";
+
+    private void ToggleDarkMode() => IsDark = !IsDark;
 }
+<style>
+/* Container */
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    transition: background 200ms ease;
+}
+
+/* Light / Dark backgrounds */
+.login-container.light {
+    background: linear-gradient(180deg,#f6fbff,#ffffff);
+    color: #0f172a;
+}
+.login-container.dark {
+    background: linear-gradient(180deg,#0b1220,#071726);
+    color: #e6eef8;
+}
+
+/* Box */
+.login-box {
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255,255,255,0.85);
+    border-radius: 12px;
+    padding: 1.25rem 1.25rem 1rem 1.25rem;
+    box-shadow: 0 10px 30px rgba(2,6,23,0.12);
+    position: relative;
+}
+
+/* Dark variant of box */
+.login-container.dark .login-box {
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.04);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.6);
+}
+
+/* Header */
+.login-box h1 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.4rem;
+}
+.lead {
+    margin-top: 0;
+    color: #6b7280;
+    margin-bottom: 0.85rem;
+}
+.login-container.dark .lead { color: #9fb0c9; }
+
+/* Form controls */
+.form-label { display:block; margin-bottom: 0.35rem; font-weight:600; font-size:0.9rem; }
+.form-control {
+    width: 100%;
+    padding: 0.55rem 0.6rem;
+    border-radius: 8px;
+    border: 1px solid #e6eef8;
+    background: #fff;
+    color: inherit;
+    outline: none;
+    box-sizing: border-box;
+}
+.login-container.dark .form-control {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    color: #e6eef8;
+}
+
+/* PIN inputs */
+.pin-row { display:flex; gap:0.5rem; align-items:center; }
+.pin-input { width: 100%; }
+.pin-input-lg { width: 100%; padding: 0.75rem; font-size: 1.05rem; text-align:center; letter-spacing: .25rem; }
+
+/* Buttons */
+.actions { display:flex; gap:0.6rem; align-items:center; margin-top:0.9rem; flex-wrap:wrap; }
+.btn { padding: 0.55rem 0.9rem; border-radius:8px; border: none; cursor: pointer; }
+.btn.primary {
+    background: linear-gradient(90deg,#4f46e5,#06b6d4);
+    color: #fff;
+    font-weight:600;
+}
+.btn.primary[disabled] { opacity: 0.65; cursor: not-allowed; }
+
+.link-btn {
+    background: transparent;
+    border: none;
+    color: #3b82f6;
+    text-decoration: underline;
+    cursor: pointer;
+}
+.login-container.dark .link-btn { color: #93c5fd; }
+
+/* Icon / small buttons */
+.icon-btn {
+    background: transparent;
+    border: none;
+    padding: 0.35rem;
+    cursor: pointer;
+    font-size: 1.05rem;
+}
+
+/* Toasts */
+.toast {
+    margin-top: 0.85rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+.toast-close { background: transparent; border: none; cursor: pointer; margin-left: 0.6rem; }
+
+.toast-error {
+    background: linear-gradient(90deg,#fff5f5,#fff);
+    border: 1px solid #f8d7da;
+    color: #842029;
+}
+.toast-success {
+    background: linear-gradient(90deg,#ecfdf5,#fff);
+    border: 1px solid #d1fae5;
+    color: #064e3b;
+}
+
+/* Theme toggle */
+.theme-toggle { position: absolute; top: 10px; right: 10px; }
+.theme-btn { background: transparent; border: none; cursor: pointer; font-size: 1.05rem; }
+
+/* Responsive */
+@media (max-width: 480px) {
+    .login-box { padding: 1rem; }
+    .btn.primary { width: 100%; }
+    .actions { flex-direction: column; align-items: stretch; }
+}
+</style>

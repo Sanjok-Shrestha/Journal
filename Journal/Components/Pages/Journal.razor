@@ -1,4 +1,4 @@
-﻿@page "/journal"
+@page "/journal"
 @page "/journal/{EntryId:int}"
 @using JournalApp.Services
 @using JournalApp.Models
@@ -7,129 +7,143 @@
 @inject JournalService JournalService
 @inject NavigationManager Navigation
 
-<div style="max-width: 800px; margin: 0 auto; padding: 1rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 class="mb-4">📓 Daily Journal</h3>
+<div class="journal-container">
+    <header class="journal-header">
         <div>
-            <button class="btn btn-outline-secondary btn-sm" @onclick="BackToEntries">← Back to All Entries</button>
-            <button class="btn btn-outline-primary btn-sm ms-2" @onclick="ExportEntry">Export</button>
+            <h3 class="journal-title">📓 Daily Journal</h3>
+            <p class="journal-subtitle">Capture your thoughts — one day at a time.</p>
         </div>
-    </div>
-
-    @if (entry == null)
-    {
-        <div class="empty-state p-4 text-center" style="border: 1px dashed #ccc; border-radius: 8px;">
-            <p class="text-muted">No entry for today.</p>
-            <button class="btn btn-primary mt-2" @onclick="CreateEntry">Start Writing</button>
+        <div class="journal-actions">
+            <button class="btn btn-outline-secondary btn-sm" @onclick="BackToEntries" disabled="@isSaving" aria-disabled="@isSaving">← Back to All Entries</button>
+            <button class="btn btn-outline-primary btn-sm ms-2" @onclick="ExportEntry" disabled="@isSaving" aria-disabled="@isSaving">Export</button>
         </div>
-    }
-    else
-    {
-        <div class="card">
-            <div class="card-header bg-light">
-                <strong>@entry.Date.ToString("dddd, MMMM dd, yyyy")</strong>
-                @if (entry.UpdatedAt != default)
-                {
-                    <small class="d-block text-muted">Last saved: @entry.UpdatedAt.ToString("g")</small>
-                }
-            </div>
-            <div class="card-body">
-                <!-- Title -->
-                <div class="mb-3">
-                    <label class="form-label">Title</label>
-                    <input type="text" class="form-control" @bind="entry.Title" placeholder="Enter a title for your entry" maxlength="200" />
-                </div>
+    </header>
 
-                <!-- Mood -->
-                <div class="mb-3">
-                    <label class="form-label">How are you feeling today?</label>
-                    <select class="form-select" @bind="entry.PrimaryMood">
-                        <option value="">— Select —</option>
-                        <option value="Happy">😊 Happy</option>
-                        <option value="Excited">🎉 Excited</option>
-                        <option value="Grateful">🙏 Grateful</option>
-                        <option value="Confident">💪 Confident</option>
-                        <option value="Relaxed">😌 Relaxed</option>
-                        <option value="Calm">🧘 Calm</option>
-                        <option value="Thoughtful">🤔 Thoughtful</option>
-                        <option value="Curious">🧐 Curious</option>
-                        <option value="Nostalgic">💭 Nostalgic</option>
-                        <option value="Bored">😑 Bored</option>
-                        <option value="Sad">😢 Sad</option>
-                        <option value="Angry">😠 Angry</option>
-                        <option value="Stressed">😟 Stressed</option>
-                        <option value="Anxious">😰 Anxious</option>
-                        <option value="Lonely">😔 Lonely</option>
-                        <option value="Tired">😴 Tired</option>
-                    </select>
+    <main class="journal-main">
+        @if (entry == null)
+        {
+            <section class="empty-state p-4">
+                <p class="text-muted">No entry for today.</p>
+                <button class="btn btn-primary mt-2" @onclick="CreateEntry">Start Writing</button>
+            </section>
+        }
+        else
+        {
+            <article class="card journal-card">
+                <header class="card-header card-header-custom">
+                    <div>
+                        <strong>@entry.Date.ToString("dddd, MMMM dd, yyyy")</strong>
+                        @if (entry.UpdatedAt != default)
+                        {
+                            <small class="muted d-block">Last saved: @entry.UpdatedAt.ToString("g")</small>
+                        }
+                    </div>
+                </header>
 
-                    <div class="mt-2">
-                        <label class="form-label">Secondary Moods (optional, up to 2)</label>
-                        <div class="d-flex gap-2">
-                            <select class="form-select" @bind="secondary1">
-                                <option value="">Select</option>
-                                @foreach (var m in SecondaryMoodOptions)
-                                {
-                                    <option value="@m">@m</option>
-                                }
-                            </select>
-                            <select class="form-select" @bind="secondary2">
-                                <option value="">Select</option>
-                                @foreach (var m in SecondaryMoodOptions)
-                                {
-                                    <option value="@m">@m</option>
-                                }
-                            </select>
+                <section class="card-body">
+                    <!-- Title -->
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-control" @bind="entry.Title" placeholder="Enter a title for your entry" maxlength="200" aria-label="Entry title" />
+                    </div>
+
+                    <!-- Mood -->
+                    <div class="mb-3">
+                        <label class="form-label">How are you feeling today?</label>
+                        <select class="form-select" @bind="entry.PrimaryMood" aria-label="Primary mood">
+                            <option value="">— Select —</option>
+                            <option value="Happy">😊 Happy</option>
+                            <option value="Excited">🎉 Excited</option>
+                            <option value="Grateful">🙏 Grateful</option>
+                            <option value="Confident">💪 Confident</option>
+                            <option value="Relaxed">😌 Relaxed</option>
+                            <option value="Calm">🧘 Calm</option>
+                            <option value="Thoughtful">🤔 Thoughtful</option>
+                            <option value="Curious">🧐 Curious</option>
+                            <option value="Nostalgic">💭 Nostalgic</option>
+                            <option value="Bored">😑 Bored</option>
+                            <option value="Sad">😢 Sad</option>
+                            <option value="Angry">😠 Angry</option>
+                            <option value="Stressed">😟 Stressed</option>
+                            <option value="Anxious">😰 Anxious</option>
+                            <option value="Lonely">😔 Lonely</option>
+                            <option value="Tired">😴 Tired</option>
+                        </select>
+
+                        <div class="mt-2">
+                            <label class="form-label">Secondary Moods (optional, up to 2)</label>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <select class="form-select" @bind="secondary1" aria-label="Secondary mood 1">
+                                    <option value="">Select</option>
+                                    @foreach (var m in SecondaryMoodOptions)
+                                    {
+                                        <option value="@m">@m</option>
+                                    }
+                                </select>
+                                <select class="form-select" @bind="secondary2" aria-label="Secondary mood 2">
+                                    <option value="">Select</option>
+                                    @foreach (var m in SecondaryMoodOptions)
+                                    {
+                                        <option value="@m">@m</option>
+                                    }
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Content with Quill Editor -->
-                <div class="mb-3">
-                    <label class="form-label">Your thoughts for today</label>
-                    <div id="quill-editor" style="height: 300px; background: white;"></div>
-                </div>
+                    <!-- Content with Quill Editor -->
+                    <div class="mb-3">
+                        <label class="form-label">Your thoughts for today</label>
+                        <div id="quill-editor" role="textbox" aria-multiline="true" aria-label="Journal editor" class="quill-container"></div>
+                    </div>
 
-                <!-- Tags -->
-                <div class="mb-3">
-                    <label class="form-label">Tags (comma-separated)</label>
-                    <input type="text" class="form-control"
-                           @bind="entry.Tags"
-                           placeholder="e.g., work, family, gratitude" />
-                </div>
+                    <!-- Tags -->
+                    <div class="mb-3">
+                        <label class="form-label">Tags (comma-separated)</label>
+                        <input type="text" class="form-control"
+                               @bind="entry.Tags"
+                               placeholder="e.g., work, family, gratitude" aria-label="Tags" />
+                    </div>
 
-                <!-- Actions -->
-                <div class="d-flex justify-content-end gap-2">
-                    @if (isEditing)
-                    {
-                        <button class="btn btn-outline-danger" @onclick="Delete">Delete</button>
-                    }
-                    <button class="btn btn-outline-secondary" @onclick="BackToEntries">Cancel</button>
-                    <button class="btn btn-success" @onclick="Save">Save</button>
-                </div>
-            </div>
-        </div>
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-end gap-2 action-row">
+                        @if (isEditing)
+                        {
+                            <button class="btn btn-outline-danger" @onclick="Delete" disabled="@isSaving" aria-disabled="@isSaving">Delete</button>
+                        }
+                        <button class="btn btn-outline-secondary" @onclick="BackToEntries" disabled="@isSaving" aria-disabled="@isSaving">Cancel</button>
+                        <button class="btn btn-success" @onclick="Save" disabled="@isSaving" aria-disabled="@isSaving">
+                            @(isSaving ? "Saving..." : "Save")
+                        </button>
+                    </div>
+                </section>
+            </article>
 
-        @if (!string.IsNullOrEmpty(statusMessage))
-        {
-            <div class="alert alert-info mt-3">@statusMessage</div>
+            @if (!string.IsNullOrEmpty(statusMessage))
+            {
+                <div class="alert alert-info mt-3" role="status" aria-live="polite">@statusMessage</div>
+            }
         }
-    }
+    </main>
 </div>
 
 @if (!string.IsNullOrEmpty(errorMessage))
 {
-    <div class="alert alert-danger" style="position: fixed; top: 20px; right: 20px; z-index: 1000;" @onclick="ClearError">
-        @errorMessage
-        <button type="button" class="btn-close" @onclick="ClearError"></button>
+    <div class="alert alert-danger toast toast-error" role="alert" @onclick="ClearError" aria-live="assertive">
+        <div class="toast-body">
+            @errorMessage
+            <button type="button" class="btn-close" @onclick="ClearError" aria-label="Close"></button>
+        </div>
     </div>
 }
 
 @if (!string.IsNullOrEmpty(successMessage))
 {
-    <div class="alert alert-success" style="position: fixed; top: 20px; right: 20px; z-index: 1000;" @onclick="ClearSuccess">
-        @successMessage
-        <button type="button" class="btn-close" @onclick="ClearSuccess"></button>
+    <div class="alert alert-success toast toast-success" role="status" @onclick="ClearSuccess" aria-live="polite">
+        <div class="toast-body">
+            @successMessage
+            <button type="button" class="btn-close" @onclick="ClearSuccess" aria-label="Close"></button>
+        </div>
     </div>
 }
 
@@ -142,6 +156,7 @@
     private string successMessage = "";
     private string statusMessage = "";
     private bool isInitialized = false;
+    private bool isSaving = false;
 
     private string secondary1 = "";
     private string secondary2 = "";
@@ -232,7 +247,7 @@
             }
             else
             {
-                // Default behavior: do NOT auto-load today's entry. Start with a blank form for new entry.
+                // Default behavior: start with a blank form for new entry.
                 entry = new JournalEntry
                 {
                     Date = DateTime.Today,
@@ -289,6 +304,8 @@
                 return;
             }
 
+            isSaving = true;
+
             // Get content from Quill editor
             if (isInitialized)
             {
@@ -333,7 +350,7 @@
                     statusMessage += $" Secondary moods: {entry.SecondaryMoods}.";
                 }
 
-                await Task.Delay(1000);
+                await Task.Delay(900);
                 Navigation.NavigateTo("/entries");
             }
             else
@@ -345,6 +362,10 @@
         {
             errorMessage = $"Error saving entry: {ex.Message}";
             Console.WriteLine($"Save error: {ex}");
+        }
+        finally
+        {
+            isSaving = false;
         }
     }
 
@@ -358,9 +379,10 @@
 
             if (confirmed)
             {
+                isSaving = true;
                 await JournalService.DeleteEntryAsync(entry);
                 successMessage = "Entry deleted successfully!";
-                await Task.Delay(1000);
+                await Task.Delay(800);
                 Navigation.NavigateTo("/entries");
             }
         }
@@ -368,11 +390,16 @@
         {
             errorMessage = $"Error deleting entry: {ex.Message}";
         }
+        finally
+        {
+            isSaving = false;
+        }
     }
 
     private void BackToEntries()
     {
-        Navigation.NavigateTo("/entries");
+        if (!isSaving)
+            Navigation.NavigateTo("/entries");
     }
 
     private void ClearError()
@@ -423,25 +450,151 @@
         }
     }
 }
-
 <style>
-    .empty-state {
-        background-color: #f9f9f9;
+    /* Layout */
+    .journal-container {
+        max-width: 980px;
+        margin: 1.5rem auto;
+        padding: 1rem;
     }
 
-    /* Quill editor custom styles */
-    #quill-editor {
+    .journal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        background: linear-gradient(90deg, #ffffff 0%, #f7fbff 100%);
+        box-shadow: 0 4px 10px rgba(22, 33, 62, 0.04);
+        border: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .journal-title {
+        margin: 0;
+        font-size: 1.25rem;
+    }
+
+    .journal-subtitle {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .journal-actions button {
+        min-width: 90px;
+    }
+
+    .journal-main {
+        margin-top: 0.75rem;
+    }
+
+    .empty-state {
+        border: 1px dashed #e0e6ef;
+        border-radius: 8px;
+        background: linear-gradient(180deg, #ffffff, #fbfdff);
+        text-align: center;
+    }
+
+    .journal-card {
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid rgba(22, 33, 62, 0.06);
+        box-shadow: 0 6px 18px rgba(22, 33, 62, 0.04);
+    }
+
+    .card-header-custom {
+        background: linear-gradient(90deg,#f8f9fb,#ffffff);
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid rgba(0,0,0,0.03);
+    }
+
+    .muted {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    /* Editor */
+    .quill-container {
+        height: 320px;
+        background: #ffffff;
         border: 1px solid #dee2e6;
         border-radius: 0.375rem;
+        overflow: hidden;
     }
 
     :global(.ql-toolbar) {
         border-top-left-radius: 0.375rem;
         border-top-right-radius: 0.375rem;
+        background: #fbfdff;
+        border-bottom: 1px solid #eceef1;
     }
 
     :global(.ql-container) {
         border-bottom-left-radius: 0.375rem;
         border-bottom-right-radius: 0.375rem;
+    }
+
+    /* Actions */
+    .action-row .btn {
+        min-width: 84px;
+    }
+
+    /* Toasts / alerts */
+    .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1200;
+        min-width: 260px;
+        border-radius: 8px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+
+    .toast .toast-body {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.8rem 1rem;
+    }
+
+    .toast .btn-close {
+        background: transparent;
+        border: none;
+    }
+
+    .toast-error {
+        border-left: 4px solid #d9534f;
+    }
+
+    .toast-success {
+        border-left: 4px solid #28a745;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 720px) {
+        .journal-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .journal-actions {
+            margin-top: 0.5rem;
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .action-row {
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
+
+        .action-row .btn {
+            width: 100%;
+        }
     }
 </style>

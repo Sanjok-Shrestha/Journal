@@ -1,5 +1,4 @@
-﻿@page "/write-entry"
-
+@page "/write-entry"
 @implements IDisposable
 @using JournalApp.Services
 @using JournalApp.Models
@@ -11,112 +10,148 @@
 @inject NavigationManager Navigation
 
 <div style="max-width: 800px; margin: 0 auto; padding: 1rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h3 class="mb-4">Daily Journal</h3>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Daily Journal</h3>
         <div>
-            <button class="btn btn-outline-secondary btn-sm" @onclick="BackToEntries">← Back to All Entries</button>
-            <button class="btn btn-outline-primary btn-sm ms-2" @onclick="ExportEntry">Export</button>
+            <button class="btn btn-outline-secondary btn-sm" @onclick="BackToEntries" disabled="@isSaving || isProcessing">← Back to All Entries</button>
+            <button class="btn btn-outline-primary btn-sm ms-2" @onclick="ExportEntry" disabled="@entry == null">Export</button>
         </div>
     </div>
 
-    @if (entry == null)
+    @if (isLoading)
     {
-        <div class="empty-state p-4 text-center" style="border: 1px dashed #ccc; border-radius: 8px;">
-            <p class="text-muted">No entry for today.</p>
-            <button class="btn btn-primary mt-2" @onclick="CreateEntry">Start Writing</button>
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status" aria-hidden="true"></div>
+            <div class="mt-2 text-muted">Loading...</div>
+        </div>
+    }
+    else if (entry == null)
+    {
+        <div class="empty-state p-4 text-center border-dashed rounded-2">
+            <p class="text-muted">No entry yet.</p>
+            <button class="btn btn-primary mt-2" @onclick="CreateEntry" disabled="@isSaving">Start Writing</button>
         </div>
     }
     else
     {
-        <div class="card">
-            <div class="card-header bg-light">
-                <strong>@entry.Date.ToString("dddd, MMMM dd, yyyy")</strong>
-                @if (entry.UpdatedAt != default)
-                {
-                    <small class="d-block text-muted">Last saved: @entry.UpdatedAt.ToString("g")</small>
-                }
-            </div>
-            <div class="card-body">
-                <!-- Title -->
-                <div class="mb-3">
-                    <label class="form-label">Title</label>
-                    <input type="text" class="form-control" @bind="entry.Title" placeholder="Enter a title for your entry" maxlength="200" />
-                </div>
-
-                <!-- Mood -->
-                <div class="mb-3">
-                    <label class="form-label">How are you feeling today?</label>
-                    <select class="form-select" @bind="selectedPrimaryMood">
-                        <option value="">— Select Primary Mood —</option>
-                        @foreach (var mood in primaryMoods)
-                        {
-                            <option value="@mood.Name">@mood.Name (@mood.MoodType)</option>
-                        }
-                    </select>
-
-                    <div class="mt-2">
-                        <label class="form-label">Secondary Moods (optional, up to 2)</label>
-                        <div class="d-flex gap-2">
-                            <select class="form-select" @bind="selectedSecondaryMood1">
-                                <option value="">Select</option>
-                                @foreach (var mood in secondaryMoods.Where(m => m.Name != selectedPrimaryMood))
-                                {
-                                    <option value="@mood.Name">@mood.Name (@mood.MoodType)</option>
-                                }
-                            </select>
-                            <select class="form-select" @bind="selectedSecondaryMood2">
-                                <option value="">Select</option>
-                                @foreach (var mood in secondaryMoods.Where(m => m.Name != selectedPrimaryMood && m.Name != selectedSecondaryMood1))
-                                {
-                                    <option value="@mood.Name">@mood.Name (@mood.MoodType)</option>
-                                }
-                            </select>
+        <EditForm Model="entry" OnValidSubmit="Save">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <strong>@entry.Date.ToString("dddd, MMMM dd, yyyy")</strong>
+                            @if (entry.UpdatedAt != default)
+                            {
+                                <div class="small text-muted">Last saved: @entry.UpdatedAt.ToString("g")</div>
+                            }
+                        </div>
+                        <div class="text-end">
+                            @if (isAutosaving)
+                            {
+                                <small class="text-muted">Autosaving…</small>
+                            }
                         </div>
                     </div>
                 </div>
 
-                <!-- Content with Quill Editor -->
-                <div class="mb-3">
-                    <label class="form-label">Your thoughts for today</label>
-                    <div id="quill-editor" style="height: 300px; background: white;"></div>
-                </div>
+                <div class="card-body">
+                    <ValidationSummary />
 
-                <!-- Tags -->
-                <div class="mb-3">
-                    <label class="form-label">Tags</label>
-                    <input class="form-control" @bind="selectedTags" placeholder="work, personal, goals" />
-                    @if (!string.IsNullOrWhiteSpace(selectedTags))
-                    {
-                        <div class="selected-tags mt-2">
-                            <small class="text-muted">Tags: @string.Join(", ", selectedTags.Split(',').Where(t => !string.IsNullOrWhiteSpace(t)).Select(t => t.Trim()))</small>
-                        </div>
-                    }
+                    <!-- Title -->
+                    <div class="mb-3">
+                        <label for="titleInput" class="form-label">Title <span class="text-muted small">(required)</span></label>
+                        <InputText id="titleInput" class="form-control" @bind-Value="entry.Title" placeholder="Enter a title" maxlength="200" />
+                    </div>
 
-                    @if (allTags != null && allTags.Any())
-                    {
+                    <!-- Mood -->
+                    <div class="mb-3">
+                        <label class="form-label">How are you feeling today? <span class="text-muted small">(required)</span></label>
+                        <InputSelect class="form-select" @bind-Value="selectedPrimaryMood" aria-label="Primary mood">
+                            <option value="">— Select Primary Mood —</option>
+                            @foreach (var mood in primaryMoods)
+                            {
+                                <option value="@mood.Name">@mood.Name (@mood.MoodType)</option>
+                            }
+                        </InputSelect>
+
                         <div class="mt-2">
-                            <small class="text-muted">Suggestions:</small>
-                            <div class="d-flex flex-wrap gap-2 mt-1">
-                                @foreach (var t in allTags)
-                                {
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => AddTagSuggestion(t.Name ?? string.Empty)">@t.Name</button>
-                                }
+                            <label class="form-label">Secondary Moods (optional, up to 2)</label>
+                            <div class="d-flex gap-2">
+                                <InputSelect class="form-select" @bind-Value="selectedSecondaryMood1">
+                                    <option value="">Select</option>
+                                    @foreach (var mood in secondaryMoods.Where(m => m.Name != selectedPrimaryMood))
+                                    {
+                                        <option value="@mood.Name">@mood.Name (@mood.MoodType)</option>
+                                    }
+                                </InputSelect>
+
+                                <InputSelect class="form-select" @bind-Value="selectedSecondaryMood2">
+                                    <option value="">Select</option>
+                                    @foreach (var mood in secondaryMoods.Where(m => m.Name != selectedPrimaryMood && m.Name != selectedSecondaryMood1))
+                                    {
+                                        <option value="@mood.Name">@mood.Name (@mood.MoodType)</option>
+                                    }
+                                </InputSelect>
                             </div>
                         </div>
-                    }
-                </div>
+                    </div>
 
-                <!-- Actions -->
-                <div class="d-flex justify-content-end gap-2">
-                    @if (isEditing)
-                    {
-                        <button class="btn btn-outline-danger" @onclick="Delete">Delete</button>
-                    }
-                    <button class="btn btn-outline-secondary" @onclick="BackToEntries">Cancel</button>
-                    <button class="btn btn-success" @onclick="Save">Save</button>
+                    <!-- Content with Quill Editor -->
+                    <div class="mb-3">
+                        <label class="form-label">Your thoughts for today <span class="text-muted small">(required)</span></label>
+                        <div id="quill-editor" style="height: 300px; background: white; border: 1px solid #dee2e6; border-radius: 0.375rem;"></div>
+                        <div class="form-text text-muted mt-1">Tip: Use Ctrl+S to save.</div>
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="mb-3">
+                        <label class="form-label">Tags</label>
+                        <input class="form-control" @bind="selectedTags" placeholder="work, personal, goals" />
+                        @if (!string.IsNullOrWhiteSpace(selectedTags))
+                        {
+                            <div class="selected-tags mt-2">
+                                <small class="text-muted">Tags: @string.Join(", ", selectedTags.Split(',').Where(t => !string.IsNullOrWhiteSpace(t)).Select(t => t.Trim()))</small>
+                            </div>
+                        }
+
+                        @if (allTags != null && allTags.Any())
+                        {
+                            <div class="mt-2">
+                                <small class="text-muted">Suggestions:</small>
+                                <div class="d-flex flex-wrap gap-2 mt-1">
+                                    @foreach (var t in allTags)
+                                    {
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => AddTagSuggestion(t.Name ?? string.Empty)">@t.Name</button>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-end gap-2">
+                        @if (isEditing)
+                        {
+                            <button type="button" class="btn btn-outline-danger" @onclick="PromptDelete" disabled="@isSaving || isProcessing">Delete</button>
+                        }
+
+                        <button type="button" class="btn btn-outline-secondary" @onclick="BackToEntries" disabled="@isSaving || isProcessing">Cancel</button>
+
+                        <button type="submit" class="btn btn-success" disabled="@isSaving || isProcessing">
+                            @if (isSaving)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span class="ms-1">Saving…</span>
+                            }
+                            else
+                            {
+                                <span>Save</span>
+                            }
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </EditForm>
 
         @if (!string.IsNullOrEmpty(statusMessage))
         {
@@ -127,17 +162,71 @@
 
 @if (!string.IsNullOrEmpty(errorMessage))
 {
-    <div class="alert alert-danger" style="position: fixed; top: 20px; right: 20px; z-index: 1000;" @onclick="ClearError">
-        @errorMessage
-        <button type="button" class="btn-close" @onclick="ClearError"></button>
+    <div class="alert alert-danger toast-position" role="alert" @onclick="ClearError">
+        <div class="d-flex">
+            <div>@errorMessage</div>
+            <button type="button" class="btn-close ms-auto" aria-label="Close" @onclick="ClearError"></button>
+        </div>
     </div>
 }
 
 @if (!string.IsNullOrEmpty(successMessage))
 {
-    <div class="alert alert-success" style="position: fixed; top: 20px; right: 20px; z-index: 1000;" @onclick="ClearSuccess">
-        @successMessage
-        <button type="button" class="btn-close" @onclick="ClearSuccess"></button>
+    <div class="alert alert-success toast-position" role="status" @onclick="ClearSuccess">
+        <div class="d-flex">
+            <div>@successMessage</div>
+            <button type="button" class="btn-close ms-auto" aria-label="Close" @onclick="ClearSuccess"></button>
+        </div>
+    </div>
+}
+
+<!-- Delete confirmation modal -->
+@if (showDeleteConfirm)
+{
+    <div class="modal-backdrop d-block" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm delete</h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="CloseDelete" disabled="@isProcessing"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the entry "<strong>@entry?.Title</strong>"? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseDelete" disabled="@isProcessing">Cancel</button>
+                    <button class="btn btn-danger" @onclick="Delete" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        }
+                        <span class="ms-1">Delete</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Unsaved changes confirm -->
+@if (showUnsavedConfirm)
+{
+    <div class="modal-backdrop d-block" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Unsaved changes</h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="CancelUnsavedNavigation" disabled="@isProcessing"></button>
+                </div>
+                <div class="modal-body">
+                    <p>You have unsaved changes. Do you want to leave without saving?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelUnsavedNavigation" disabled="@isProcessing">Stay</button>
+                    <button class="btn btn-danger" @onclick="ConfirmUnsavedNavigation" disabled="@isProcessing">Leave</button>
+                </div>
+            </div>
+        </div>
     </div>
 }
 
@@ -146,43 +235,59 @@
     public int? EntryId { get; set; }
 
     private JournalEntry? entry;
-    private string errorMessage = "";
-    private string successMessage = "";
-    private string statusMessage = "";
     private bool isInitialized = false;
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private bool isProcessing = false;
+    private bool isAutosaving = false;
+    private bool isEditing = false;
+    private bool isDisposed = false;
 
     private List<Mood> primaryMoods = new();
     private List<Mood> secondaryMoods = new();
-    // Change the type of allTags to match the service return type
-    private List<JournalApp.Models.Tag> allTags = new();
+    private List<Tag> allTags = new();
 
-    // store selected values as names (strings)
     private string selectedPrimaryMood = "";
     private string selectedSecondaryMood1 = "";
     private string selectedSecondaryMood2 = "";
     private string selectedTags = "";
 
-    private bool forceNew = false;
-    private bool isEditing = false;
+    private string statusMessage = "";
+    private string errorMessage = "";
+    private string successMessage = "";
 
     private DotNetObjectReference<WriteEntry>? dotNetRef;
+    private CancellationTokenSource? autosaveCts;
+    private CancellationTokenSource? saveCts;
+
+    private bool unsavedChanges = false;
+    private bool showDeleteConfirm = false;
+    private bool showUnsavedConfirm = false;
+    private string? pendingNavigationTarget = null;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadMoodsAndTags();
-
-        // Detect query parameter ?new=true
         try
         {
-            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
-            if (!string.IsNullOrEmpty(uri.Query) && uri.Query.Contains("new=true", StringComparison.OrdinalIgnoreCase))
-            {
-                forceNew = true;
-            }
-        }
-        catch { }
+            await LoadMoodsAndTags();
+            await LoadEntry();
 
-        await LoadEntry();
+            // Create dotnet ref for JS callbacks (keyboard shortcut, editor change)
+            dotNetRef = DotNetObjectReference.Create(this);
+
+            // Register beforeunload to warn user on page refresh/close when there are unsaved changes
+            await JS.InvokeVoidAsync("registerBeforeUnload", dotNetRef);
+
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Initialization error: {ex.Message}";
+            Console.Error.WriteLine(ex);
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private async Task LoadMoodsAndTags()
@@ -191,42 +296,43 @@
         {
             primaryMoods = await MoodService.GetMoodsByCategoryAsync("Primary");
             secondaryMoods = await MoodService.GetMoodsByCategoryAsync("Secondary");
-            allTags = await TagService.GetAllTagsAsync(); // Now types match
+            allTags = await TagService.GetAllTagsAsync();
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading moods/tags: {ex.Message}";
-            Console.WriteLine(errorMessage);
+            errorMessage = $"Error loading moods or tags: {ex.Message}";
+            Console.Error.WriteLine(ex);
         }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Initialize Quill whenever the entry is available and we haven't already initialized
+        if (isDisposed) return;
+
         if (entry != null && !isInitialized)
         {
             try
             {
-                await Task.Delay(100);
+                // Give small delay for rendering
+                await Task.Delay(50);
 
-                // Create a dotnet reference so JS can call back OnQuillTextChanged
-                dotNetRef = DotNetObjectReference.Create(this);
-
-                // Pass dotNetRef to the initialization so the text-change handler can call back
+                // Initialize Quill editor and wire up change events and keyboard shortcuts
                 await JS.InvokeVoidAsync("initQuillEditor", "quill-editor", dotNetRef);
 
-                // If the entry has existing content, set it in the editor
                 if (!string.IsNullOrWhiteSpace(entry.Content))
                 {
                     await JS.InvokeVoidAsync("setQuillContent", entry.Content);
                 }
+
+                // Register Ctrl+S shortcut in JS that will call dotnet SaveShortcut
+                await JS.InvokeVoidAsync("registerEditorShortcuts", dotNetRef);
 
                 isInitialized = true;
             }
             catch (Exception ex)
             {
                 errorMessage = $"Editor initialization failed: {ex.Message}";
-                Console.WriteLine($"Quill init error: {ex}");
+                Console.Error.WriteLine(ex);
             }
         }
     }
@@ -235,9 +341,9 @@
     {
         try
         {
+            isLoading = true;
             if (EntryId.HasValue && EntryId.Value > 0)
             {
-                // Load existing entry for editing
                 entry = await JournalService.GetEntryAsync(EntryId.Value);
                 if (entry == null)
                 {
@@ -246,30 +352,15 @@
                 else
                 {
                     isEditing = true;
-                    // Set selected mood names
                     selectedPrimaryMood = entry.PrimaryMood ?? "";
                     selectedSecondaryMood1 = entry.SecondaryMoods?.Split(',').FirstOrDefault()?.Trim() ?? "";
                     selectedSecondaryMood2 = entry.SecondaryMoods?.Split(',').Skip(1).FirstOrDefault()?.Trim() ?? "";
-
-                    // Set selected tags
                     selectedTags = entry.Tags ?? "";
                 }
             }
-            else if (forceNew)
-            {
-                // Explicit new entry requested — start with a blank entry
-                entry = new JournalEntry
-                {
-                    Date = DateTime.Today,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
-                };
-                isEditing = false;
-                statusMessage = "Creating new entry.";
-            }
             else
             {
-                // Default behavior: do NOT auto-load today's entry. Start with a blank form for new entry.
+                // New entry
                 entry = new JournalEntry
                 {
                     Date = DateTime.Today,
@@ -282,14 +373,18 @@
         catch (Exception ex)
         {
             errorMessage = $"Error loading entry: {ex.Message}";
-            Console.WriteLine($"LoadEntry error: {ex}");
+            Console.Error.WriteLine(ex);
+        }
+        finally
+        {
+            isLoading = false;
         }
     }
 
     private void CreateEntry()
     {
-        entry = new JournalEntry 
-        { 
+        entry = new JournalEntry
+        {
             Date = DateTime.Today,
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now
@@ -303,17 +398,125 @@
         StateHasChanged();
     }
 
+    // Called from JS when editor text changes - we debounce autosave here
+    [JSInvokable]
+    public async Task OnQuillTextChanged()
+    {
+        if (entry == null) return;
+
+        // Read current editor content
+        try
+        {
+            var content = await JS.InvokeAsync<string>("getQuillContent");
+            entry.Content = content;
+            unsavedChanges = true;
+
+            DebounceAutoSave();
+            StateHasChanged();
+        }
+        catch
+        {
+            // swallow - non-critical
+        }
+    }
+
+    private void DebounceAutoSave()
+    {
+        try
+        {
+            autosaveCts?.Cancel();
+            autosaveCts = new CancellationTokenSource();
+            var token = autosaveCts.Token;
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(1500, token); // 1.5s debounce
+                    if (token.IsCancellationRequested) return;
+
+                    await InvokeAsync(AutoSave);
+                }
+                catch (TaskCanceledException) { }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Autosave error: {ex}");
+                }
+            }, token);
+        }
+        catch { }
+    }
+
+    private async Task AutoSave()
+    {
+        if (entry == null) return;
+
+        try
+        {
+            isAutosaving = true;
+            // Minimal validations for autosave: we allow saving content even if title empty
+            entry.PrimaryMood = selectedPrimaryMood;
+            entry.SecondaryMoods = string.Join(", ", new[] { selectedSecondaryMood1, selectedSecondaryMood2 }.Where(s => !string.IsNullOrWhiteSpace(s)));
+            entry.Tags = selectedTags?.Trim();
+
+            saveCts?.Cancel();
+            saveCts = new CancellationTokenSource();
+
+            var id = await JournalService.SaveEntryAsync(entry);
+            if (id > 0)
+            {
+                entry.Id = id;
+                entry.UpdatedAt = DateTime.Now;
+                unsavedChanges = false;
+                successMessage = "Autosaved";
+                StateHasChanged();
+                await Task.Delay(700);
+                successMessage = "";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"AutoSave failed: {ex}");
+            // keep user informed but do not interrupt
+        }
+        finally
+        {
+            isAutosaving = false;
+        }
+    }
+
+    // Triggered by Ctrl+S JS shortcut
+    [JSInvokable]
+    public async Task SaveShortcut()
+    {
+        await Save();
+    }
+
     private async Task Save()
     {
+        if (entry == null) return;
+
         try
         {
             errorMessage = "";
             successMessage = "";
             statusMessage = "";
 
-            if (entry == null) return;
+            // Ensure latest editor content
+            if (isInitialized)
+            {
+                try
+                {
+                    entry.Content = await JS.InvokeAsync<string>("getQuillContent");
+                }
+                catch (Exception ex)
+                {
+                    errorMessage = $"Failed to read editor content: {ex.Message}";
+                    return;
+                }
+            }
 
-            // Validate
+            // Basic validation
             if (string.IsNullOrWhiteSpace(entry.Title))
             {
                 errorMessage = "Please enter a title.";
@@ -326,51 +529,32 @@
                 return;
             }
 
-            // Get content from Quill editor
-            if (isInitialized)
-            {
-                try
-                {
-                    entry.Content = await JS.InvokeAsync<string>("getQuillContent");
-                }
-                catch (Exception ex)
-                {
-                    errorMessage = $"Failed to get editor content: {ex.Message}";
-                    return;
-                }
-            }
-
             if (string.IsNullOrWhiteSpace(entry.Content))
             {
                 errorMessage = "Please write some content.";
                 return;
             }
 
-            // Set mood and tag names directly
+            isSaving = true;
             entry.PrimaryMood = selectedPrimaryMood;
-            entry.SecondaryMoods = string.Join(", ", new[] { selectedSecondaryMood1, selectedSecondaryMood2 }.Where(s => !string.IsNullOrEmpty(s)));
-            entry.Tags = selectedTags.Trim();
+            entry.SecondaryMoods = string.Join(", ", new[] { selectedSecondaryMood1, selectedSecondaryMood2 }.Where(s => !string.IsNullOrWhiteSpace(s)));
+            entry.Tags = selectedTags?.Trim();
+            entry.UpdatedAt = DateTime.Now;
 
-            // Determine whether save will update an existing entry for the date
-            var existingForDate = await JournalService.GetEntryByDateAsync(entry.Date == default ? DateTime.Today : entry.Date);
-            var willUpdate = existingForDate != null && existingForDate.Id != entry.Id;
+            saveCts?.Cancel();
+            saveCts = new CancellationTokenSource();
 
-            // Save entry
-            var result = await JournalService.SaveEntryAsync(entry);
-            
-            if (result > 0)
+            var resultId = await JournalService.SaveEntryAsync(entry);
+            if (resultId > 0)
             {
-                // no tag-id linking; tags are stored as names in entry.Tags
-                successMessage = willUpdate || isEditing ? "Entry updated successfully!" : "Entry created successfully!";
-                statusMessage = willUpdate || isEditing ? "Updated existing entry." : "Created new entry.";
+                entry.Id = resultId;
+                isEditing = true;
+                unsavedChanges = false;
+                successMessage = "Entry saved successfully!";
+                StateHasChanged();
 
-                var primaryMood = primaryMoods.Concat(secondaryMoods).FirstOrDefault(m => m.Name == selectedPrimaryMood);
-                if (primaryMood != null)
-                {
-                    statusMessage += $" Primary mood: {primaryMood.Name}.";
-                }
-
-                await Task.Delay(1000);
+                // Short delay so user sees confirmation, then navigate back (optional)
+                await Task.Delay(800);
                 Navigation.NavigateTo("/entries");
             }
             else
@@ -381,35 +565,76 @@
         catch (Exception ex)
         {
             errorMessage = $"Error saving entry: {ex.Message}";
-            Console.WriteLine($"Save error: {ex}");
+            Console.Error.WriteLine(ex);
+        }
+        finally
+        {
+            isSaving = false;
         }
     }
 
     private async Task Delete()
     {
+        if (entry == null || entry.Id == 0) return;
+
         try
         {
-            if (entry == null || entry.Id == 0) return;
-
-            var confirmed = await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this entry?");
-            
-            if (confirmed)
-            {
-                await JournalService.DeleteEntryAsync(entry);
-                successMessage = "Entry deleted successfully!";
-                await Task.Delay(1000);
-                Navigation.NavigateTo("/entries");
-            }
+            isProcessing = true;
+            await JournalService.DeleteEntryAsync(entry);
+            successMessage = "Entry deleted.";
+            unsavedChanges = false;
+            showDeleteConfirm = false;
+            await Task.Delay(600);
+            Navigation.NavigateTo("/entries");
         }
         catch (Exception ex)
         {
             errorMessage = $"Error deleting entry: {ex.Message}";
+            Console.Error.WriteLine(ex);
         }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private void PromptDelete()
+    {
+        showDeleteConfirm = true;
+    }
+
+    private void CloseDelete()
+    {
+        showDeleteConfirm = false;
     }
 
     private void BackToEntries()
     {
-        Navigation.NavigateTo("/entries");
+        if (unsavedChanges)
+        {
+            // Show modal asking whether to leave without saving
+            pendingNavigationTarget = "/entries";
+            showUnsavedConfirm = true;
+        }
+        else
+        {
+            Navigation.NavigateTo("/entries");
+        }
+    }
+
+    private void CancelUnsavedNavigation()
+    {
+        pendingNavigationTarget = null;
+        showUnsavedConfirm = false;
+    }
+
+    private void ConfirmUnsavedNavigation()
+    {
+        showUnsavedConfirm = false;
+        var target = pendingNavigationTarget ?? "/entries";
+        pendingNavigationTarget = null;
+        unsavedChanges = false;
+        Navigation.NavigateTo(target);
     }
 
     private void ClearError()
@@ -428,16 +653,12 @@
         {
             if (entry == null) return;
 
-            // Build simple HTML export
             var html = $"<html><head><meta charset=\"utf-8\"><title>{System.Net.WebUtility.HtmlEncode(entry.Title)}</title></head><body>" +
                        $"<h1>{System.Net.WebUtility.HtmlEncode(entry.Title)}</h1>" +
                        $"<p><em>{entry.Date:dddd, MMMM dd, yyyy}</em></p>" +
                        $"<p><strong>Mood:</strong> {System.Net.WebUtility.HtmlEncode(entry.PrimaryMood)}" +
                        (!string.IsNullOrWhiteSpace(entry.SecondaryMoods) ? $" (Secondary: {System.Net.WebUtility.HtmlEncode(entry.SecondaryMoods)})" : "") +
-                       $"</p>" +
-                       $"<hr/>" +
-                       entry.Content +
-                       $"</body></html>";
+                       $"</p><hr/>{entry.Content}</body></html>";
 
             var filename = $"journal-{entry.Date:yyyy-MM-dd}.html";
             await JS.InvokeVoidAsync("downloadFile", filename, html, "text/html");
@@ -445,87 +666,45 @@
         catch (Exception ex)
         {
             errorMessage = $"Export failed: {ex.Message}";
+            Console.Error.WriteLine(ex);
         }
     }
 
     private void AddTagSuggestion(string tag)
     {
-        var list = (selectedTags ?? string.Empty).Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrEmpty(t)).ToList();
+        var list = (selectedTags ?? string.Empty).Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrWhiteSpace(t)).ToList();
         if (!list.Contains(tag, StringComparer.OrdinalIgnoreCase))
         {
             list.Add(tag);
             selectedTags = string.Join(", ", list);
-        }
-    }
-
-    // Called from JS when editor text changes
-    [JSInvokable]
-    public async Task OnQuillTextChanged()
-    {
-        try
-        {
-            if (entry != null && isInitialized)
-            {
-                var content = await JS.InvokeAsync<string>("getQuillContent");
-                entry.Content = content;
-                StateHasChanged();
-            }
-        }
-        catch {
-            // ignore errors from JS callback
+            unsavedChanges = true;
+            DebounceAutoSave();
         }
     }
 
     public void Dispose()
     {
+        if (isDisposed) return;
+        isDisposed = true;
+
         try
         {
+            autosaveCts?.Cancel();
+            autosaveCts?.Dispose();
+            saveCts?.Cancel();
+            saveCts?.Dispose();
             dotNetRef?.Dispose();
+
+            // Unregister beforeunload handler
+            _ = JS.InvokeVoidAsync("unregisterBeforeUnload");
         }
         catch { }
     }
 }
 
 <style>
-    .empty-state {
-        background-color: #f9f9f9;
-    }
-
-    .tag-selection {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        max-height: 200px;
-        overflow-y: auto;
-        border: 1px solid #dee2e6;
-        border-radius: 0.375rem;
-        padding: 10px;
-        background: #f8f9fa;
-    }
-
-    .tag-checkbox {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        cursor: pointer;
-        padding: 5px 10px;
-        border-radius: 15px;
-        background: white;
-        border: 1px solid #dee2e6;
-        transition: all 0.2s;
-    }
-
-    .tag-checkbox:hover {
-        background: #e9ecef;
-    }
-
-    .tag-checkbox input[type="checkbox"] {
-        margin: 0;
-    }
-
-    .tag-label {
-        font-size: 0.9rem;
-        user-select: none;
+    .border-dashed {
+        border: 1px dashed #ccc;
     }
 
     .selected-tags {
@@ -535,19 +714,16 @@
         border-left: 4px solid #007bff;
     }
 
-    /* Quill editor custom styles */
-    #quill-editor {
-        border: 1px solid #dee2e6;
-        border-radius: 0.375rem;
+    .toast-position {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1200;
+        min-width: 220px;
     }
 
-    :global(.ql-toolbar) {
-        border-top-left-radius: 0.375rem;
-        border-top-right-radius: 0.375rem;
-    }
-
-    :global(.ql-container) {
-        border-bottom-left-radius: 0.375rem;
-        border-bottom-right-radius: 0.375rem;
+    .modal-backdrop .modal-dialog {
+        max-width: 540px;
+        margin: 6rem auto;
     }
 </style>

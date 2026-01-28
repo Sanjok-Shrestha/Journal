@@ -1,4 +1,4 @@
-﻿@page "/entries"
+@page "/entries"
 @using JournalApp.Services
 @using JournalApp.Models
 @inject JournalService JournalService
@@ -19,6 +19,8 @@
                placeholder=" Search entries..." 
                value="@searchQuery"
                @oninput="OnSearchInput" />
+
+        <button class="btn btn-sm btn-outline-secondary" @onclick="ClearSearch" title="Clear search">✕</button>
         
         <select class="entries-filter" value="@moodFilter" @onchange="OnMoodFilterChange">
             <option value="">All Moods</option>
@@ -34,7 +36,7 @@
             <option value="title">Sort: Title (A-Z)</option>
         </select>
         
-        <button class="entries-newentry" @onclick="GoToWrite">+ New Entry</button>
+        <button class="entries-newentry btn btn-primary" @onclick="GoToWrite">+ New Entry</button>
     </div>
 
     @if (isLoading)
@@ -45,7 +47,7 @@
     {
         <div class="empty-state">
             <p>No entries found.</p>
-            <button class="entries-newentry" @onclick="GoToWrite">Create Your First Entry</button>
+            <button class="entries-newentry btn btn-primary" @onclick="GoToWrite">Create Your First Entry</button>
         </div>
     }
     else
@@ -53,7 +55,7 @@
         <div class="entries-list">
             @foreach (var entry in GetPagedEntries())
             {
-                <div class="entry-card">
+                <div class="entry-card" @key="entry.Id">
                     <div class="entry-card-header d-flex justify-content-between align-items-start">
                         <div>
                             <div class="entry-card-title @(GetMoodColor(entry.PrimaryMood))">@entry.Title</div>
@@ -61,9 +63,9 @@
                         </div>
 
                         <div class="entry-card-actions d-flex gap-2">
-                            <button class="btn btn-sm btn-outline-primary" @onclick="() => ViewEntryView(entry.Id)">View</button>
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => ViewEntry(entry.Id)">View</button>
                             <button class="btn btn-sm btn-outline-secondary" @onclick="() => EditEntry(entry.Id)">Edit</button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteEntry(entry)">Delete</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => RequestDeleteEntry(entry)">Delete</button>
                         </div>
                     </div>
 
@@ -100,37 +102,65 @@
     }
 </div>
 
+<ConfirmDialog @ref="confirmDialog" Title="Delete Entry" Message="Delete this entry? This action cannot be undone." />
+
 @code {
+    // Local data
     private List<JournalEntry> allEntries = new();
     private List<JournalEntry> filteredEntries = new();
     private List<Mood> allMoods = new();
+
+    // UI state
     private string searchQuery = "";
     private string moodFilter = "";
     private string sortOrder = "newest";
     private bool isLoading = true;
     private string feedbackMessage = "";
+    private string errorMessage = "";
 
+    // Pagination
     private int currentPage = 1;
     private int pageSize = 10;
-    private int totalPages => (int)Math.Ceiling(filteredEntries.Count / (double)pageSize);
+    private int totalPages => Math.Max(1, (int)Math.Ceiling(filteredEntries.Count / (double)pageSize));
+
+    // Delete flow
+    private ConfirmDialog? confirmDialog;
+    private JournalEntry? deleteCandidate;
+
+    /* -------------------------
+       Lifecycle & data loading
+       ------------------------- */
 
     protected override async Task OnInitializedAsync()
     {
+        // Load initial data (moods + entries)
         await LoadEntries();
     }
 
     private async Task LoadEntries()
     {
+        isLoading = true;
+        errorMessage = "";
         try
         {
-            isLoading = true;
-            allMoods = await MoodService.GetAllMoodsAsync();
-            allEntries = await JournalService.GetEntriesAsync();
+            // Load available moods (used for filter UI) and all entries
+            allMoods = await MoodService.GetAllMoodsAsync() ?? new List<Mood>();
+            allEntries = await JournalService.GetEntriesAsync() ?? new List<JournalEntry>();
+
+            // Ensure dates are normalized to local date for correct sorting/filtering
+            foreach (var e in allEntries)
+            {
+                e.Date = e.Date.ToLocalTime();
+            }
+
+            // Apply initial filters (sets filteredEntries and pagination)
             ApplyFilters();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading entries: {ex.Message}");
+            // Surface errors for debugging; consider replacing with ILogger in production
+            errorMessage = "Failed to load entries.";
+            Console.WriteLine($"Error loading entries: {ex}");
         }
         finally
         {
@@ -138,9 +168,25 @@
         }
     }
 
+    /* -------------------------
+       Input handlers (search/filter/sort)
+       ------------------------- */
+
+    // Simple debounce: cancel and schedule ApplyFilters after small delay to avoid applying on every keystroke.
+    private CancellationTokenSource? _searchCts;
     private void OnSearchInput(ChangeEventArgs e)
     {
         searchQuery = e.Value?.ToString() ?? "";
+        // debounce
+        _searchCts?.Cancel();
+        _searchCts = new CancellationTokenSource();
+        _ = Task.Delay(300, _searchCts.Token)
+            .ContinueWith(t => { if (!t.IsCanceled) InvokeAsync(ApplyFilters); }, TaskScheduler.Current);
+    }
+
+    private void ClearSearch()
+    {
+        searchQuery = "";
         ApplyFilters();
     }
 
@@ -152,40 +198,48 @@
 
     private void OnSortOrderChange(ChangeEventArgs e)
     {
-        sortOrder = e.Value?.ToString() ?? "";
+        sortOrder = e.Value?.ToString() ?? "newest";
         ApplyFilters();
     }
 
+    /* -------------------------
+       Filtering / sorting / paging
+       ------------------------- */
+
+    // ApplyFilters rebuilds filteredEntries from allEntries using current search/mood/sort settings.
     private void ApplyFilters()
     {
-        filteredEntries = allEntries.ToList();
+        // Start from full list
+        var list = allEntries.AsEnumerable();
 
+        // Search across title/content/tags/moods (case-insensitive)
         if (!string.IsNullOrWhiteSpace(searchQuery))
         {
-            var query = searchQuery.ToLower();
-            filteredEntries = filteredEntries.Where(e =>
-                (e.Title ?? string.Empty).ToLower().Contains(query) ||
-                (e.Content ?? string.Empty).ToLower().Contains(query) ||
-                (e.Tags ?? string.Empty).ToLower().Contains(query) ||
-                (e.PrimaryMood ?? string.Empty).ToLower().Contains(query)
-            ).ToList();
+            var q = searchQuery.Trim();
+            list = list.Where(e =>
+                (e.Title ?? string.Empty).Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                (StripHtml(e.Content) ?? string.Empty).Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                (e.Tags ?? string.Empty).Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                (e.PrimaryMood ?? string.Empty).Contains(q, StringComparison.OrdinalIgnoreCase));
         }
 
+        // Mood filter (matches primary or secondary moods)
         if (!string.IsNullOrWhiteSpace(moodFilter))
         {
-            filteredEntries = filteredEntries.Where(e =>
+            list = list.Where(e =>
                 (e.PrimaryMood ?? string.Empty).Equals(moodFilter, StringComparison.OrdinalIgnoreCase) ||
-                (e.SecondaryMoods ?? string.Empty).Contains(moodFilter, StringComparison.OrdinalIgnoreCase)
-            ).ToList();
+                ((e.SecondaryMoods ?? string.Empty).IndexOf(moodFilter, StringComparison.OrdinalIgnoreCase) >= 0));
         }
 
+        // Sorting
         filteredEntries = sortOrder switch
         {
-            "oldest" => filteredEntries.OrderBy(e => e.Date).ThenBy(e => e.CreatedAt).ToList(),
-            "title" => filteredEntries.OrderBy(e => e.Title).ToList(),
-            _ => filteredEntries.OrderByDescending(e => e.Date).ThenByDescending(e => e.CreatedAt).ToList()
+            "oldest" => list.OrderBy(e => e.Date).ThenBy(e => e.CreatedAt).ToList(),
+            "title" => list.OrderBy(e => e.Title).ToList(),
+            _ => list.OrderByDescending(e => e.Date).ThenByDescending(e => e.CreatedAt).ToList()
         };
 
+        // Reset paging when filters change
         currentPage = 1;
     }
 
@@ -205,14 +259,19 @@
         }
     }
 
+    /* -------------------------
+       Navigation helpers
+       ------------------------- */
+
+    // Navigate to the journal page for viewing/editing a specific entry.
     private void ViewEntry(int id)
     {
         Navigation.NavigateTo($"/journal/{id}");
     }
 
-    private void ViewEntryView(int id)
+    private void EditEntry(int id)
     {
-        Navigation.NavigateTo($"/journals/view/{id}");
+        Navigation.NavigateTo($"/journal/{id}");
     }
 
     private void GoToWrite()
@@ -220,67 +279,122 @@
         Navigation.NavigateTo("/journal");
     }
 
+    /* -------------------------
+       Utilities
+       ------------------------- */
+
+    // Simple HTML-stripping helper so search and preview operate on plain text
+    private static string StripHtml(string? html)
+    {
+        if (string.IsNullOrWhiteSpace(html)) return string.Empty;
+        return System.Text.RegularExpressions.Regex.Replace(html, "<.*?>", " ");
+    }
+
     private int GetWordCount(string content)
     {
-        if (string.IsNullOrWhiteSpace(content))
-            return 0;
-        
-        var text = System.Text.RegularExpressions.Regex.Replace(content, "<.*?>", " ");
+        var text = StripHtml(content);
+        if (string.IsNullOrWhiteSpace(text)) return 0;
         return text.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length;
     }
 
     private string GetPreview(string content, int maxLength = 150)
     {
-        if (string.IsNullOrWhiteSpace(content))
-            return "";
-        
-        var text = System.Text.RegularExpressions.Regex.Replace(content, "<.*?>", " ");
-        text = text.Trim();
-        
-        if (text.Length <= maxLength)
-            return text;
-        
+        var text = StripHtml(content).Trim();
+        if (text.Length <= maxLength) return text;
         return text.Substring(0, maxLength) + "...";
     }
 
-    private string GetMoodEmoji(string mood)
-    {
-        // Removed emoji display
-        return "";
-    }
-
+    // Returns a CSS class depending on mood category (used for styling)
     private string GetMoodColor(string mood)
     {
         var moodObj = allMoods.FirstOrDefault(m => m.Name == mood);
         return moodObj?.Category == "Negative" ? "entry-card-title-red" : "";
     }
 
-    private async Task EditEntry(int id)
-    {
-        Navigation.NavigateTo($"/journal/{id}");
-    }
+    /* -------------------------
+       Delete flow (uses ConfirmDialog component)
+       ------------------------- */
 
-    private async Task DeleteEntry(JournalEntry entry)
+    // Called when user clicks Delete — stores candidate and opens dialog.
+    private async Task RequestDeleteEntry(JournalEntry entry)
     {
+        deleteCandidate = entry;
+        if (confirmDialog == null)
+        {
+            // fallback to JS confirm if confirmDialog not available
+            var ok = await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this entry?");
+            if (ok) await PerformDelete(entry);
+            return;
+        }
+
         try
         {
-            var confirmed = await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this entry?");
-            if (!confirmed) return;
-
-            var result = await JournalService.DeleteEntryAsync(entry);
-            if (result > 0)
+            // Show the shared ConfirmDialog and await user's choice
+            var confirmed = await confirmDialog.ShowAsync();
+            if (confirmed && deleteCandidate != null)
             {
-                allEntries.RemoveAll(e => e.Id == entry.Id);
-                ApplyFilters();
-            }
-            else
-            {
-                Console.WriteLine("Failed to delete entry");
+                await PerformDelete(deleteCandidate);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error deleting entry: {ex.Message}");
+            Console.WriteLine($"Delete flow error: {ex}");
+        }
+        finally
+        {
+            deleteCandidate = null;
+        }
+    }
+
+    // Actual delete operation: calls service, updates local lists and UI.
+    private async Task PerformDelete(JournalEntry entry)
+    {
+        try
+        {
+            var result = await JournalService.DeleteEntryAsync(entry);
+            if (result > 0)
+            {
+                // Remove from local cache and re-apply filters so UI updates
+                allEntries.RemoveAll(e => e.Id == entry.Id);
+                ApplyFilters();
+                feedbackMessage = "Entry deleted.";
+            }
+            else
+            {
+                errorMessage = "Failed to delete entry.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting entry: {ex.Message}";
+            Console.WriteLine($"Error deleting entry: {ex}");
         }
     }
 }
+<style>
+/* Basic layout & small UI improvements */
+.all-entries-layout { max-width: 1100px; margin: 1.25rem auto; padding: 0 1rem; }
+.entries-header-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; }
+.entries-toolbar { display:flex; gap:0.5rem; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; }
+.entries-search { padding:0.45rem 0.6rem; border-radius:6px; border:1px solid #e6eef8; min-width: 260px; }
+.entries-filter, .entries-sort { padding:0.45rem; border-radius:6px; border:1px solid #e6eef8; }
+.entries-newentry { margin-left:auto; }
+
+.entry-card { border:1px solid rgba(0,0,0,0.04); border-radius:8px; padding:0.75rem; margin-bottom:0.75rem; background: #fff; }
+.entry-card-title { font-weight: 600; font-size:1.05rem; }
+.entry-card-title-red { color: #dc3545; }
+.entry-card-meta { color:#6c757d; font-size:0.9rem; }
+.entry-card-preview { color:#111827; }
+.entry-card-tags { font-size:0.875rem; }
+.entry-card-wordcount { font-size:0.85rem; }
+
+.entries-pagination { display:flex; gap:0.4rem; justify-content:center; margin-top:1rem; flex-wrap:wrap; }
+.pagination-btn { padding:0.35rem 0.6rem; border-radius:6px; border:1px solid rgba(0,0,0,0.06); background:#fff; cursor:pointer; }
+.pagination-btn.active { background:#3b82f6; color:#fff; border-color:#3b82f6; }
+
+/* Small responsive tweaks */
+@media (max-width: 720px) {
+    .entries-toolbar { flex-direction:column; align-items:stretch; gap:0.5rem; }
+    .entries-newentry { margin-left: 0; }
+}
+</style>

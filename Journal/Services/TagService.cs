@@ -1,25 +1,33 @@
-﻿using JournalApp.Models;
-using JournalApp.Services;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+using JournalApp.Models;
 using SQLite;
 
 namespace JournalApp.Services;
 
 public class TagService
 {
-    private readonly SQLiteAsyncConnection _database;
+    private readonly SQLiteAsyncConnection _db;
 
     public TagService(string dbPath)
     {
+        if (string.IsNullOrWhiteSpace(dbPath))
+            throw new ArgumentException("Database path must be provided.", nameof(dbPath));
+
         try
         {
-            _database = new SQLiteAsyncConnection(dbPath);
-            _database.CreateTableAsync<Tag>().Wait();
-            _database.CreateTableAsync<JournalEntryTag>().Wait();
-            Console.WriteLine("Tag tables initialized");
+            _db = new SQLiteAsyncConnection(dbPath);
+            // Ensure tables exist (synchronously during construction)
+            _db.CreateTableAsync<Tag>().GetAwaiter().GetResult();
+            _db.CreateTableAsync<JournalEntryTag>().GetAwaiter().GetResult();
+            Debug.WriteLine("Tag tables initialized");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"TagService initialization error: {ex.Message}");
+            Debug.WriteLine($"TagService initialization error: {ex.Message}");
             throw;
         }
     }
@@ -28,21 +36,29 @@ public class TagService
     {
         try
         {
-            var tags = await _database.Table<Tag>()
+            var tags = await _db.Table<Tag>()
                 .OrderBy(t => t.Name)
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
 
             if (tags == null || !tags.Any())
             {
                 tags = StaticData.GetAllTags();
-                try { await _database.InsertAllAsync(tags); } catch { }
+                try
+                {
+                    await _db.InsertAllAsync(tags).ConfigureAwait(false);
+                }
+                catch (Exception insertEx)
+                {
+                    Debug.WriteLine($"InsertAllAsync fallback failed: {insertEx.Message}");
+                }
             }
 
             return tags;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"GetAllTagsAsync error: {ex.Message}");
+            Debug.WriteLine($"GetAllTagsAsync error: {ex.Message}");
             return StaticData.GetAllTags();
         }
     }
@@ -51,13 +67,14 @@ public class TagService
     {
         try
         {
-            return await _database.Table<Tag>()
+            return await _db.Table<Tag>()
                 .Where(t => t.Id == id)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync()
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"GetTagByIdAsync error: {ex.Message}");
+            Debug.WriteLine($"GetTagByIdAsync error: {ex.Message}");
             return null;
         }
     }
@@ -66,14 +83,19 @@ public class TagService
     {
         try
         {
-            return await _database.Table<Tag>()
-                .Where(t => tagIds.Contains(t.Id))
+            if (tagIds == null) return new List<Tag>();
+            var ids = tagIds as int[] ?? tagIds.ToArray();
+            if (!ids.Any()) return new List<Tag>();
+
+            return await _db.Table<Tag>()
+                .Where(t => ids.Contains(t.Id))
                 .OrderBy(t => t.Name)
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"GetTagsByIdsAsync error: {ex.Message}");
+            Debug.WriteLine($"GetTagsByIdsAsync error: {ex.Message}");
             return new List<Tag>();
         }
     }
@@ -82,36 +104,39 @@ public class TagService
     {
         try
         {
-            var tags = await _database.Table<JournalEntryTag>()
+            var tags = await _db.Table<JournalEntryTag>()
                 .Where(jet => jet.JournalEntryId == journalEntryId)
-                .ToListAsync();
+                .ToListAsync()
+                .ConfigureAwait(false);
             return tags.Select(jet => jet.TagId).ToList();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"GetTagIdsForEntryAsync error: {ex.Message}");
+            Debug.WriteLine($"GetTagIdsForEntryAsync error: {ex.Message}");
             return new List<int>();
         }
     }
 
     public async Task<int> SaveTagAsync(Tag tag)
     {
+        if (tag == null) return 0;
+
         try
         {
             if (tag.Id != 0)
             {
-                await _database.UpdateAsync(tag);
+                await _db.UpdateAsync(tag).ConfigureAwait(false);
                 return tag.Id;
             }
             else
             {
-                await _database.InsertAsync(tag);
+                await _db.InsertAsync(tag).ConfigureAwait(false);
                 return tag.Id;
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"SaveTagAsync error: {ex.Message}");
+            Debug.WriteLine($"SaveTagAsync error: {ex.Message}");
             return 0;
         }
     }
@@ -120,13 +145,13 @@ public class TagService
     {
         try
         {
-            var tag = await GetTagByIdAsync(id);
+            var tag = await GetTagByIdAsync(id).ConfigureAwait(false);
             if (tag is null) return 0;
-            return await _database.DeleteAsync(tag);
+            return await _db.DeleteAsync(tag).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"DeleteTagAsync error: {ex.Message}");
+            Debug.WriteLine($"DeleteTagAsync error: {ex.Message}");
             return 0;
         }
     }
@@ -135,21 +160,20 @@ public class TagService
     {
         try
         {
-            var existingCount = await _database.Table<Tag>().CountAsync();
+            var existingCount = await _db.Table<Tag>().CountAsync().ConfigureAwait(false);
             if (existingCount > 0)
             {
-                Console.WriteLine("Tags already prepopulated");
+                Debug.WriteLine("Tags already prepopulated");
                 return;
             }
 
             var tags = StaticData.GetAllTags();
-
-            await _database.InsertAllAsync(tags);
-            Console.WriteLine($"Prepopulated {tags.Count} tags");
+            await _db.InsertAllAsync(tags).ConfigureAwait(false);
+            Debug.WriteLine($"Prepopulated {tags.Count} tags");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"PrepopulateTagsAsync error: {ex.Message}");
+            Debug.WriteLine($"PrepopulateTagsAsync error: {ex.Message}");
             throw;
         }
     }
@@ -159,26 +183,29 @@ public class TagService
         try
         {
             // Remove existing tags for this entry
-            await _database.Table<JournalEntryTag>()
-                .DeleteAsync(jet => jet.JournalEntryId == journalEntryId);
+            await _db.Table<JournalEntryTag>()
+                .DeleteAsync(jet => jet.JournalEntryId == journalEntryId)
+                .ConfigureAwait(false);
 
-            // Add new tags
-            if (tagIds.Any())
+            // Add new tags (if any)
+            if (tagIds == null || !tagIds.Any())
             {
-                var entryTags = tagIds.Select(tagId => new JournalEntryTag
-                {
-                    JournalEntryId = journalEntryId,
-                    TagId = tagId
-                }).ToList();
-
-                await _database.InsertAllAsync(entryTags);
+                Debug.WriteLine($"Cleared tags for journal entry {journalEntryId}");
+                return;
             }
 
-            Console.WriteLine($"Saved {tagIds.Count} tags for journal entry {journalEntryId}");
+            var entryTags = tagIds.Select(tagId => new JournalEntryTag
+            {
+                JournalEntryId = journalEntryId,
+                TagId = tagId
+            }).ToList();
+
+            await _db.InsertAllAsync(entryTags).ConfigureAwait(false);
+            Debug.WriteLine($"Saved {tagIds.Count} tags for journal entry {journalEntryId}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"SaveTagsForEntryAsync error: {ex.Message}");
+            Debug.WriteLine($"SaveTagsForEntryAsync error: {ex.Message}");
             throw;
         }
     }

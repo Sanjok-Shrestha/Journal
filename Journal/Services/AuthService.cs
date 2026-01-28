@@ -4,9 +4,9 @@ namespace JournalApp.Services;
 
 public class AuthService
 {
-    public readonly UserService _userService;
-    public bool isAuthenticated = false;
-    public User? currentUser = null;
+    private readonly UserService _userService;
+    private bool isAuthenticated = false;
+    private User? currentUser = null;
 
     public AuthService(UserService userService)
     {
@@ -26,10 +26,14 @@ public class AuthService
         try
         {
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(otp))
+            {
                 return false;
+            }
 
             if (otp.Length != 4 || !otp.All(char.IsDigit))
+            {
                 return false;
+            }
 
             var result = await _userService.CreateUserAsync(name, otp);
             return result > 0;
@@ -43,7 +47,9 @@ public class AuthService
     public async Task<bool> ValidateOTPAsync(string otp)
     {
         if (string.IsNullOrWhiteSpace(otp))
+        {
             return false;
+        }
 
         var isValid = await _userService.ValidateOTPAsync(otp);
         if (isValid)
@@ -70,7 +76,9 @@ public class AuthService
         try
         {
             if (string.IsNullOrWhiteSpace(newOtp) || newOtp.Length != 4 || !newOtp.All(char.IsDigit))
+            {
                 return false;
+            }
 
             var result = await _userService.UpdateOTPAsync(newOtp);
             return result > 0;
@@ -79,17 +87,5 @@ public class AuthService
         {
             return false;
         }
-    }
-
-    // New helpers used by Razor pages
-    public Task<User?> GetCurrentUserAsync()
-    {
-        // If currentUser already loaded, return it; otherwise fetch from UserService
-        return Task.FromResult(currentUser ?? _userService.GetUserAsync().Result);
-    }
-
-    public Task<bool> IsAuthenticatedAsync()
-    {
-        return Task.FromResult(isAuthenticated);
     }
 }

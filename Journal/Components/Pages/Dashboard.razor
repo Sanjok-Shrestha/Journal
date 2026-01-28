@@ -1,143 +1,154 @@
 ﻿@page "/dashboard"
 @using JournalApp.Services
 @using JournalApp.Models
-@inject AuthService AuthService
-@inject AnalyticsService AnalyticsService
 @inject NavigationManager Navigation
+@inject JournalService JournalService
+@inject MoodService MoodService
+@inject TagService TagService
 
-<div class="dashboard-container">
-    <h1> Dashboard Analytics & Insights</h1>
+<div class="ds-dashboard-main">
+    <h1>Dashboard</h1>
+    <div class="ds-dashboard-date">@DateTime.Today.ToString("dddd, MMMM dd, yyyy")</div>
 
-    @if (isLoading)
+    <div class="ds-dashboard-stats-row">
+        <div class="ds-dashboard-stat">
+            <div class="ds-dashboard-stat-label">Current Streak</div>
+            <div class="ds-dashboard-stat-value">@currentStreak days</div>
+        </div>
+        <div class="ds-dashboard-stat">
+            <div class="ds-dashboard-stat-label">Total Entries</div>
+            <div class="ds-dashboard-stat-value">@totalEntries</div>
+        </div>
+        <div class="ds-dashboard-stat">
+            <div class="ds-dashboard-stat-label">Words Written</div>
+            <div class="ds-dashboard-stat-value">@totalWords.ToString("N0")</div>
+        </div>
+    </div>
+
+    <h2 class="ds-dashboard-section">Quick Actions</h2>
+    <div class="ds-dashboard-quick-actions">
+        <button class="ds-dashboard-primary" @onclick="GoToJournal">
+            Write Today's Entry
+        </button>
+        <div class="ds-dashboard-secondary-actions">
+            <button @onclick="GoToEntries">
+                View All Entries
+            </button>
+            <button @onclick="GoToAnalytics">
+                View Statistics
+            </button>
+        </div>
+    </div>
+
+    @if (recentEntry != null)
     {
-        <div class="loading">Loading analytics...</div>
-    }
-    else if (analytics != null)
-    {
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon"></div>
-                <div class="stat-value">@analytics.TotalEntries</div>
-                <div class="stat-label">Total Entries</div>
+        <h2 class="ds-dashboard-section">Recent Entry</h2>
+        <div class="ds-dashboard-recent-entry clickable" @onclick="HandleViewRecentEntry">
+            <div class="ds-dashboard-recent-entry-date"><b>@recentEntry.Date.ToString("MMMM dd, yyyy")</b></div>
+            <div class="ds-dashboard-recent-entry-title">
+                @recentEntry.Title
+                <span class="ds-mini-mood">@recentEntry.PrimaryMoodName</span>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon"></div>
-                <div class="stat-value">@analytics.TotalWords</div>
-                <div class="stat-label">Total Words</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"></div>
-                <div class="stat-value">@analytics.AverageWordCount</div>
-                <div class="stat-label">Avg Words/Entry</div>
-            </div>
-        </div>
-
-        <div class="analytics-section">
-            <h2>Mood Distribution</h2>
-            <div class="mood-distribution">
-                @foreach (var mood in analytics.MoodDistribution)
-                {
-                    <div class="mood-bar-item">
-                        <div class="mood-label">
-                            <span class="mood-emoji">@mood.Mood.GetEmoji()</span>
-                            <span>@mood.Mood</span>
-                        </div>
-                        <div class="mood-bar-container">
-                            <div class="mood-bar"
-                                 style="width: @mood.Percentage%; background-color: @mood.Mood.GetColor()">
-                                <span class="mood-count">@mood.Count</span>
-                            </div>
-                        </div>
-                        <span class="mood-percentage">@mood.Percentage.ToString("F1")%</span>
-                    </div>
-                }
-            </div>
-        </div>
-
-        <div class="analytics-section">
-            <h2>Most Frequent Moods</h2>
-            <div class="frequent-moods">
-                @foreach (var (mood, index) in analytics.FrequentMoods.Select((m, i) => (m, i)))
-                {
-                    <div class="frequent-mood-card" style="border-color: @mood.Mood.GetColor()">
-                        <div class="rank">#@(index + 1)</div>
-                        <div class="mood-info">
-                            <div class="mood-emoji-large">@mood.Mood.GetEmoji()</div>
-                            <div class="mood-name">@mood.Mood</div>
-                            <div class="mood-stats">@mood.Count entries (@mood.Percentage%)</div>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
-
-        <div class="analytics-section">
-            <h2>Most Used Tags</h2>
-            <div class="tags-cloud">
-                @foreach (var tag in analytics.MostUsedTags)
-                {
-                    <div class="tag-cloud-item"
-                         style="font-size: @(12 + Math.Min(tag.Count * 2, 20))px; color: @tag.Color">
-                        #@tag.Name
-                        <span class="tag-count">(@tag.Count)</span>
-                    </div>
-                }
-            </div>
-        </div>
-
-        <div class="analytics-section">
-            <h2>Tag Breakdown</h2>
-            <div class="tag-breakdown">
-                @foreach (var tag in analytics.TagBreakdown)
-                {
-                    <div class="tag-breakdown-item">
-                        <span class="tag-name">#@tag.Name</span>
-                        <span class="tag-stat">@tag.Count entries</span>
-                    </div>
-                }
-            </div>
-        </div>
-
-        <div class="analytics-section">
-            <h2>Word Count Trends (Last 30 Days)</h2>
-            <div class="word-count-trends">
-                @foreach (var trend in analytics.WordCountTrends)
-                {
-                    <div class="trend-item">
-                        <span>@trend.Date.ToString("MMM dd")</span>
-                        <span>@trend.WordCount words</span>
-                    </div>
-                }
-            </div>
+            <div class="ds-dashboard-recent-entry-meta">@GetWordCount(recentEntry.Content) words</div>
         </div>
     }
     else
     {
-        <p>No data available. Start writing journal entries to see analytics!</p>
+        <h2 class="ds-dashboard-section">Recent Entry</h2>
+        <div class="ds-dashboard-recent-entry">
+            <p style="text-align: center; color: #888;">No entries yet. Start writing your first journal entry!</p>
+        </div>
     }
 </div>
 
 @code {
-    public DashboardAnalytics? analytics;
-    private bool isLoading = true;
+    private int totalEntries = 0;
+    private int totalWords = 0;
+    private int currentStreak = 0;
+    private JournalEntry? recentEntry;
+    private List<Mood> allMoods = new();
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadDashboardData();
+    }
+
+    private async Task LoadDashboardData()
+    {
         try
         {
-            if (!await AuthService.IsAuthenticatedAsync())
-            {
-                Navigation.NavigateTo("/login");
-                return;
-            }
-
-            analytics = await AnalyticsService.GetDashboardAnalyticsAsync();
-            isLoading = false;
+            allMoods = await MoodService.GetAllMoodsAsync();
+            var entries = await JournalService.GetEntriesAsync();
+            
+            totalEntries = entries.Count;
+            totalWords = entries.Sum(e => GetWordCount(e.Content));
+            currentStreak = CalculateStreak(entries);
+            
+            recentEntry = entries.OrderByDescending(e => e.Date)
+                .ThenByDescending(e => e.CreatedAt)
+                .FirstOrDefault();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading dashboard: {ex.Message}");
-            isLoading = false;
+            Console.WriteLine($"Error loading dashboard data: {ex.Message}");
         }
     }
+
+    private int CalculateStreak(List<JournalEntry> entries)
+    {
+        if (!entries.Any()) return 0;
+
+        var sortedDates = entries
+            .Select(e => e.Date.Date)
+            .Distinct()
+            .OrderByDescending(d => d)
+            .ToList();
+
+        if (!sortedDates.Any()) return 0;
+
+        var today = DateTime.Today;
+        var mostRecent = sortedDates.First();
+        
+        if (mostRecent < today.AddDays(-1))
+            return 0;
+
+        int streak = 0;
+        var currentDate = today;
+
+        foreach (var date in sortedDates)
+        {
+            if (date == currentDate || date == currentDate.AddDays(-1))
+            {
+                streak++;
+                currentDate = date.AddDays(-1);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return streak;
+    }
+
+    private int GetWordCount(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+            return 0;
+
+        var text = System.Text.RegularExpressions.Regex.Replace(content, "<.*?>", " ");
+        return text.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length;
+    }
+
+    private void HandleViewRecentEntry()
+    {
+        if (recentEntry != null)
+        {
+            Navigation.NavigateTo($"/journal/{recentEntry.Id}");
+        }
+    }
+
+    private void GoToJournal() => Navigation.NavigateTo("/journal");
+    private void GoToEntries() => Navigation.NavigateTo("/entries");
+    private void GoToAnalytics() => Navigation.NavigateTo("/analytics");
 }

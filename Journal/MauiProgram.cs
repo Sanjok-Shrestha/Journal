@@ -2,6 +2,7 @@
 using MudBlazor.Services;
 using JournalApp.Services;
 using Microsoft.Maui.Storage;
+using System.IO;
 
 namespace JournalApp
 {
@@ -20,15 +21,23 @@ namespace JournalApp
             builder.Services.AddMauiBlazorWebView();
 
 #if DEBUG
-    		builder.Services.AddBlazorWebViewDeveloperTools();
-    		builder.Logging.AddDebug();
+            builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Logging.AddDebug();
 #endif
             builder.Services.AddMudServices();
 
-            // Database path
-            var dbPath = Path.Combine(FileSystem.AppDataDirectory, "journal.db");
+            // Database path fix for Windows!
+            string dbPath;
+#if WINDOWS
+            dbPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "journal.db"
+            );
+#else
+            dbPath = Path.Combine(FileSystem.AppDataDirectory, "journal.db");
+#endif
+
             Console.WriteLine($"Database path: {dbPath}");
-            Console.WriteLine($"AppData directory: {FileSystem.AppDataDirectory}");
 
             // Ensure directory exists
             var dbDirectory = Path.GetDirectoryName(dbPath);
@@ -52,7 +61,7 @@ namespace JournalApp
                 }
             });
 
-            // Register UserService (single registration with factory)
+            // Register UserService
             builder.Services.AddSingleton<UserService>(s =>
             {
                 try
@@ -66,9 +75,40 @@ namespace JournalApp
                 }
             });
 
+            // Register MoodService (ASYNC prepopulation)
+            builder.Services.AddSingleton<MoodService>(s =>
+            {
+                try
+                {
+                    var service = new MoodService(dbPath);
+                    Task.Run(() => service.PrepopulateMoodsAsync());
+                    return service;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error creating MoodService: {ex.Message}");
+                    throw;
+                }
+            });
+
+            // Register TagService (ASYNC prepopulation)
+            builder.Services.AddSingleton<TagService>(s =>
+            {
+                try
+                {
+                    var service = new TagService(dbPath);
+                    Task.Run(() => service.PrepopulateTagsAsync());
+                    return service;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error creating TagService: {ex.Message}");
+                    throw;
+                }
+            });
+
             // Register Auth and Theme services
-            builder.Services.AddScoped<AuthService>();
-            builder.Services.AddScoped<AnalyticsService>();
+            builder.Services.AddSingleton<AuthService>();
             builder.Services.AddSingleton<ThemeService>();
 
             return builder.Build();

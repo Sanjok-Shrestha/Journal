@@ -63,7 +63,7 @@
             @foreach (var mood in topMoods.Take(5))
             {
                 <div class="mood-item">
-                    <span>@GetMoodEmoji(mood.Key) @mood.Key</span>
+                    <span>@mood.Key</span>
                     <span class="mood-count">@mood.Value entries</span>
                 </div>
             }
@@ -121,34 +121,33 @@
         CalculateStreaks(entries);
 
         // Count mood categories
-        positiveCount = entries.Count(e => IsPositiveMood(e.PrimaryMood));
-        neutralCount = entries.Count(e => IsNeutralMood(e.PrimaryMood));
-        negativeCount = entries.Count(e => IsNegativeMood(e.PrimaryMood));
+        positiveCount = entries.Count(e => StaticData.IsPositiveMood(e.PrimaryMood));
+        neutralCount = entries.Count(e => StaticData.IsNeutralMood(e.PrimaryMood));
+        negativeCount = entries.Count(e => StaticData.IsNegativeMood(e.PrimaryMood));
 
         // Calculate top moods
-        var moodCounts = new Dictionary<string, int>();
+        var moodCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var entry in entries)
         {
-            if (!string.IsNullOrEmpty(entry.PrimaryMood))
+            if (!string.IsNullOrWhiteSpace(entry.PrimaryMood))
             {
-                if (!moodCounts.ContainsKey(entry.PrimaryMood))
-                    moodCounts[entry.PrimaryMood] = 0;
-                moodCounts[entry.PrimaryMood]++;
+                var name = entry.PrimaryMood.Trim();
+                if (!moodCounts.ContainsKey(name)) moodCounts[name] = 0;
+                moodCounts[name]++;
             }
         }
         topMoods = moodCounts.OrderByDescending(x => x.Value).ToList();
 
         // Calculate top tags
-        var tagCounts = new Dictionary<string, int>();
+        var tagCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         foreach (var entry in entries)
         {
-            if (!string.IsNullOrEmpty(entry.Tags))
+            if (!string.IsNullOrWhiteSpace(entry.Tags))
             {
-                var tags = entry.Tags.Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrWhiteSpace(t));
-                foreach (var tag in tags)
+                var parts = entry.Tags.Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrEmpty(t));
+                foreach (var tag in parts)
                 {
-                    if (!tagCounts.ContainsKey(tag))
-                        tagCounts[tag] = 0;
+                    if (!tagCounts.ContainsKey(tag)) tagCounts[tag] = 0;
                     tagCounts[tag]++;
                 }
             }
@@ -219,44 +218,5 @@
     {
         var maxCount = topTags.Any() ? topTags.Max(t => t.Value) : 1;
         return 0.9 + (count / (double)maxCount) * 1.5;
-    }
-
-    private bool IsPositiveMood(string mood)
-    {
-        return new[] { "Happy", "Excited", "Relaxed", "Grateful", "Confident" }.Contains(mood);
-    }
-
-    private bool IsNeutralMood(string mood)
-    {
-        return new[] { "Calm", "Thoughtful", "Curious", "Nostalgic", "Bored" }.Contains(mood);
-    }
-
-    private bool IsNegativeMood(string mood)
-    {
-        return new[] { "Sad", "Angry", "Stressed", "Lonely", "Anxious", "Tired" }.Contains(mood);
-    }
-
-    private string GetMoodEmoji(string mood)
-    {
-        return mood switch
-        {
-            "Happy" => "??",
-            "Sad" => "??",
-            "Calm" => "??",
-            "Excited" => "??",
-            "Anxious" => "??",
-            "Grateful" => "??",
-            "Tired" => "??",
-            "Angry" => "??",
-            "Stressed" => "??",
-            "Confident" => "??",
-            "Relaxed" => "??",
-            "Thoughtful" => "??",
-            "Curious" => "??",
-            "Nostalgic" => "??",
-            "Bored" => "??",
-            "Lonely" => "??",
-            _ => "??"
-        };
     }
 }

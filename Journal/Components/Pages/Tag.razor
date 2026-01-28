@@ -1,12 +1,9 @@
 ﻿@page "/tags"
-@using JournalApp.Models
+@using TagModel = JournalApp.Models.Tag
 @using JournalApp.Services
 @using Microsoft.JSInterop
 @inject TagService TagService
 @inject IJSRuntime JS
-
-@* Avoid name collision with this component (Tag) and model Tag by aliasing the model *@
-@using TagModel = JournalApp.Models.Tag
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">

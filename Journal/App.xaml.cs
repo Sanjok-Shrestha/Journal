@@ -9,7 +9,7 @@
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new MainPage()) { Title = "Daily_Journal_App" };
+            return new Window(new MainPage()) { Title = "JournalApp" };
         }
     }
 }

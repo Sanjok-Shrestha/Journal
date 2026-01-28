@@ -1,134 +1,286 @@
-﻿@page "/editor"
-@page "/editor/{EntryId:int}"
+﻿@page "/entries"
 @using JournalApp.Services
 @using JournalApp.Models
-@using Microsoft.AspNetCore.Components.Forms
 @inject JournalService JournalService
+@inject MoodService MoodService
+@inject TagService TagService
 @inject NavigationManager Navigation
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
 
-<div style="padding: 20px;">
-    <h1>Journal Entry Editor</h1>
-
-    <div style="margin-bottom: 20px;">
-        <button @onclick="Cancel" style="padding: 10px 20px;">← Back</button>
-        <button @onclick="SaveEntry" style="padding: 10px 20px; background: green; color: white;">Save</button>
+<div class="all-entries-layout">
+    <div class="entries-header-row">
+        <h1>All Journal Entries</h1>
+        <span class="entries-count">@filteredEntries.Count entries</span>
     </div>
-
-    <div style="margin-bottom: 15px;">
-        <label><strong>Date:</strong></label><br />
-        <input type="date" @bind="entryDate" style="width: 200px; padding: 5px;" />
-    </div>
-
-    <div style="margin-bottom: 15px;">
-        <label><strong>Title:</strong></label><br />
-        <input type="text" @bind="title" style="width: 100%; padding: 8px;" placeholder="Entry title..." />
-    </div>
-
-    <div style="margin-bottom: 15px;">
-        <label><strong>Mood:</strong></label><br />
-        <select @bind="mood" style="padding: 8px;">
-            <option value="Happy">Happy</option>
-            <option value="Sad">Sad</option>
-            <option value="Angry">Angry</option>
-            <option value="Anxious">Anxious</option>
-            <option value="Excited">Excited</option>
-            <option value="Calm">Calm</option>
+    
+    <div class="entries-toolbar">
+        <input class="entries-search" 
+               placeholder=" Search entries..." 
+               value="@searchQuery"
+               @oninput="OnSearchInput" />
+        
+        <select class="entries-filter" value="@moodFilter" @onchange="OnMoodFilterChange">
+            <option value="">All Moods</option>
+            @foreach (var mood in allMoods)
+            {
+                <option value="@mood.Name">@mood.Name</option>
+            }
         </select>
+        
+        <select class="entries-sort" value="@sortOrder" @onchange="OnSortOrderChange">
+            <option value="newest">Sort: Newest First ▼</option>
+            <option value="oldest">Sort: Oldest First ▲</option>
+            <option value="title">Sort: Title (A-Z)</option>
+        </select>
+        
+        <button class="entries-newentry" @onclick="GoToWrite">+ New Entry</button>
     </div>
 
-    <div style="margin-bottom: 15px;">
-        <label><strong>Content:</strong></label><br />
-        <textarea @bind="content"
-                  rows="15"
-                  style="width: 100%; padding: 10px; font-size: 14px; font-family: Arial;"
-                  placeholder="Write your thoughts here...">
-        </textarea>
-    </div>
-
-    <div style="margin-bottom: 15px;">
-        <label><strong>Tags (comma-separated):</strong></label><br />
-        <input type="text" @bind="tags" style="width: 100%; padding: 8px;" placeholder="work, health, travel" />
-    </div>
-
-    @if (!string.IsNullOrEmpty(message))
+    @if (isLoading)
     {
-        <div style="padding: 15px; background: @(isError ? "#fee" : "#efe"); border: 1px solid @(isError ? "red" : "green"); margin: 10px 0;">
-            @message
+        <div class="loading-message">Loading entries...</div>
+    }
+    else if (!filteredEntries.Any())
+    {
+        <div class="empty-state">
+            <p>No entries found.</p>
+            <button class="entries-newentry" @onclick="GoToWrite">Create Your First Entry</button>
         </div>
+    }
+    else
+    {
+        <div class="entries-list">
+            @foreach (var entry in GetPagedEntries())
+            {
+                <div class="entry-card">
+                    <div class="entry-card-header d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="entry-card-title @(GetMoodColor(entry.PrimaryMood))">@entry.Title</div>
+                            <div class="entry-card-meta">@entry.Date.ToString("yyyy-MM-dd") - @entry.PrimaryMood</div>
+                        </div>
+
+                        <div class="entry-card-actions d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary" @onclick="() => ViewEntryView(entry.Id)">View</button>
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => EditEntry(entry.Id)">Edit</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteEntry(entry)">Delete</button>
+                        </div>
+                    </div>
+
+                    <div class="entry-card-body mt-2">
+                        <div class="entry-card-preview">@GetPreview(entry.Content, 200)</div>
+                        <div class="entry-card-tags text-muted mt-2">@string.Join(" • ", (entry.Tags ?? string.Empty).Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrEmpty(t)))</div>
+                        <div class="entry-card-wordcount text-muted">Words: @GetWordCount(entry.Content)</div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="entries-pagination">
+                @if (currentPage > 1)
+                {
+                    <button class="pagination-btn" @onclick="@(() => ChangePage(currentPage - 1))">« Previous</button>
+                }
+                
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    var pageNumber = i;
+                    <button class="pagination-btn @(currentPage == pageNumber ? "active" : "")" 
+                            @onclick="@(() => ChangePage(pageNumber))">@pageNumber</button>
+                }
+                
+                @if (currentPage < totalPages)
+                {
+                    <button class="pagination-btn" @onclick="@(() => ChangePage(currentPage + 1))">Next »</button>
+                }
+            </div>
+        }
     }
 </div>
 
 @code {
-    [Parameter]
-    public int? EntryId { get; set; }
+    private List<JournalEntry> allEntries = new();
+    private List<JournalEntry> filteredEntries = new();
+    private List<Mood> allMoods = new();
+    private string searchQuery = "";
+    private string moodFilter = "";
+    private string sortOrder = "newest";
+    private bool isLoading = true;
+    private string feedbackMessage = "";
 
-    private DateTime entryDate = DateTime.Today;
-    private string title = "";
-    private string mood = "Happy";
-    private string content = "";
-    private string tags = "";
-    private string message = "";
-    private bool isError = false;
+    private int currentPage = 1;
+    private int pageSize = 10;
+    private int totalPages => (int)Math.Ceiling(filteredEntries.Count / (double)pageSize);
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadEntries();
+    }
+
+    private async Task LoadEntries()
+    {
         try
         {
-            if (EntryId.HasValue && EntryId.Value > 0)
+            isLoading = true;
+            allMoods = await MoodService.GetAllMoodsAsync();
+            allEntries = await JournalService.GetEntriesAsync();
+            ApplyFilters();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading entries: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? "";
+        ApplyFilters();
+    }
+
+    private void OnMoodFilterChange(ChangeEventArgs e)
+    {
+        moodFilter = e.Value?.ToString() ?? "";
+        ApplyFilters();
+    }
+
+    private void OnSortOrderChange(ChangeEventArgs e)
+    {
+        sortOrder = e.Value?.ToString() ?? "";
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        filteredEntries = allEntries.ToList();
+
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            var query = searchQuery.ToLower();
+            filteredEntries = filteredEntries.Where(e =>
+                (e.Title ?? string.Empty).ToLower().Contains(query) ||
+                (e.Content ?? string.Empty).ToLower().Contains(query) ||
+                (e.Tags ?? string.Empty).ToLower().Contains(query) ||
+                (e.PrimaryMood ?? string.Empty).ToLower().Contains(query)
+            ).ToList();
+        }
+
+        if (!string.IsNullOrWhiteSpace(moodFilter))
+        {
+            filteredEntries = filteredEntries.Where(e =>
+                (e.PrimaryMood ?? string.Empty).Equals(moodFilter, StringComparison.OrdinalIgnoreCase) ||
+                (e.SecondaryMoods ?? string.Empty).Contains(moodFilter, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+        }
+
+        filteredEntries = sortOrder switch
+        {
+            "oldest" => filteredEntries.OrderBy(e => e.Date).ThenBy(e => e.CreatedAt).ToList(),
+            "title" => filteredEntries.OrderBy(e => e.Title).ToList(),
+            _ => filteredEntries.OrderByDescending(e => e.Date).ThenByDescending(e => e.CreatedAt).ToList()
+        };
+
+        currentPage = 1;
+    }
+
+    private List<JournalEntry> GetPagedEntries()
+    {
+        return filteredEntries
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+    }
+
+    private void ChangePage(int page)
+    {
+        if (page >= 1 && page <= totalPages)
+        {
+            currentPage = page;
+        }
+    }
+
+    private void ViewEntry(int id)
+    {
+        Navigation.NavigateTo($"/journal/{id}");
+    }
+
+    private void ViewEntryView(int id)
+    {
+        Navigation.NavigateTo($"/journals/view/{id}");
+    }
+
+    private void GoToWrite()
+    {
+        Navigation.NavigateTo("/journal");
+    }
+
+    private int GetWordCount(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+            return 0;
+        
+        var text = System.Text.RegularExpressions.Regex.Replace(content, "<.*?>", " ");
+        return text.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length;
+    }
+
+    private string GetPreview(string content, int maxLength = 150)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+            return "";
+        
+        var text = System.Text.RegularExpressions.Regex.Replace(content, "<.*?>", " ");
+        text = text.Trim();
+        
+        if (text.Length <= maxLength)
+            return text;
+        
+        return text.Substring(0, maxLength) + "...";
+    }
+
+    private string GetMoodEmoji(string mood)
+    {
+        // Removed emoji display
+        return "";
+    }
+
+    private string GetMoodColor(string mood)
+    {
+        var moodObj = allMoods.FirstOrDefault(m => m.Name == mood);
+        return moodObj?.Category == "Negative" ? "entry-card-title-red" : "";
+    }
+
+    private async Task EditEntry(int id)
+    {
+        Navigation.NavigateTo($"/journal/{id}");
+    }
+
+    private async Task DeleteEntry(JournalEntry entry)
+    {
+        try
+        {
+            var confirmed = await JS.InvokeAsync<bool>("confirm", "Are you sure you want to delete this entry?");
+            if (!confirmed) return;
+
+            var result = await JournalService.DeleteEntryAsync(entry);
+            if (result > 0)
             {
-                var entry = await JournalService.GetEntryByIdAsync(EntryId.Value);
-                if (entry != null)
-                {
-                    entryDate = entry.EntryDate;
-                    title = entry.Title;
-                    mood = entry.PrimaryMood ?? "Happy";
-                    content = entry.Content;
-                    tags = entry.Tags;
-                }
+                allEntries.RemoveAll(e => e.Id == entry.Id);
+                ApplyFilters();
+            }
+            else
+            {
+                Console.WriteLine("Failed to delete entry");
             }
         }
         catch (Exception ex)
         {
-            message = $"Error loading: {ex.Message}";
-            isError = true;
+            Console.WriteLine($"Error deleting entry: {ex.Message}");
         }
-    }
-
-    private async Task SaveEntry()
-    {
-        try
-        {
-            var entry = new JournalEntry
-            {
-                Id = EntryId ?? 0,
-                EntryDate = entryDate,
-                Title = title,
-                Content = content,
-                Tags = tags,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
-                WordCount = string.IsNullOrWhiteSpace(content) ? 0 : content.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length
-            };
-
-            // store mood as string
-            entry.PrimaryMood = mood;
-
-            await JournalService.SaveEntryAsync(entry);
-            message = "Entry saved successfully!";
-            isError = false;
-
-            await Task.Delay(800);
-            Navigation.NavigateTo("/");
-        }
-        catch (Exception ex)
-        {
-            message = $"Error saving: {ex.Message}";
-            isError = true;
-        }
-    }
-
-    private void Cancel()
-    {
-        Navigation.NavigateTo("/");
     }
 }

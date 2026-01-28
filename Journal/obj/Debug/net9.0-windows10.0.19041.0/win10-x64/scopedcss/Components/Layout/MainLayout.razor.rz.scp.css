@@ -168,4 +168,36 @@
     .ds-logo[b-wyqhynbrrg] {
         font-size: 1.5rem;
     }
+    /* Center and box main content for readability */
+    .ds-content-inner[b-wyqhynbrrg], .entries-container[b-wyqhynbrrg], .content-center[b-wyqhynbrrg], .content-box[b-wyqhynbrrg] {
+        width: 100%;
+        max-width: 780px;
+        margin: 0 auto;
+        /* Optional: uncomment for a nice card look!
+    background: var(--content-bg, #fff);
+    border-radius: 10px;
+    box-shadow: 0 2px 15px #eee;
+    padding: 32px 24px;
+    */
+        /* Use color variables for theming if desired */
+    }
+
+    /* For vertical centering and more padding */
+    .ds-content[b-wyqhynbrrg] {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Responsive: ensure max width doesn't overflow */
+    @media (max-width: 900px) {
+        .ds-content-inner[b-wyqhynbrrg], .entries-container[b-wyqhynbrrg], .content-center[b-wyqhynbrrg], .content-box[b-wyqhynbrrg] {
+            max-width: 97vw;
+            padding: 15px 0;
+        }
+
+        .ds-content[b-wyqhynbrrg] {
+            padding: 8px;
+        }
+    }
 }

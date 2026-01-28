@@ -5,13 +5,13 @@
 @inject NavigationManager Navigation
 
 <div class="calendar-page">
-    <h1>?? Calendar View</h1>
+    <h1>Calendar</h1>
     <p>Navigate through your journal entries by date</p>
 
     <div class="calendar-controls">
-        <button @onclick="PreviousMonth">? Previous</button>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="PreviousMonth">Previous</button>
         <h2>@currentDate.ToString("MMMM yyyy")</h2>
-        <button @onclick="NextMonth">Next ?</button>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="NextMonth">Next</button>
     </div>
 
     <div class="calendar-grid">
@@ -39,7 +39,7 @@
                 <span class="day-number">@day</span>
                 @if (hasEntry)
                 {
-                    <span class="entry-indicator">?</span>
+                    <span class="entry-indicator">•</span>
                 }
             </div>
         }
@@ -47,13 +47,13 @@
 
     @if (selectedDateEntries.Any())
     {
-        <div class="selected-date-entries">
+        <div class="selected-date-entries mt-3">
             <h3>Entries for @selectedDate.ToString("MMMM dd, yyyy")</h3>
             @foreach (var entry in selectedDateEntries)
             {
                 <div class="entry-preview" @onclick="() => ViewEntry(entry.Id)">
                     <h4>@entry.Title</h4>
-                    <p>@GetMoodEmoji(entry.PrimaryMood) @entry.PrimaryMood</p>
+                    <p>@(entry.Content ?? "No description")</p>
                 </div>
             }
         </div>
@@ -95,7 +95,18 @@
 
     private async Task SelectDate(DateTime date)
     {
-        await LoadEntriesForDate(date);
+        // If an entry exists for the selected date, navigate to the view page for that entry.
+        var entries = await JournalService.GetEntriesByDateAsync(date);
+        if (entries != null && entries.Any())
+        {
+            var first = entries.First();
+            Navigation.NavigateTo($"/journal/view/{first.Id}");
+            return;
+        }
+
+        // No entry exists for that date — open the journal write page and pass the date so user can create an entry for it.
+        var dateString = date.ToString("yyyy-MM-dd");
+        Navigation.NavigateTo($"/journal?new=true&date={dateString}");
     }
 
     private async Task PreviousMonth()
@@ -113,24 +124,5 @@
     private void ViewEntry(int id)
     {
         Navigation.NavigateTo($"/journal/{id}");
-    }
-
-    private string GetMoodEmoji(string mood)
-    {
-        return mood switch
-        {
-            "Happy" => "??",
-            "Sad" => "??",
-            "Calm" => "??",
-            "Excited" => "??",
-            "Anxious" => "??",
-            "Grateful" => "??",
-            "Tired" => "??",
-            "Angry" => "??",
-            "Stressed" => "??",
-            "Confident" => "??",
-            "Relaxed" => "??",
-            _ => "??"
-        };
     }
 }

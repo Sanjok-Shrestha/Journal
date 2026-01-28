@@ -1,5 +1,6 @@
 ﻿using SQLite;
 using JournalApp.Models;
+
 namespace JournalApp.Services;
 
 public class MoodService

@@ -31,18 +31,19 @@
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "C:\\Program Files\\dotnet\\library-packs": {},
-          "https://api.nuget.org/v3/index.json": {}
+          "https://api.nuget.org/v3/index.json": {},
+          "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json": {}
         },
         "frameworks": {
           "net9.0-android35.0": {
             "targetAlias": "net9.0-android",
             "projectReferences": {}
           },
-          "net9.0-ios18.5": {
+          "net9.0-ios26.0": {
             "targetAlias": "net9.0-ios",
             "projectReferences": {}
           },
-          "net9.0-maccatalyst18.5": {
+          "net9.0-maccatalyst26.0": {
             "targetAlias": "net9.0-maccatalyst",
             "projectReferences": {}
           },
@@ -69,7 +70,7 @@
           "dependencies": {
             "Microsoft.AspNetCore.Components.WebView.Maui": {
               "target": "Package",
-              "version": "[9.0.82, )"
+              "version": "[9.0.120, )"
             },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
@@ -77,7 +78,7 @@
             },
             "Microsoft.Maui.Controls": {
               "target": "Package",
-              "version": "[9.0.82, )"
+              "version": "[9.0.120, )"
             },
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
@@ -88,10 +89,6 @@
             "MudBlazor": {
               "target": "Package",
               "version": "[8.15.0, )"
-            },
-            "QuestPDF": {
-              "target": "Package",
-              "version": "[2025.12.3, )"
             },
             "sqlite-net-pcl": {
               "target": "Package",
@@ -109,6 +106,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.Android": {
               "privateAssets": "all"
@@ -119,12 +122,12 @@
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         },
-        "net9.0-ios18.5": {
+        "net9.0-ios26.0": {
           "targetAlias": "net9.0-ios",
           "dependencies": {
             "Microsoft.AspNetCore.Components.WebView.Maui": {
               "target": "Package",
-              "version": "[9.0.82, )"
+              "version": "[9.0.120, )"
             },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
@@ -132,7 +135,7 @@
             },
             "Microsoft.Maui.Controls": {
               "target": "Package",
-              "version": "[9.0.82, )"
+              "version": "[9.0.120, )"
             },
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
@@ -143,10 +146,6 @@
             "MudBlazor": {
               "target": "Package",
               "version": "[8.15.0, )"
-            },
-            "QuestPDF": {
-              "target": "Package",
-              "version": "[2025.12.3, )"
             },
             "sqlite-net-pcl": {
               "target": "Package",
@@ -164,6 +163,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.iOS": {
               "privateAssets": "all"
@@ -174,12 +179,12 @@
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         },
-        "net9.0-maccatalyst18.5": {
+        "net9.0-maccatalyst26.0": {
           "targetAlias": "net9.0-maccatalyst",
           "dependencies": {
             "Microsoft.AspNetCore.Components.WebView.Maui": {
               "target": "Package",
-              "version": "[9.0.82, )"
+              "version": "[9.0.120, )"
             },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
@@ -187,7 +192,7 @@
             },
             "Microsoft.Maui.Controls": {
               "target": "Package",
-              "version": "[9.0.82, )"
+              "version": "[9.0.120, )"
             },
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
@@ -198,10 +203,6 @@
             "MudBlazor": {
               "target": "Package",
               "version": "[8.15.0, )"
-            },
-            "QuestPDF": {
-              "target": "Package",
-              "version": "[2025.12.3, )"
             },
             "sqlite-net-pcl": {
               "target": "Package",
@@ -220,6 +221,12 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[9.0.12, 9.0.12]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.MacCatalyst": {
               "privateAssets": "all"
@@ -235,7 +242,7 @@
           "dependencies": {
             "Microsoft.AspNetCore.Components.WebView.Maui": {
               "target": "Package",
-              "version": "[9.0.82, )"
+              "version": "[9.0.120, )"
             },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
@@ -243,15 +250,11 @@
             },
             "Microsoft.Maui.Controls": {
               "target": "Package",
-              "version": "[9.0.82, )"
+              "version": "[9.0.120, )"
             },
             "MudBlazor": {
               "target": "Package",
               "version": "[8.15.0, )"
-            },
-            "QuestPDF": {
-              "target": "Package",
-              "version": "[2025.12.3, )"
             },
             "sqlite-net-pcl": {
               "target": "Package",

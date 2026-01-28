@@ -49,7 +49,7 @@
             <div class="entry-item">
                 <h4>@entry.Title</h4>
                 <p><strong>Date:</strong> @entry.Date.ToShortDateString()</p>
-                <p><strong>Mood:</strong> @entry.PrimaryMood</p>
+                <p><strong>Mood:</strong> @(entry.PrimaryMood ?? "No mood")</p>
                 <p><strong>Content:</strong> @entry.Content?.Substring(0, Math.Min(100, entry.Content?.Length ?? 0))...</p>
             </div>
         }
@@ -78,14 +78,14 @@
         {
             // Get database path from service (we'll need to expose this)
             dbPath = "Check MauiProgram.cs console output for path";
-
+            
             // For now, construct the path manually
             var appData = Microsoft.Maui.Storage.FileSystem.AppDataDirectory;
             dbPath = Path.Combine(appData, "journal.db");
-
+            
             directoryExists = Directory.Exists(Path.GetDirectoryName(dbPath));
             fileExists = File.Exists(dbPath);
-
+            
             // Test connection
             try
             {
@@ -93,7 +93,7 @@
                 entryCount = entries.Count;
                 connectionOk = true;
                 connectionStatus = "Connected";
-
+                
                 // Load recent entries
                 testEntries = entries.OrderByDescending(e => e.CreatedAt).Take(3).ToList();
             }
@@ -114,7 +114,7 @@
     {
         errorMessage = "";
         successMessage = "";
-
+        
         try
         {
             var testEntry = new JournalEntry
@@ -122,8 +122,7 @@
                 Date = DateTime.Today,
                 Title = $"Test Entry {DateTime.Now:HH:mm:ss}",
                 Content = "This is a test entry to verify database functionality.",
-                PrimaryMood = "Happy",
-                Category = "Positive",
+                PrimaryMood = "Happy", // store mood name
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
             };
@@ -154,18 +153,18 @@
     {
         errorMessage = "";
         successMessage = "";
-
+        
         try
         {
             var entries = await JournalService.GetEntriesAsync();
             int deletedCount = 0;
-
+            
             foreach (var entry in entries)
             {
                 var result = await JournalService.DeleteEntryAsync(entry);
                 if (result > 0) deletedCount++;
             }
-
+            
             successMessage = $"Deleted {deletedCount} entries";
             await LoadDatabaseInfo(); // Refresh data
         }
@@ -177,116 +176,116 @@
 }
 
 <style>
-    .db-info {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-        margin: 20px 0;
-        border: 1px solid #dee2e6;
-    }
+.db-info {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid #dee2e6;
+}
 
-    .info-item {
-        margin: 10px 0;
-        padding: 8px;
-        background: white;
-        border-radius: 4px;
-    }
+.info-item {
+    margin: 10px 0;
+    padding: 8px;
+    background: white;
+    border-radius: 4px;
+}
 
-        .info-item code {
-            background: #f1f3f4;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: monospace;
-        }
+.info-item code {
+    background: #f1f3f4;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+}
 
-    .success {
-        color: #28a745;
-        font-weight: bold;
-    }
+.success {
+    color: #28a745;
+    font-weight: bold;
+}
 
-    .error {
-        color: #dc3545;
-        font-weight: bold;
-    }
+.error {
+    color: #dc3545;
+    font-weight: bold;
+}
 
-    .db-actions {
-        margin: 20px 0;
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
+.db-actions {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
 
-    .test-btn {
-        padding: 10px 20px;
-        background: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
+.test-btn {
+    padding: 10px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
 
-    .create-btn {
-        padding: 10px 20px;
-        background: #28a745;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
+.create-btn {
+    padding: 10px 20px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
 
-    .clear-btn {
-        padding: 10px 20px;
-        background: #dc3545;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
+.clear-btn {
+    padding: 10px 20px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
 
-        .test-btn:hover, .create-btn:hover, .clear-btn:hover {
-            opacity: 0.8;
-        }
+.test-btn:hover, .create-btn:hover, .clear-btn:hover {
+    opacity: 0.8;
+}
 
-    .entries-list {
-        margin: 20px 0;
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 8px;
-    }
+.entries-list {
+    margin: 20px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
 
-    .entry-item {
-        background: white;
-        padding: 15px;
-        margin: 10px 0;
-        border-radius: 5px;
-        border: 1px solid #dee2e6;
-    }
+.entry-item {
+    background: white;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+}
 
-        .entry-item h4 {
-            margin: 0 0 10px 0;
-            color: #495057;
-        }
+.entry-item h4 {
+    margin: 0 0 10px 0;
+    color: #495057;
+}
 
-        .entry-item p {
-            margin: 5px 0;
-            color: #6c757d;
-        }
+.entry-item p {
+    margin: 5px 0;
+    color: #6c757d;
+}
 
-    .error-message {
-        background: #f8d7da;
-        color: #721c24;
-        padding: 12px;
-        border-radius: 5px;
-        margin: 10px 0;
-        border: 1px solid #f5c6cb;
-    }
+.error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 12px;
+    border-radius: 5px;
+    margin: 10px 0;
+    border: 1px solid #f5c6cb;
+}
 
-    .success-message {
-        background: #d4edda;
-        color: #155724;
-        padding: 12px;
-        border-radius: 5px;
-        margin: 10px 0;
-        border: 1px solid #c3e6cb;
-    }
+.success-message {
+    background: #d4edda;
+    color: #155724;
+    padding: 12px;
+    border-radius: 5px;
+    margin: 10px 0;
+    border: 1px solid #c3e6cb;
+}
 </style>

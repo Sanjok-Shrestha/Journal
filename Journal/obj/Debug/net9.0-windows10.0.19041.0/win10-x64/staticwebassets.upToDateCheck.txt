@@ -3,8 +3,8 @@ wwwroot\css\bootstrap\bootstrap.min.css
 wwwroot\css\bootstrap\bootstrap.min.css.map
 wwwroot\index.html
 wwwroot\js\quill.js
-C:\Users\Consumer\source\repos\Journal\Journal\wwwroot\css\app.css
-C:\Users\Consumer\source\repos\Journal\Journal\wwwroot\css\bootstrap\bootstrap.min.css
-C:\Users\Consumer\source\repos\Journal\Journal\wwwroot\css\bootstrap\bootstrap.min.css.map
-C:\Users\Consumer\source\repos\Journal\Journal\wwwroot\index.html
 C:\Users\Consumer\source\repos\Journal\Journal\wwwroot\js\quill.js
+C:\Users\Consumer\source\repos\Journal\Journal\wwwroot\index.html
+C:\Users\Consumer\source\repos\Journal\Journal\wwwroot\css\bootstrap\bootstrap.min.css.map
+C:\Users\Consumer\source\repos\Journal\Journal\wwwroot\css\bootstrap\bootstrap.min.css
+C:\Users\Consumer\source\repos\Journal\Journal\wwwroot\css\app.css

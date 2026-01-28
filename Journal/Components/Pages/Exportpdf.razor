@@ -2,8 +2,8 @@
 @using System
 @using JournalApp.Services
 @using JournalApp.Models
-@using Microsoft.JSInterop
 @inject JournalService JournalService
+@using Microsoft.JSInterop
 @inject IJSRuntime JS
 
 <div style="max-width: 900px; margin: 0 auto; padding: 1rem;">
@@ -84,7 +84,7 @@
     private async Task ExportRange()
     {
         message = "";
-
+        
         if (!DateTime.TryParse(startDateText, out var startDate))
         {
             message = "Please enter a valid start date (yyyy-MM-dd).";

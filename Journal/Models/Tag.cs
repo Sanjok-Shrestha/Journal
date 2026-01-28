@@ -1,12 +1,12 @@
 ﻿using SQLite;
 
-namespace JournalApp.Models
+namespace JournalApp.Models;
+
+[Table("Tags")]
+public class Tag
 {
-    public class Tag
-    {
-        [PrimaryKey, AutoIncrement]
-        public int Id { get; set; }
-        public string Name { get; set; } = "";
-        public string? Color { get; set; } // optional
-    }
+    [PrimaryKey, AutoIncrement]
+    public int Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
 }

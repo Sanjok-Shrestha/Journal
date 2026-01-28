@@ -9,7 +9,6 @@ C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\macc
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\scopedcss\Components\Pages\Dashboard.razor.rz.scp.css
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\scopedcss\Components\Pages\EntryEditor.razor.rz.scp.css
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\scopedcss\Components\Pages\Login.razor.rz.scp.css
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\scopedcss\Components\Pages\WriteEntry.razor.rz.scp.css
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\scopedcss\bundle\Journal.styles.css
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\scopedcss\projectbundle\Journal.bundle.scp.css
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\compressed\tzxjg6is5z-7c7lhmh1j6.gz
@@ -19,8 +18,8 @@ C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\macc
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\compressed\hv5ewxavo7-8inm30yfxf.gz
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\compressed\s5zps3le29-d3veeoi55b.gz
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\compressed\5ztsupavkp-evnusq6no4.gz
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\compressed\1suj0y1rd1-udo0v7jzsq.gz
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\compressed\5a62ffeve3-udo0v7jzsq.gz
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\compressed\1suj0y1rd1-3jw07qpbei.gz
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\compressed\5a62ffeve3-3jw07qpbei.gz
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\staticwebassets.build.json
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\staticwebassets.build.json.cache
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\staticwebassets.development.json
@@ -39,8 +38,8 @@ C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\macc
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\compressed\publish\hv5ewxavo7-8inm30yfxf.br
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\compressed\publish\s5zps3le29-d3veeoi55b.br
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\compressed\publish\5ztsupavkp-evnusq6no4.br
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\compressed\publish\1suj0y1rd1-udo0v7jzsq.br
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\compressed\publish\5a62ffeve3-udo0v7jzsq.br
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\compressed\publish\1suj0y1rd1-3jw07qpbei.br
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\compressed\publish\5a62ffeve3-3jw07qpbei.br
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\staticwebassets.publish.json
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\staticwebassets.publish.endpoints.json
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-maccatalyst\maccatalyst-x64\mauiimage.inputs

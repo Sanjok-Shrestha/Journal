@@ -1,6 +1,8 @@
-﻿using SQLite;
-using JournalApp.Models;
-namespace JournalApp.Models;
+﻿using JournalApp.Models;
+using JournalApp.Services;
+using SQLite;
+
+namespace JournalApp.Services;
 
 public class TagService
 {
@@ -119,7 +121,7 @@ public class TagService
         try
         {
             var tag = await GetTagByIdAsync(id);
-            if (tag == null) return 0;
+            if (tag is null) return 0;
             return await _database.DeleteAsync(tag);
         }
         catch (Exception ex)

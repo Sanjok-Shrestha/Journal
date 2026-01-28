@@ -67,3 +67,12 @@ yarn-error.log*
 
 # Optional: exclude MAUI cache (safe to ignore)
 /.maui/
+bin/
+obj/
+*.db
+*.exe
+*.dll
+*.pdb
+*.cache
+*.vs/
+Journal.exe.WebView2/

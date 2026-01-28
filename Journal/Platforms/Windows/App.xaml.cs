@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Microsoft.Maui;
+using Microsoft.Maui.Hosting;
 
 namespace JournalApp.Platforms.Windows
 {
@@ -6,9 +7,18 @@ namespace JournalApp.Platforms.Windows
     {
         public App()
         {
-            this.InitializeComponent();
+            this.UnhandledException += (sender, e) =>
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"[UNHANDLED EXCEPTION] {e.Exception?.ToString()}"
+                );
+            };
+            InitializeComponent();
         }
-
-        protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+       
+        protected override MauiApp CreateMauiApp()
+        {
+            return MauiProgram.CreateMauiApp();
+        }
     }
 }

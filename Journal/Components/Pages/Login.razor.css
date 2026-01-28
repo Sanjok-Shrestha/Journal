@@ -1,144 +1,178 @@
-﻿.login-container {
+﻿.ds-login-layout {
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 0 12px;
+    background: linear-gradient(-135deg, #ece9f7 0%, #d3d3f3 100%);
 }
 
-.login-box {
+.ds-login-form {
     background: #fff;
-    padding: 38px 36px 28px 36px;
-    border-radius: 22px;
-    box-shadow: 0 10px 38px rgba(40,30,70,0.17);
-    min-width: 330px;
-    max-width: 95vw;
-    margin: 14px 0;
-    text-align: center;
-    position: relative;
-}
-
-    .login-box h1 {
-        font-size: 2.15rem;
-        font-weight: 700;
-        margin-bottom: 6px;
-        letter-spacing: 1.5px;
-        color: #333;
-    }
-
-    .login-box p {
-        color: #6d6d7b;
-        font-size: 1.11rem;
-        margin-bottom: 28px;
-        margin-top: 2px;
-    }
-
-.registration-form,
-.pin-input-group {
-    margin-bottom: 19px;
-}
-
-.input-group {
-    margin-bottom: 20px;
+    border-radius: 18px;
+    padding: 42px 36px 36px 36px;
+    box-shadow: 0 8px 40px 0 rgba(80, 45, 100, 0.16), 0 2px 8px #a1a3e0;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    text-align: left;
-}
-
-.form-label {
-    font-size: 1rem;
-    color: #333;
-    padding-left: 2px;
-    margin-bottom: 7px;
-    font-weight: 500;
-}
-
-.form-control,
-.pin-input {
-    padding: 13px;
-    font-size: 1.15rem;
-    border: 2px solid #e0e0ef;
-    border-radius: 10px;
-    outline: none;
-    background: #f9faff;
-    margin-bottom: 3px;
-    transition: border-color .15s;
+    min-width: 330px;
+    max-width: 370px;
     width: 100%;
-    box-sizing: border-box;
-    letter-spacing: 9px;
+}
+
+.ds-login-form h1 {
+    font-size: 2.15rem;
+    margin-bottom: 7px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: #633991;
     text-align: center;
 }
 
-    .form-control:focus,
-    .pin-input:focus {
-        border-color: #667eea;
-        background: #f3f6ff;
-    }
+.ds-login-sub {
+    color: #8881a0;
+    font-size: 1.08rem;
+    margin-bottom: 28px;
+    text-align: center;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
 
-.login-btn {
+.ds-login-form label {
+    font-weight: 600;
+    color: #443B57;
+    margin-bottom: 8px;
+    display: block;
+    font-size: 1.09rem;
+}
+
+.ds-login-form input[type="text"],
+.ds-login-form input[type="password"],
+.ds-login-form input[type="number"] {
+    padding: 15px 13px;
+    border-radius: 11px;
+    border: 2px solid #ede7fa;
+    margin-bottom: 21px;
+    font-size: 1.12rem;
+    background: #f6f4fa;
+    outline: none;
+    transition: border-color 0.17s, box-shadow 0.12s;
+}
+
+.ds-login-form input:focus {
+    border-color: #967efb;
+    background: #f0edff;
+    box-shadow: 0 1px 5px #d1cbea4c;
+}
+
+.ds-login-form button {
     width: 100%;
-    padding: 15px;
-    background: #667eea;
+    padding: 16px;
+    background: linear-gradient(90deg, #7f53ac 0%, #647dee 100%);
     color: #fff;
     border: none;
-    border-radius: 10px;
-    font-size: 1.11rem;
-    font-weight: 600;
+    border-radius: 11px;
+    font-size: 1.2rem;
+    font-weight: bold;
     cursor: pointer;
-    transition: background 0.15s;
-    margin: 10px 0 6px 0;
-    letter-spacing: .5px;
+    margin-top: 10px;
+    box-shadow: 0 3px 10px #bcb1d1a9;
+    transition: background 0.16s, transform 0.08s;
 }
 
-    .login-btn:hover {
-        background: #5568d3;
-    }
+.ds-login-form button:hover, .ds-login-form button:focus {
+    background: linear-gradient(90deg, #6e47ba 0%, #5b66d8 100%);
+    transform: scale(1.025) translateY(-2px);
+}
+
+.ds-darkmode-btn {
+    background: #f3eaff;
+    border: 2px solid #cfc4e0;
+    color: #422e63;
+    padding: 7px 19px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-left: 15px;
+    transition: background 0.14s, color 0.12s;
+}
+.ds-darkmode-btn:hover, .ds-darkmode-btn:focus {
+    background: #eadafe;
+    color: #222;
+}
 
 .error-message {
-    color: #e74c3c;
-    margin-bottom: 15px;
-    padding: 10px 11px;
-    background: #ffeaea;
+    color: #d32f2f;
+    background: #fff2f4;
+    margin-bottom: 16px;
+    padding: 12px 15px;
     border-radius: 7px;
     font-size: 1rem;
-    border: 1px solid #ffb4b4;
-}
-
-.success-message {
-    color: #22af89;
-    margin-bottom: 12px;
-    padding: 10px 11px;
-    background: #eafff3;
-    border-radius: 7px;
-    font-size: 1rem;
-    border: 1px solid #a7ffca;
+    text-align: center;
+    border-left: 4px solid #d32f2f;
+    box-shadow: 0 4px 15px #d32f2f13;
 }
 
 .hint-text {
-    margin-top: 18px;
-    color: #999;
-    font-size: .99rem;
+    margin-top: 20px;
+    color: #a199bc;
+    text-align: center;
+    font-size: 1.01rem;
 }
 
-    .hint-text a {
-        color: #667eea;
-        cursor: pointer;
-        text-decoration: underline;
+body.dark,
+.ds-dark {
+    background: linear-gradient(135deg, #171630 0%, #232046 100%) !important;
+}
+
+    body.dark .ds-login-form,
+    .ds-dark .ds-login-form {
+        background: #222047;
+        box-shadow: 0 8px 40px 0 #0006, 0 2px 8px #22263e;
+        color: #fafaff;
     }
 
-@media (max-width: 480px) {
-    .login-box {
-        padding: 22px 5vw 18px 5vw;
-        min-width: unset;
-        border-radius: 13px;
+        body.dark .ds-login-form input,
+        .ds-dark .ds-login-form input {
+            background: #222248;
+            border: 2px solid #343164;
+            color: #f0eaff;
+        }
+
+            body.dark .ds-login-form input:focus,
+            .ds-dark .ds-login-form input:focus {
+                border-color: #8f7ffb;
+                background: #23205a;
+            }
+
+        body.dark .ds-login-form button,
+        .ds-dark .ds-login-form button {
+            background: linear-gradient(90deg, #382466 0%, #574993 100%);
+            color: #f6f2fd;
+        }
+
+    body.dark .ds-darkmode-btn,
+    .ds-dark .ds-darkmode-btn {
+        background: #23205a;
+        color: #c3b3f6;
+        border: 2px solid #39325f;
     }
 
-    .form-control,
-    .pin-input {
-        font-size: 1rem;
-        padding: 10px;
-        letter-spacing: 5px;
+    body.dark .error-message,
+    .ds-dark .error-message {
+        background: #432332;
+        color: #ffb4bd;
+        border-left: 4px solid #d32f2f;
+    }
+
+    body.dark .hint-text,
+    .ds-dark .hint-text {
+        color: #bdaaee;
+    }
+@media (max-width: 500px) {
+    .ds-login-form {
+        min-width: 98vw;
+        max-width: 99vw;
+        padding: 22px 6vw 18px 6vw;
     }
 }

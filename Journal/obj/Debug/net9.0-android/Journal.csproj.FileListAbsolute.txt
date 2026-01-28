@@ -11,7 +11,6 @@ C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\scopedcs
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\scopedcss\Components\Pages\Dashboard.razor.rz.scp.css
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\scopedcss\Components\Pages\EntryEditor.razor.rz.scp.css
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\scopedcss\Components\Pages\Login.razor.rz.scp.css
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\scopedcss\Components\Pages\WriteEntry.razor.rz.scp.css
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\scopedcss\bundle\Journal.styles.css
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\scopedcss\projectbundle\Journal.bundle.scp.css
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compressed\tzxjg6is5z-7c7lhmh1j6.gz
@@ -21,8 +20,8 @@ C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compress
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compressed\hv5ewxavo7-8inm30yfxf.gz
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compressed\s5zps3le29-d3veeoi55b.gz
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compressed\5ztsupavkp-evnusq6no4.gz
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compressed\1suj0y1rd1-udo0v7jzsq.gz
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compressed\5a62ffeve3-udo0v7jzsq.gz
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compressed\1suj0y1rd1-3jw07qpbei.gz
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compressed\5a62ffeve3-3jw07qpbei.gz
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\staticwebassets.build.json
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\staticwebassets.build.json.cache
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\staticwebassets.development.json
@@ -41,8 +40,8 @@ C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compress
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compressed\publish\hv5ewxavo7-8inm30yfxf.br
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compressed\publish\s5zps3le29-d3veeoi55b.br
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compressed\publish\5ztsupavkp-evnusq6no4.br
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compressed\publish\1suj0y1rd1-udo0v7jzsq.br
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compressed\publish\5a62ffeve3-udo0v7jzsq.br
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compressed\publish\1suj0y1rd1-3jw07qpbei.br
+C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\compressed\publish\5a62ffeve3-3jw07qpbei.br
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\staticwebassets.publish.json
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\staticwebassets.publish.endpoints.json
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\_CompileBindingJava.FileList.txt
@@ -50,17 +49,8 @@ C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\Journal.
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\mauiimage.inputs
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\mauifont.inputs
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\mauisplash.inputs
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\resizetizer\sp\drawable-hdpi\splash.png
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\resizetizer\sp\drawable-mdpi\splash.png
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\resizetizer\sp\drawable-v31\maui_splash_image.xml
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\resizetizer\sp\drawable-xhdpi\splash.png
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\resizetizer\sp\drawable-xxhdpi\splash.png
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\resizetizer\sp\drawable-xxxhdpi\splash.png
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\resizetizer\sp\drawable\maui_splash_image.xml
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\resizetizer\sp\values\maui_colors.xml
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\mauisplash.stamp
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\mauifont.stamp
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\resizetizer\f\OpenSans-Regular.ttf
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\resizetizer\r\drawable-xxxhdpi\dotnet_bot.png
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\resizetizer\r\drawable-xxhdpi\dotnet_bot.png
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\resizetizer\r\drawable-xhdpi\dotnet_bot.png
@@ -95,7 +85,6 @@ C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\stamp\_B
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\case_map.txt
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\__Microsoft.Android.Resource.Designer.cs
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\res.flag
-C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\resizetizer\6CD7C47F03026257-files.cache
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\resizetizer\B81013EDA07D2EB8-files.cache
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\lp\98\jl\files.cache
 C:\Users\Consumer\source\repos\Journal\Journal\obj\Debug\net9.0-android\lp\99\jl\files.cache

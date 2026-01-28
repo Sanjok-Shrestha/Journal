@@ -77,7 +77,7 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <FileLength>1150</FileLength>
-      <LastWriteTime>Tue, 27 Jan 2026 11:49:37 GMT</LastWriteTime>
+      <LastWriteTime>Wed, 28 Jan 2026 02:40:30 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\index.html'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\Journal.styles.css'))">
@@ -92,12 +92,12 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName>ScopedCss</AssetTraitName>
       <AssetTraitValue>ApplicationBundle</AssetTraitValue>
-      <Fingerprint>udo0v7jzsq</Fingerprint>
-      <Integrity>cmaq/CjClhY/gA+uiRgSrJ+q/AaEF78oZ6upbQaelaI=</Integrity>
+      <Fingerprint>gp1fa8l3f1</Fingerprint>
+      <Integrity>nM81nI/CrOnJ+UpL2/+C2X6Q9ukFZZ/MB2GrreBDTWY=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <FileLength>24297</FileLength>
-      <LastWriteTime>Tue, 27 Jan 2026 17:12:34 GMT</LastWriteTime>
+      <FileLength>24994</FileLength>
+      <LastWriteTime>Wed, 28 Jan 2026 08:29:11 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\Journal.styles.css'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\quill.js'))">

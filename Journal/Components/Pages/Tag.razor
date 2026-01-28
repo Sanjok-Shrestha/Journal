@@ -1,14 +1,13 @@
-﻿@page "/tags"
+@page "/tags"
 @using TagModel = JournalApp.Models.Tag
 @using JournalApp.Services
-@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components
 @inject TagService TagService
-@inject IJSRuntime JS
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h4">Tags</h1>
-        <button class="btn btn-primary" @onclick="CreateNew">+ New Tag</button>
+        <button class="btn btn-primary" @onclick="CreateNew" disabled="@isBusy">+ New Tag</button>
     </div>
 
     <div class="row">
@@ -17,35 +16,25 @@
                 <div class="card-body">
                     <h5 class="card-title">All Tags</h5>
 
-                    <div class="mb-2 d-flex gap-2">
-                        <input class="form-control form-control-sm" placeholder="Search tags..." @bind="search" />
+                    <div class="mb-2 d-flex gap-2 align-items-center">
+                        <input class="form-control form-control-sm" placeholder="Search tags..." @bind="search" @bind:event="oninput" />
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="ClearSearch" title="Clear search">✕</button>
                     </div>
 
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th style="width:60px">Id</th>
-                                    <th>Name</th>
-                                    <th style="width:140px">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var t in FilteredTags)
-                                {
-                                    <tr>
-                                        <td>@t.Id</td>
-                                        <td>@t.Name</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => Edit(t.Id)">Edit</button>
-                                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmDelete(t.Id)">Delete</button>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-
+                    @if (isBusy)
+                    {
+                        <div class="text-center py-4 text-muted">Loading tags…</div>
+                    }
+                    else if (!FilteredTags.Any())
+                    {
+                        <div class="text-center py-4 text-muted">No tags found.</div>
+                    }
+                    else
+                    {
+                        <TagList Tags="FilteredTags"
+                                 OnEdit="HandleEdit"
+                                 OnRequestDelete="HandleRequestDelete" />
+                    }
                 </div>
             </div>
         </div>
@@ -53,28 +42,26 @@
         <div class="col-md-5 mb-4">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">@((editingTag.Id == 0) ? "Create Tag" : "Edit Tag")</h5>
+                    <h5 class="card-title">@((editingTag?.Id == 0) ? "Create Tag" : "Edit Tag")</h5>
 
                     @if (!string.IsNullOrEmpty(message))
                     {
-                        <div class="alert @messageClass">@message</div>
+                        <div class="alert @messageClass" role="status">@message</div>
                     }
 
-                    <div class="mb-2">
-                        <label class="form-label">Name</label>
-                        <input class="form-control" @bind="editingTag.Name" />
-                    </div>
-
-                    <div class="d-flex gap-2 justify-content-end">
-                        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-                        <button class="btn btn-success" @onclick="Save">Save</button>
-                    </div>
-
+                    <TagEditor Tag="editingTag"
+                               OnSaved="HandleSaved"
+                               OnCancelled="HandleCancelled"
+                               IsBusy="isBusy" />
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<ConfirmDialog @ref="confirmDialog" Title="Delete tag"
+               Message="Are you sure you want to delete this tag? This action cannot be undone."
+               OnConfirm="DeleteConfirmed" />
 
 @code {
     private List<TagModel> tags = new();
@@ -82,6 +69,9 @@
     private string search = string.Empty;
     private string message = string.Empty;
     private string messageClass = "alert-success";
+    private bool isBusy = false;
+    private ConfirmDialog? confirmDialog;
+    private int? deleteCandidateId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -90,7 +80,22 @@
 
     private async Task Load()
     {
-        tags = await TagService.GetAllTagsAsync();
+        isBusy = true;
+        message = string.Empty;
+        try
+        {
+            tags = (await TagService.GetAllTagsAsync()) ?? new List<TagModel>();
+        }
+        catch (Exception ex)
+        {
+            message = "Failed to load tags.";
+            messageClass = "alert-danger";
+            Console.WriteLine($"Tags.Load error: {ex}");
+        }
+        finally
+        {
+            isBusy = false;
+        }
     }
 
     private IEnumerable<TagModel> FilteredTags
@@ -101,7 +106,7 @@
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var q = search.Trim();
-                list = list.Where(t => t.Name.Contains(q, StringComparison.OrdinalIgnoreCase));
+                list = list.Where(t => t.Name?.Contains(q, StringComparison.OrdinalIgnoreCase) == true);
             }
             return list.OrderBy(t => t.Name);
         }
@@ -113,27 +118,62 @@
         message = string.Empty;
     }
 
-    private async Task Edit(int id)
+    private async Task HandleEdit(int id)
     {
         var t = await TagService.GetTagByIdAsync(id);
-        if (t != null) editingTag = new TagModel { Id = t.Id, Name = t.Name };
+        if (t != null)
+        {
+            editingTag = new TagModel { Id = t.Id, Name = t.Name };
+            message = string.Empty;
+        }
     }
 
-    private async Task Save()
+    private async Task HandleSaved(TagModel saved)
     {
-        message = string.Empty;
-        if (string.IsNullOrWhiteSpace(editingTag.Name))
-        {
-            message = "Name is required.";
-            messageClass = "alert-danger";
-            return;
-        }
-
-        await TagService.SaveTagAsync(editingTag);
+        // refresh list and show confirmation
         await Load();
         message = "Tag saved.";
         messageClass = "alert-success";
         editingTag = new TagModel();
+    }
+
+    private Task HandleCancelled()
+    {
+        editingTag = new TagModel();
+        message = string.Empty;
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleRequestDelete(int id)
+    {
+        deleteCandidateId = id;
+        if (confirmDialog != null)
+        {
+            await confirmDialog.ShowAsync();
+        }
+    }
+
+    private async Task DeleteConfirmed()
+    {
+        if (!deleteCandidateId.HasValue) return;
+
+        try
+        {
+            await TagService.DeleteTagAsync(deleteCandidateId.Value);
+            await Load();
+            message = "Tag deleted.";
+            messageClass = "alert-success";
+        }
+        catch (Exception ex)
+        {
+            message = "Failed to delete tag.";
+            messageClass = "alert-danger";
+            Console.WriteLine($"Tags.Delete error: {ex}");
+        }
+        finally
+        {
+            deleteCandidateId = null;
+        }
     }
 
     private void Cancel()
@@ -142,11 +182,10 @@
         message = string.Empty;
     }
 
-    private async Task ConfirmDelete(int id)
-    {
-        var confirmed = await JS.InvokeAsync<bool>("confirm", "Delete this tag? This action cannot be undone.");
-        if (!confirmed) return;
-        await TagService.DeleteTagAsync(id);
-        await Load();
-    }
+    private void ClearSearch() => search = string.Empty;
 }
+<style>
+/* small page tweaks */
+.card { border-radius: 10px; }
+.table-responsive { max-height: 420px; overflow: auto; }
+</style>

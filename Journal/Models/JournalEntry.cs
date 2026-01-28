@@ -1,5 +1,5 @@
 ﻿using SQLite;
-using JournalApp.Models; // Add this using directive
+using JournalApp.Models; 
 
 namespace JournalApp.Models;
 
@@ -20,17 +20,16 @@ public class JournalEntry
 
     public DateTime UpdatedAt { get; set; }
 
-    // New relational fields
-    // Each entry can have multiple moods via JournalEntryMood join table
+  
     // Keep PrimaryMood/SecondaryMoods strings for backwards compatibility, but prefer relational mapping
-    public string PrimaryMood { get; set; } = string.Empty; // stored as name (legacy)
-    public string SecondaryMoods { get; set; } = string.Empty; // comma-separated (legacy)
+    public string PrimaryMood { get; set; } = string.Empty; 
+    public string SecondaryMoods { get; set; } = string.Empty; )
 
     // Tag relationship: a journal entry now references a single Tag by Id
     public int? TagId { get; set; }
 
     // Legacy tag storage (kept for compatibility)
-    public string Tags { get; set; } = string.Empty; // comma-separated legacy
+    public string Tags { get; set; } = string.Empty; 
 
     // Add this property to fix the error
     public string Category { get; set; }

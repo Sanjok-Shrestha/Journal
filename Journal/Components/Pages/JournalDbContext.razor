@@ -1,58 +1,180 @@
-﻿@page "/db-info"
+@page "/db-info"
 @using JournalApp.Services
 @using JournalApp.Models
 @inject JournalService JournalService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
 
-<h1>Database Information</h1>
-
-<div class="db-info">
-    <h3>Database Status</h3>
-    <div class="info-item">
-        <strong>Database Path:</strong> <code>@dbPath</code>
+<div class="container py-4" style="max-width: 980px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h4 mb-0">Database Information</h1>
+        <div>
+            <button class="btn btn-sm btn-outline-secondary me-2" @onclick="LoadDatabaseInfo" disabled="@isProcessing">
+                @if (isLoading)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span class="ms-1">Refreshing…</span>
+                }
+                else
+                {
+                    <span>Refresh</span>
+                }
+            </button>
+            <button class="btn btn-sm btn-outline-primary me-2" @onclick="BackupDatabase" disabled="@isProcessing || !fileExists">Backup</button>
+            <button class="btn btn-sm btn-danger" @onclick="PromptClearAll" disabled="@isProcessing || entryCount == 0">Clear All</button>
+        </div>
     </div>
-    <div class="info-item">
-        <strong>Directory Exists:</strong> <span class="@(directoryExists ? "success" : "error")">@directoryExists</span>
-    </div>
-    <div class="info-item">
-        <strong>Database File Exists:</strong> <span class="@(fileExists ? "success" : "error")">@fileExists</span>
-    </div>
-    <div class="info-item">
-        <strong>Connection Status:</strong> <span class="@(connectionOk ? "success" : "error")">@connectionStatus</span>
-    </div>
-    <div class="info-item">
-        <strong>Total Entries:</strong> @entryCount
-    </div>
-</div>
 
-@if (!string.IsNullOrEmpty(errorMessage))
-{
-    <div class="error-message">@errorMessage</div>
-}
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success">@successMessage</div>
+    }
 
-@if (!string.IsNullOrEmpty(successMessage))
-{
-    <div class="success-message">@successMessage</div>
-}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Status</h5>
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Database Path</dt>
+                <dd class="col-sm-8"><code>@dbPath</code>
+                    @if (!string.IsNullOrEmpty(dbPath) && fileExists)
+                    {
+                        <button class="btn btn-link btn-sm" @onclick="CopyPathToClipboard">Copy path</button>
+                    }
+                </dd>
 
-<div class="db-actions">
-    <button @onclick="TestDatabase" class="test-btn">Test Database</button>
-    <button @onclick="CreateTestEntry" class="create-btn">Create Test Entry</button>
-    <button @onclick="ClearAllEntries" class="clear-btn">Clear All Entries</button>
-</div>
+                <dt class="col-sm-4">Directory Exists</dt>
+                <dd class="col-sm-8">
+                    <span class="badge @(directoryExists ? "bg-success" : "bg-danger")">@directoryExists</span>
+                </dd>
 
-@if (testEntries.Any())
-{
-    <div class="entries-list">
-        <h3>Recent Entries</h3>
-        @foreach (var entry in testEntries)
-        {
-            <div class="entry-item">
-                <h4>@entry.Title</h4>
-                <p><strong>Date:</strong> @entry.Date.ToShortDateString()</p>
-                <p><strong>Mood:</strong> @(entry.PrimaryMood ?? "No mood")</p>
-                <p><strong>Content:</strong> @entry.Content?.Substring(0, Math.Min(100, entry.Content?.Length ?? 0))...</p>
+                <dt class="col-sm-4">Database File Exists</dt>
+                <dd class="col-sm-8">
+                    <span class="badge @(fileExists ? "bg-success" : "bg-danger")">@fileExists</span>
+                </dd>
+
+                <dt class="col-sm-4">Connection Status</dt>
+                <dd class="col-sm-8">
+                    <span class="fw-semibold">@connectionStatus</span>
+                </dd>
+
+                <dt class="col-sm-4">Total Entries</dt>
+                <dd class="col-sm-8">@entryCount</dd>
+
+                @if (fileExists)
+                {
+                    <dt class="col-sm-4">File Size</dt>
+                    <dd class="col-sm-8">@fileSizeHuman</dd>
+
+                    <dt class="col-sm-4">Last Modified</dt>
+                    <dd class="col-sm-8">@lastModifiedString</dd>
+                }
+            </dl>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">Recent Entries</h5>
+                <div class="text-muted small">Showing @testEntries.Count recent</div>
             </div>
-        }
+
+            @if (testEntries == null || !testEntries.Any())
+            {
+                <div class="text-muted">No entries found in the database.</div>
+            }
+            else
+            {
+                <div class="list-group">
+                    @foreach (var e in testEntries)
+                    {
+                        <div class="list-group-item d-flex justify-content-between align-items-start">
+                            <div class="me-3" style="flex:1 1 0;">
+                                <div class="d-flex align-items-baseline gap-2">
+                                    <h6 class="mb-1">@e.Title</h6>
+                                    <small class="text-muted">(@e.Date.ToString("yyyy-MM-dd"))</small>
+                                </div>
+                                <div class="text-muted small">
+                                    Mood: @(string.IsNullOrWhiteSpace(e.PrimaryMood) ? "—" : e.PrimaryMood) •
+                                    Created: @e.CreatedAt.ToString("g")
+                                </div>
+                                <div class="mt-2 text-truncate" style="max-width: 70ch;">
+                                    @((e.Content ?? string.Empty).Length > 200 ? (e.Content?.Substring(0, 200) + "…") : e.Content)
+                                </div>
+                            </div>
+
+                            <div class="text-end ms-3">
+                                <a class="btn btn-sm btn-outline-secondary mb-1" href="@($"/journals/view/{e.Id}")">View</a>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => PromptDeleteEntry(e)">Delete</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Clear All modal -->
+@if (showClearConfirm)
+{
+    <div class="modal-backdrop d-block" style="background-color: rgba(0,0,0,0.4);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm: Clear All Entries</h5>
+                    <button type="button" class="btn-close" @onclick="CloseClearConfirm" disabled="@isProcessing" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>This will permanently delete <strong>all entries</strong> from the database. This action cannot be undone.</p>
+                    <p class="small text-muted">To confirm, type <code>CLEAR</code> in the box below and click <strong>Clear All</strong>.</p>
+                    <input class="form-control" @bind="clearConfirmText" placeholder="Type CLEAR to confirm" />
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseClearConfirm" disabled="@isProcessing">Cancel</button>
+                    <button class="btn btn-danger" @onclick="ClearAllEntries" disabled="@isProcessing || clearConfirmText != \"CLEAR\"">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        }
+                        <span class="ms-1">Clear All</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Confirm Delete single entry -->
+@if (showDeleteEntryConfirm && entryToDelete != null)
+{
+    <div class="modal-backdrop d-block" style="background-color: rgba(0,0,0,0.4);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Entry</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDeleteEntryConfirm" disabled="@isProcessing" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Delete entry "<strong>@entryToDelete.Title</strong>"?</p>
+                    <p class="small text-muted">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseDeleteEntryConfirm" disabled="@isProcessing">Cancel</button>
+                    <button class="btn btn-danger" @onclick="DeleteEntryConfirmed" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        }
+                        <span class="ms-1">Delete</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 }
 
@@ -61,11 +183,27 @@
     private bool directoryExists = false;
     private bool fileExists = false;
     private bool connectionOk = false;
-    private string connectionStatus = "Testing...";
+    private string connectionStatus = "Unknown";
     private int entryCount = 0;
     private string errorMessage = "";
     private string successMessage = "";
     private List<JournalEntry> testEntries = new();
+
+    private bool isLoading = false;
+    private bool isProcessing = false;
+
+    private long fileSizeBytes = 0;
+    private string fileSizeHuman = "";
+    private DateTime? lastModified;
+    private string lastModifiedString = "";
+
+    // Clear all modal
+    private bool showClearConfirm = false;
+    private string clearConfirmText = "";
+
+    // Delete single entry modal
+    private bool showDeleteEntryConfirm = false;
+    private JournalEntry? entryToDelete;
 
     protected override async Task OnInitializedAsync()
     {
@@ -74,218 +212,292 @@
 
     private async Task LoadDatabaseInfo()
     {
+        isLoading = true;
+        errorMessage = "";
+        successMessage = "";
+        connectionOk = false;
+        connectionStatus = "Testing...";
+        testEntries = new();
+
         try
         {
-            // Get database path from service (we'll need to expose this)
-            dbPath = "Check MauiProgram.cs console output for path";
-            
-            // For now, construct the path manually
-            var appData = Microsoft.Maui.Storage.FileSystem.AppDataDirectory;
-            dbPath = Path.Combine(appData, "journal.db");
-            
-            directoryExists = Directory.Exists(Path.GetDirectoryName(dbPath));
+            // Try to get path from the service if it exposes one (optional). If not, fall back to AppDataDirectory/journal.db
+            try
+            {
+                // If JournalService provides a method called GetDatabasePathAsync or GetDatabasePath, use it.
+                // We attempt common names via reflection to be defensive—if unavailable, fall back.
+                var svcType = JournalService.GetType();
+                var getPathAsync = svcType.GetMethod("GetDatabasePathAsync") ?? svcType.GetMethod("GetDatabasePath");
+                if (getPathAsync != null)
+                {
+                    var pathObj = getPathAsync.Invoke(JournalService, Array.Empty<object>());
+                    if (pathObj is Task<string> taskStr)
+                    {
+                        dbPath = await taskStr;
+                    }
+                    else if (pathObj is string s)
+                    {
+                        dbPath = s;
+                    }
+                }
+            }
+            catch
+            {
+                // swallow - we'll use fallback
+            }
+
+            if (string.IsNullOrWhiteSpace(dbPath) || dbPath.StartsWith("Loading"))
+            {
+                var appData = Microsoft.Maui.Storage.FileSystem.AppDataDirectory;
+                dbPath = Path.Combine(appData, "journal.db");
+            }
+
+            directoryExists = Directory.Exists(Path.GetDirectoryName(dbPath) ?? string.Empty);
             fileExists = File.Exists(dbPath);
-            
-            // Test connection
+
+            if (fileExists)
+            {
+                var fi = new FileInfo(dbPath);
+                fileSizeBytes = fi.Length;
+                fileSizeHuman = FormatBytes(fileSizeBytes);
+                lastModified = fi.LastWriteTime;
+                lastModifiedString = lastModified?.ToString("g") ?? "";
+            }
+            else
+            {
+                fileSizeHuman = "—";
+                lastModifiedString = "—";
+            }
+
+            // Test connection by trying to load entries
             try
             {
                 var entries = await JournalService.GetEntriesAsync();
-                entryCount = entries.Count;
+                entryCount = entries?.Count ?? 0;
                 connectionOk = true;
                 connectionStatus = "Connected";
-                
-                // Load recent entries
-                testEntries = entries.OrderByDescending(e => e.CreatedAt).Take(3).ToList();
+                testEntries = (entries ?? new List<JournalEntry>()).OrderByDescending(e => e.CreatedAt).Take(6).ToList();
             }
             catch (Exception ex)
             {
                 connectionOk = false;
-                connectionStatus = $"Error: {ex.Message}";
-                errorMessage = $"Database connection failed: {ex.Message}";
+                connectionStatus = "Error";
+                errorMessage = $"Database query failed: {ex.Message}";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error loading database info: {ex.Message}";
+            errorMessage = $"Failed to load DB info: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
         }
     }
 
-    private async Task TestDatabase()
+    private string FormatBytes(long bytes)
     {
-        errorMessage = "";
-        successMessage = "";
-        
-        try
+        if (bytes < 1024) return $"{bytes} B";
+        var units = new[] { "KB", "MB", "GB", "TB" };
+        double size = bytes;
+        int unit = -1;
+        do
         {
-            var testEntry = new JournalEntry
-            {
-                Date = DateTime.Today,
-                Title = $"Test Entry {DateTime.Now:HH:mm:ss}",
-                Content = "This is a test entry to verify database functionality.",
-                PrimaryMood = "Happy", // store mood name
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
-            };
-
-            var result = await JournalService.SaveEntryAsync(testEntry);
-            if (result > 0)
-            {
-                successMessage = $"Test entry created successfully (ID: {testEntry.Id})";
-                await LoadDatabaseInfo(); // Refresh data
-            }
-            else
-            {
-                errorMessage = "Failed to create test entry";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMessage = $"Database test failed: {ex.Message}";
-        }
+            size /= 1024;
+            unit++;
+        } while (size >= 1024 && unit < units.Length - 1);
+        return $"{size:0.##} {units[Math.Max(0, unit)]}";
     }
 
-    private async Task CreateTestEntry()
+    private void PromptClearAll()
     {
-        await TestDatabase();
+        clearConfirmText = "";
+        showClearConfirm = true;
+    }
+
+    private void CloseClearConfirm()
+    {
+        showClearConfirm = false;
+        clearConfirmText = "";
     }
 
     private async Task ClearAllEntries()
     {
+        if (!showClearConfirm) return;
+        isProcessing = true;
         errorMessage = "";
         successMessage = "";
-        
+
         try
         {
-            var entries = await JournalService.GetEntriesAsync();
-            int deletedCount = 0;
-            
-            foreach (var entry in entries)
+            // Prefer a dedicated service method if available
+            var svcType = JournalService.GetType();
+            var deleteAll = svcType.GetMethod("DeleteAllEntriesAsync") ?? svcType.GetMethod("ClearAllEntriesAsync");
+            if (deleteAll != null)
             {
-                var result = await JournalService.DeleteEntryAsync(entry);
-                if (result > 0) deletedCount++;
+                var resultObj = deleteAll.Invoke(JournalService, Array.Empty<object>());
+                if (resultObj is Task task)
+                {
+                    await task;
+                    successMessage = "All entries cleared.";
+                }
             }
-            
-            successMessage = $"Deleted {deletedCount} entries";
-            await LoadDatabaseInfo(); // Refresh data
+            else
+            {
+                // Fallback: enumerate & delete (safe but may be slower)
+                var entries = await JournalService.GetEntriesAsync();
+                int deleted = 0;
+                foreach (var e in entries)
+                {
+                    try
+                    {
+                        // many DeleteEntryAsync implementations return Task or Task<int>
+                        var deleteMethod = JournalService.GetType().GetMethod("DeleteEntryAsync");
+                        if (deleteMethod != null)
+                        {
+                            var res = deleteMethod.Invoke(JournalService, new object[] { e });
+                            if (res is Task<int> taskInt)
+                            {
+                                var value = await taskInt;
+                                if (value > 0) deleted++;
+                            }
+                            else if (res is Task taskVoid)
+                            {
+                                await taskVoid;
+                                deleted++;
+                            }
+                        }
+                        else
+                        {
+                            // No delete method available — can't continue safely
+                        }
+                    }
+                    catch { /* ignore individual delete errors */ }
+                }
+                successMessage = $"Deleted {deleted} entries.";
+            }
         }
         catch (Exception ex)
         {
             errorMessage = $"Failed to clear entries: {ex.Message}";
         }
+        finally
+        {
+            isProcessing = false;
+            showClearConfirm = false;
+            await LoadDatabaseInfo();
+        }
+    }
+
+    private void PromptDeleteEntry(JournalEntry e)
+    {
+        entryToDelete = e;
+        showDeleteEntryConfirm = true;
+    }
+
+    private void CloseDeleteEntryConfirm()
+    {
+        showDeleteEntryConfirm = false;
+        entryToDelete = null;
+    }
+
+    private async Task DeleteEntryConfirmed()
+    {
+        if (entryToDelete == null) return;
+
+        isProcessing = true;
+        errorMessage = "";
+        successMessage = "";
+
+        try
+        {
+            // Attempt to call DeleteEntryAsync
+            var deleteMethod = JournalService.GetType().GetMethod("DeleteEntryAsync");
+            if (deleteMethod != null)
+            {
+                var res = deleteMethod.Invoke(JournalService, new object[] { entryToDelete });
+                if (res is Task<int> taskInt)
+                {
+                    var value = await taskInt;
+                    if (value > 0) successMessage = "Entry deleted.";
+                }
+                else if (res is Task taskVoid)
+                {
+                    await taskVoid;
+                    successMessage = "Entry deleted.";
+                }
+            }
+            else
+            {
+                errorMessage = "Delete operation not available on JournalService.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Delete failed: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            showDeleteEntryConfirm = false;
+            entryToDelete = null;
+            await LoadDatabaseInfo();
+        }
+    }
+
+    private async Task BackupDatabase()
+    {
+        // Try to download the raw DB file — this requires a JS helper to save bytes client-side.
+        isProcessing = true;
+        errorMessage = "";
+        successMessage = "";
+
+        try
+        {
+            if (!fileExists)
+            {
+                errorMessage = "Database file does not exist.";
+                return;
+            }
+
+            var bytes = await File.ReadAllBytesAsync(dbPath);
+            var base64 = Convert.ToBase64String(bytes);
+            var filename = $"journal-backup-{DateTime.Now:yyyyMMdd-HHmmss}.db";
+
+            // JS helper 'downloadFileFromBase64' should be implemented in your wwwroot/js helpers.
+            // Example helper will create a blob from base64 and trigger download in browser.
+            await JSRuntime.InvokeVoidAsync("downloadFileFromBase64", filename, base64);
+
+            successMessage = "Backup download started.";
+        }
+        catch (JSException)
+        {
+            // If JS helper not registered, fallback to copy path to clipboard and instruct user
+            await CopyPathToClipboard();
+            successMessage = "Couldn't start automatic download. Database path copied to clipboard so you can back it up manually.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Backup failed: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task CopyPathToClipboard()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", dbPath);
+            successMessage = "Database path copied to clipboard.";
+        }
+        catch
+        {
+            // ignore failures; show path on UI for manual copy
+            errorMessage = "Unable to copy to clipboard. Please copy the path manually.";
+        }
     }
 }
-
-<style>
-.db-info {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 8px;
-    margin: 20px 0;
-    border: 1px solid #dee2e6;
-}
-
-.info-item {
-    margin: 10px 0;
-    padding: 8px;
-    background: white;
-    border-radius: 4px;
-}
-
-.info-item code {
-    background: #f1f3f4;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: monospace;
-}
-
-.success {
-    color: #28a745;
-    font-weight: bold;
-}
-
-.error {
-    color: #dc3545;
-    font-weight: bold;
-}
-
-.db-actions {
-    margin: 20px 0;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.test-btn {
-    padding: 10px 20px;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.create-btn {
-    padding: 10px 20px;
-    background: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.clear-btn {
-    padding: 10px 20px;
-    background: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.test-btn:hover, .create-btn:hover, .clear-btn:hover {
-    opacity: 0.8;
-}
-
-.entries-list {
-    margin: 20px 0;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-}
-
-.entry-item {
-    background: white;
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 5px;
-    border: 1px solid #dee2e6;
-}
-
-.entry-item h4 {
-    margin: 0 0 10px 0;
-    color: #495057;
-}
-
-.entry-item p {
-    margin: 5px 0;
-    color: #6c757d;
-}
-
-.error-message {
-    background: #f8d7da;
-    color: #721c24;
-    padding: 12px;
-    border-radius: 5px;
-    margin: 10px 0;
-    border: 1px solid #f5c6cb;
-}
-
-.success-message {
-    background: #d4edda;
-    color: #155724;
-    padding: 12px;
-    border-radius: 5px;
-    margin: 10px 0;
-    border: 1px solid #c3e6cb;
-}
-</style>

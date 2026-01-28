@@ -1,15 +1,31 @@
-﻿@page "/journals/view/{EntryId:int}"
+@page "/journals/view/{EntryId:int}"
 @using JournalApp.Services
 @using JournalApp.Models
 @inject JournalService JournalService
 @inject NavigationManager Navigation
-@using Microsoft.JSInterop
 @inject IJSRuntime JSRuntime
 
 <div class="journal-view container mt-3" style="max-width: 800px;">
-    @if (entry == null)
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status" aria-hidden="true"></div>
+            <div class="mt-2 text-muted">Loading entry...</div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+        <div>
+            <button class="btn btn-outline-secondary" @onclick="Back">Back</button>
+        </div>
+    }
+    else if (entry == null)
     {
         <div class="alert alert-warning">Entry not found.</div>
+        <div>
+            <button class="btn btn-outline-secondary" @onclick="Back">Back</button>
+        </div>
     }
     else
     {
@@ -20,9 +36,9 @@
                     <small class="text-muted">@entry.Date.ToString("dddd, MMMM dd, yyyy")</small>
                 </div>
                 <div>
-                    <button class="btn btn-sm btn-outline-secondary me-2" @onclick="Back">Back</button>
-                    <button class="btn btn-sm btn-outline-primary me-2" @onclick="EditEntry">Edit</button>
-                    <button class="btn btn-sm btn-outline-danger" @onclick="Delete">Delete</button>
+                    <button class="btn btn-sm btn-outline-secondary me-2" @onclick="Back" disabled="@isProcessing">Back</button>
+                    <button class="btn btn-sm btn-outline-primary me-2" @onclick="EditEntry" disabled="@isProcessing">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="PromptDelete" disabled="@isProcessing">Delete</button>
                 </div>
             </div>
             <div class="card-body">
@@ -39,6 +55,7 @@
                 <hr />
 
                 <div class="journal-content">
+                    @* WARNING: rendering raw HTML. Ensure entry.Content is sanitized on the server or via a robust HTML sanitizer (e.g. Ganss.XSS) to avoid XSS. *@
                     @((MarkupString)entry.Content)
                 </div>
 
@@ -55,6 +72,38 @@
             </div>
         </div>
     }
+
+    @* Inline, accessible confirmation dialog implemented without window.confirm so it's testable and styleable. *@
+    @if (showConfirm)
+    {
+        <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirm delete</h5>
+                        <button type="button" class="btn-close" aria-label="Close" @onclick="CancelDelete" disabled="@isProcessing"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete this entry titled "<strong>@entry?.Title</strong>"? This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CancelDelete" disabled="@isProcessing">Cancel</button>
+                        <button class="btn btn-danger" @onclick="ConfirmDeleteAsync" disabled="@isProcessing">
+                            @if (isProcessing)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span class="visually-hidden"> Deleting...</span>
+                            }
+                            else
+                            {
+                                <span>Delete</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
 @code {
@@ -62,30 +111,88 @@
     public int EntryId { get; set; }
 
     private JournalEntry? entry;
+    private bool isLoading;
+    private bool isProcessing;
+    private bool showConfirm;
+    private string? errorMessage;
 
-    protected override async Task OnInitializedAsync()
+    // NOTE: Use OnParametersSetAsync rather than OnInitializedAsync so the component reloads if the route parameter changes.
+    protected override async Task OnParametersSetAsync()
     {
-        entry = await JournalService.GetEntryAsync(EntryId);
+        await LoadEntryAsync();
+    }
+
+    private async Task LoadEntryAsync()
+    {
+        errorMessage = null;
+        isLoading = true;
+        entry = null;
+
+        try
+        {
+            // Attempt to load the entry. Add cancellation support if desired.
+            entry = await JournalService.GetEntryAsync(EntryId);
+            if (entry == null)
+            {
+                // Keep entry null so UI shows "Entry not found"
+            }
+        }
+        catch (Exception ex)
+        {
+            // Surface a friendly error message; log the exception server-side if possible.
+            errorMessage = "An error occurred while loading the entry. Please try again.";
+            Console.Error.WriteLine($"Error loading journal entry {EntryId}: {ex}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private void Back()
     {
-        Navigation.NavigateTo("/entries");
+        // Keep routing consistent under /journals; change this if your list page uses a different path.
+        Navigation.NavigateTo("/journals");
     }
 
     private void EditEntry()
     {
-        Navigation.NavigateTo($"/journal/{EntryId}");
+        // Navigate to a more explicit edit route. Adjust to match your app's routing if needed.
+        Navigation.NavigateTo($"/journals/edit/{EntryId}");
     }
 
-    private async Task Delete()
+    private void PromptDelete()
+    {
+        showConfirm = true;
+    }
+
+    private void CancelDelete()
+    {
+        showConfirm = false;
+    }
+
+    private async Task ConfirmDeleteAsync()
     {
         if (entry == null) return;
 
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this entry?");
-        if (!confirmed) return;
+        isProcessing = true;
+        errorMessage = null;
 
-        await JournalService.DeleteEntryAsync(entry);
-        Navigation.NavigateTo("/entries");
+        try
+        {
+            await JournalService.DeleteEntryAsync(entry);
+            showConfirm = false;
+            Navigation.NavigateTo("/journals");
+        }
+        catch (Exception ex)
+        {
+            // Provide user feedback and keep them on the page so they can retry or copy content.
+            errorMessage = "Unable to delete the entry. Please try again later.";
+            Console.Error.WriteLine($"Error deleting journal entry {EntryId}: {ex}");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
     }
 }

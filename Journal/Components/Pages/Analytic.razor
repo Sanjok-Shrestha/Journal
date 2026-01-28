@@ -1,97 +1,125 @@
-﻿@page "/analytics"
+@page "/analytics"
 @using JournalApp.Services
 @using JournalApp.Models
+@using System.Text.RegularExpressions
+@using System.Net
 @inject JournalService JournalService
 
 <div class="analytics-page">
     <h1>Analytics & Insights</h1>
-    <p>Track your journaling habits and emotional patterns</p>
+    <p class="subtitle">Track your journaling habits and emotional patterns</p>
 
-    <div class="stats-grid">
-        <!-- Streak Stats -->
-        <div class="stat-card">
-            <h3>Current Streak</h3>
-            <div class="stat-value">@currentStreak days</div>
-            <p class="stat-label">Keep it up!</p>
-        </div>
-
-        <div class="stat-card">
-            <h3>Longest Streak</h3>
-            <div class="stat-value">@longestStreak days</div>
-            <p class="stat-label">Personal best</p>
-        </div>
-
-        <div class="stat-card">
-            <h3>Total Entries</h3>
-            <div class="stat-value">@totalEntries</div>
-            <p class="stat-label">Journal entries</p>
-        </div>
-
-        <div class="stat-card">
-            <h3>Total Words</h3>
-            <div class="stat-value">@totalWords.ToString("N0")</div>
-            <p class="stat-label">Words written</p>
-        </div>
-    </div>
-
-    <!-- Mood Distribution -->
-    <div class="mood-section">
-        <h2>Mood Distribution</h2>
-        <div class="mood-stats">
-            <div class="mood-category">
-                <h4>Positive (@positiveCount)</h4>
-                <div class="mood-bar" style="width: @(GetPercentage(positiveCount))%; background: #000;"></div>
-                <span>@GetPercentage(positiveCount)%</span>
+    @if (isLoading)
+    {
+        <div class="loading">Loading analytics…</div>
+    }
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+    else
+    {
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Current Streak</h3>
+                <div class="stat-value">@currentStreak</div>
+                <p class="stat-label">days</p>
             </div>
-            <div class="mood-category">
-                <h4>Neutral (@neutralCount)</h4>
-                <div class="mood-bar" style="width: @(GetPercentage(neutralCount))%; background: #666;"></div>
-                <span>@GetPercentage(neutralCount)%</span>
+
+            <div class="stat-card">
+                <h3>Longest Streak</h3>
+                <div class="stat-value">@longestStreak</div>
+                <p class="stat-label">days</p>
             </div>
-            <div class="mood-category">
-                <h4>Negative (@negativeCount)</h4>
-                <div class="mood-bar" style="width: @(GetPercentage(negativeCount))%; background: #333;"></div>
-                <span>@GetPercentage(negativeCount)%</span>
+
+            <div class="stat-card">
+                <h3>Total Entries</h3>
+                <div class="stat-value">@totalEntries</div>
+                <p class="stat-label">journal entries</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Total Words</h3>
+                <div class="stat-value">@totalWords.ToString("N0")</div>
+                <p class="stat-label">words written</p>
             </div>
         </div>
-    </div>
 
-    <!-- Most Frequent Moods -->
-    <div class="frequent-moods">
-        <h2>Most Frequent Moods</h2>
-        <div class="mood-list">
-            @foreach (var mood in topMoods.Take(5))
-            {
-                <div class="mood-item">
-                    <span>@mood.Key</span>
-                    <span class="mood-count">@mood.Value entries</span>
+        <section class="mood-section">
+            <h2>Mood Distribution</h2>
+            <div class="mood-stats">
+                <div class="mood-category">
+                    <div class="mood-header">
+                        <h4>Positive</h4>
+                        <span class="mood-count">@positiveCount</span>
+                        <span class="mood-pct">@GetPercentageLabel(positiveCount)</span>
+                    </div>
+                    <div class="mood-bar-wrap" aria-hidden="true">
+                        <div class="mood-bar positive" style="width:@GetPercentage(positiveCount)%"></div>
+                    </div>
                 </div>
-            }
-        </div>
-    </div>
 
-    <!-- Most Used Tags -->
-    <div class="tags-section">
-        <h2>Most Used Tags</h2>
-        <div class="tags-cloud">
-            @foreach (var tag in topTags.Take(10))
-            {
-                <span class="tag-item" style="font-size: @(GetTagSize(tag.Value))rem;">
-                    @tag.Key (@tag.Value)
-                </span>
-            }
-        </div>
-    </div>
+                <div class="mood-category">
+                    <div class="mood-header">
+                        <h4>Neutral</h4>
+                        <span class="mood-count">@neutralCount</span>
+                        <span class="mood-pct">@GetPercentageLabel(neutralCount)</span>
+                    </div>
+                    <div class="mood-bar-wrap" aria-hidden="true">
+                        <div class="mood-bar neutral" style="width:@GetPercentage(neutralCount)%"></div>
+                    </div>
+                </div>
 
-    <!-- Word Count Trend -->
-    <div class="word-trend">
-        <h2>Average Word Count</h2>
-        <div class="stat-value">@averageWordCount words per entry</div>
-        <p class="stat-label">Based on @totalEntries entries</p>
-    </div>
+                <div class="mood-category">
+                    <div class="mood-header">
+                        <h4>Negative</h4>
+                        <span class="mood-count">@negativeCount</span>
+                        <span class="mood-pct">@GetPercentageLabel(negativeCount)</span>
+                    </div>
+                    <div class="mood-bar-wrap" aria-hidden="true">
+                        <div class="mood-bar negative" style="width:@GetPercentage(negativeCount)%"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="frequent-moods">
+            <h2>Most Frequent Moods</h2>
+            <div class="mood-list">
+                @foreach (var mood in topMoods.Take(5))
+                {
+                    <div class="mood-item">
+                        <span class="mood-name">@mood.Key</span>
+                        <span class="mood-count">@mood.Value</span>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <section class="tags-section">
+            <h2>Most Used Tags</h2>
+            <div class="tags-cloud" aria-label="Top tags">
+                @foreach (var tag in topTags.Take(10))
+                {
+                    <span class="tag-item" style="font-size: @(GetTagSize(tag.Value))rem" title="@($"{tag.Key}: {tag.Value}")">
+                        @tag.Key (@tag.Value)
+                    </span>
+                }
+            </div>
+        </section>
+
+        <section class="word-trend">
+            <h2>Average Word Count</h2>
+            <div class="stat-value">@Math.Round(averageWordCount)</div>
+            <p class="stat-label">words per entry (based on @totalEntries entries)</p>
+        </section>
+    }
 </div>
 
 @code {
+    private bool isLoading = true;
+    private string? errorMessage;
+
     private int currentStreak = 0;
     private int longestStreak = 0;
     private int totalEntries = 0;
@@ -99,7 +127,7 @@
     private int positiveCount = 0;
     private int neutralCount = 0;
     private int negativeCount = 0;
-    private int averageWordCount = 0;
+    private double averageWordCount = 0;
 
     private List<KeyValuePair<string, int>> topMoods = new();
     private List<KeyValuePair<string, int>> topTags = new();
@@ -111,101 +139,168 @@
 
     private async Task LoadAnalytics()
     {
-        var entries = await JournalService.GetEntriesAsync();
-        
-        totalEntries = entries.Count;
-        totalWords = entries.Sum(e => GetWordCount(e.Content));
-        averageWordCount = totalEntries > 0 ? totalWords / totalEntries : 0;
+        isLoading = true;
+        errorMessage = null;
 
-        // Calculate streaks
-        CalculateStreaks(entries);
-
-        // Count mood categories
-        positiveCount = entries.Count(e => StaticData.IsPositiveMood(e.PrimaryMood));
-        neutralCount = entries.Count(e => StaticData.IsNeutralMood(e.PrimaryMood));
-        negativeCount = entries.Count(e => StaticData.IsNegativeMood(e.PrimaryMood));
-
-        // Calculate top moods
-        var moodCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var entry in entries)
+        try
         {
-            if (!string.IsNullOrWhiteSpace(entry.PrimaryMood))
-            {
-                var name = entry.PrimaryMood.Trim();
-                if (!moodCounts.ContainsKey(name)) moodCounts[name] = 0;
-                moodCounts[name]++;
-            }
-        }
-        topMoods = moodCounts.OrderByDescending(x => x.Value).ToList();
+            var entries = await JournalService.GetEntriesAsync() ?? new List<JournalEntry>();
 
-        // Calculate top tags
-        var tagCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (var entry in entries)
-        {
-            if (!string.IsNullOrWhiteSpace(entry.Tags))
-            {
-                var parts = entry.Tags.Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrEmpty(t));
-                foreach (var tag in parts)
+            // Normalize content/dates
+            var normalizedEntries = entries
+                .Select(e => new JournalEntry
                 {
-                    if (!tagCounts.ContainsKey(tag)) tagCounts[tag] = 0;
-                    tagCounts[tag]++;
-                }
-            }
+                    Id = e.Id,
+                    Title = e.Title,
+                    Content = e.Content,
+                    Date = e.Date.ToLocalTime(),    // normalize to local time
+                    PrimaryMood = e.PrimaryMood,
+                    SecondaryMoods = e.SecondaryMoods,
+                    Tags = e.Tags,
+                    CreatedAt = e.CreatedAt,
+                    UpdatedAt = e.UpdatedAt
+                })
+                .ToList();
+
+            totalEntries = normalizedEntries.Count;
+            totalWords = normalizedEntries.Sum(e => GetWordCount(e.Content));
+            averageWordCount = totalEntries > 0 ? (double)totalWords / totalEntries : 0;
+
+            // Streaks (use distinct local dates)
+            var dateList = normalizedEntries
+                .Select(e => e.Date.Date)
+                .Where(d => d <= DateTime.Today) // ignore future-dated entries
+                .Distinct()
+                .OrderBy(d => d)
+                .ToList();
+
+            CalculateStreaks(dateList);
+
+            // Mood category counts (null-safe)
+            positiveCount = normalizedEntries.Count(e => StaticData.IsPositiveMood(e.PrimaryMood));
+            neutralCount = normalizedEntries.Count(e => StaticData.IsNeutralMood(e.PrimaryMood));
+            negativeCount = normalizedEntries.Count(e => StaticData.IsNegativeMood(e.PrimaryMood));
+
+            // Top moods
+            topMoods = normalizedEntries
+                .Where(e => !string.IsNullOrWhiteSpace(e.PrimaryMood))
+                .GroupBy(e => e.PrimaryMood!.Trim(), StringComparer.OrdinalIgnoreCase)
+                .Select(g => new KeyValuePair<string, int>(g.Key, g.Count()))
+                .OrderByDescending(kv => kv.Value)
+                .ToList();
+
+            // Top tags (split, trim, case-insensitive)
+            topTags = normalizedEntries
+                .Where(e => !string.IsNullOrWhiteSpace(e.Tags))
+                .SelectMany(e => e.Tags!.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(t => t.Trim()))
+                .Where(t => !string.IsNullOrEmpty(t))
+                .GroupBy(t => t, StringComparer.OrdinalIgnoreCase)
+                .Select(g => new KeyValuePair<string, int>(g.Key, g.Count()))
+                .OrderByDescending(kv => kv.Value)
+                .ToList();
         }
-        topTags = tagCounts.OrderByDescending(x => x.Value).ToList();
+        catch (Exception ex)
+        {
+            errorMessage = "Unable to load analytics.";
+            Console.WriteLine($"LoadAnalytics error: {ex}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
-    private void CalculateStreaks(List<JournalEntry> entries)
+    private void CalculateStreaks(List<DateTime> sortedAscDates)
     {
-        if (!entries.Any())
+        // sortedAscDates is ascending distinct dates (local)
+        if (sortedAscDates == null || !sortedAscDates.Any())
         {
             currentStreak = 0;
             longestStreak = 0;
             return;
         }
 
-        var dates = entries.Select(e => e.Date.Date).Distinct().OrderByDescending(d => d).ToList();
-        
-        // Calculate current streak
-        var today = DateTime.Today;
-        if (dates.Contains(today) || dates.Contains(today.AddDays(-1)))
+        var dateSet = new HashSet<DateTime>(sortedAscDates);
+
+        // Current streak: start from today or yesterday
+        DateTime start = DateTime.Today;
+        if (dateSet.Contains(start))
         {
-            currentStreak = 1;
-            var checkDate = dates.Contains(today) ? today.AddDays(-1) : today.AddDays(-2);
-            
-            while (dates.Contains(checkDate))
-            {
-                currentStreak++;
-                checkDate = checkDate.AddDays(-1);
-            }
+            // today counted
+        }
+        else if (dateSet.Contains(start.AddDays(-1)))
+        {
+            start = start.AddDays(-1);
+        }
+        else
+        {
+            currentStreak = 0;
         }
 
-        // Calculate longest streak
-        longestStreak = 0;
-        int tempStreak = 1;
-        var sortedDates = dates.OrderBy(d => d).ToList();
-        
-        for (int i = 1; i < sortedDates.Count; i++)
+        if (currentStreak == 0)
         {
-            if ((sortedDates[i] - sortedDates[i - 1]).Days == 1)
+            // compute if start has been adjusted
+            if (dateSet.Contains(start))
             {
-                tempStreak++;
+                int streak = 0;
+                var cursor = start;
+                while (dateSet.Contains(cursor))
+                {
+                    streak++;
+                    cursor = cursor.AddDays(-1);
+                }
+                currentStreak = streak;
+            }
+        }
+        else
+        {
+            // fallback safety
+            currentStreak = 0;
+        }
+
+        // Longest streak: walk ascending and measure consecutive runs
+        int longest = 0;
+        int running = 1;
+        for (int i = 1; i < sortedAscDates.Count; i++)
+        {
+            if ((sortedAscDates[i] - sortedAscDates[i - 1]).Days == 1)
+            {
+                running++;
             }
             else
             {
-                longestStreak = Math.Max(longestStreak, tempStreak);
-                tempStreak = 1;
+                if (running > longest) longest = running;
+                running = 1;
             }
         }
-        longestStreak = Math.Max(longestStreak, tempStreak);
+        if (running > longest) longest = running;
+
+        longestStreak = longest;
     }
 
     private int GetWordCount(string content)
     {
-        if (string.IsNullOrWhiteSpace(content))
-            return 0;
-        var text = System.Text.RegularExpressions.Regex.Replace(content, "<.*?>", " ");
-        return text.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length;
+        if (string.IsNullOrWhiteSpace(content)) return 0;
+
+        try
+        {
+            // remove script/style blocks
+            var text = Regex.Replace(content, @"<(script|style)[^>]*>.*?</\1>", " ", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            // strip tags
+            text = Regex.Replace(text, "<.*?>", " ");
+            // decode entities
+            text = WebUtility.HtmlDecode(text);
+            // Unicode-aware word matching
+            var matches = Regex.Matches(text, @"\p{L}+[\p{L}\p{Mn}\p{Pd}'’]*", RegexOptions.Multiline);
+            return matches.Count;
+        }
+        catch
+        {
+            // fallback simple split
+            var fallback = Regex.Replace(content, "<.*?>", " ");
+            return fallback.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length;
+        }
     }
 
     private double GetPercentage(int count)
@@ -214,9 +309,110 @@
         return Math.Round((double)count / totalEntries * 100, 1);
     }
 
+    private string GetPercentageLabel(int count) => $"{GetPercentage(count)}%";
+
     private double GetTagSize(int count)
     {
         var maxCount = topTags.Any() ? topTags.Max(t => t.Value) : 1;
-        return 0.9 + (count / (double)maxCount) * 1.5;
+        if (maxCount == 0) return 0.9;
+        return 0.9 + (count / (double)maxCount) * 1.6;
     }
 }
+<style>
+.analytics-page {
+    max-width: 960px;
+    margin: 1.25rem auto;
+    padding: 0 1rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+.subtitle {
+    margin-top: -0.5rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+
+.loading {
+    color: #6c757d;
+    font-style: italic;
+    margin: 1rem 0;
+}
+
+/* Stats grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+.stat-card {
+    padding: 1rem;
+    border-radius: 10px;
+    background: linear-gradient(180deg,#ffffff,#fbfdff);
+    border: 1px solid rgba(0,0,0,0.04);
+    box-shadow: 0 6px 18px rgba(22,33,62,0.03);
+    text-align: center;
+}
+.stat-value {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+.stat-label {
+    color: #6b7280;
+    font-size: 0.85rem;
+}
+
+/* Mood distribution */
+.mood-section { margin-top: 1rem; margin-bottom: 1rem; }
+.mood-stats {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+}
+.mood-category {
+    padding: 0.75rem;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.03);
+}
+.mood-header { display:flex; justify-content: space-between; align-items:center; gap: 0.5rem; margin-bottom: 0.5rem; }
+.mood-count { color:#374151; font-weight:600; margin-left:0.5rem; }
+.mood-pct { color:#6b7280; font-size:0.9rem; margin-left:0.5rem; }
+
+.mood-bar-wrap {
+    height: 12px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.mood-bar {
+    height: 100%;
+    transition: width 400ms ease;
+}
+.mood-bar.positive { background: linear-gradient(90deg,#34d399,#10b981); }
+.mood-bar.neutral { background: linear-gradient(90deg,#93c5fd,#3b82f6); }
+.mood-bar.negative { background: linear-gradient(90deg,#fca5a5,#f87171); }
+
+/* Frequent moods */
+.mood-list { display:flex; gap: 0.75rem; flex-wrap:wrap; margin-bottom: 1rem; }
+.mood-item { background:#fff; padding: 0.5rem 0.75rem; border-radius:8px; border:1px solid rgba(0,0,0,0.03); display:flex; gap:0.5rem; align-items:center; }
+.mood-name { font-weight:600; }
+.mood-count { color:#6b7280; font-size:0.9rem; }
+
+/* Tags cloud */
+.tags-cloud { display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; padding:0.5rem 0; }
+.tag-item { background: linear-gradient(90deg,#ffffff,#f8fafc); padding: 0.25rem 0.45rem; border-radius: 6px; border: 1px solid rgba(0,0,0,0.04); color:#111827; }
+
+/* Word trend */
+.word-trend { margin-top: 1rem; padding: 0.75rem; background: #fff; border-radius:8px; border: 1px solid rgba(0,0,0,0.03); text-align:center; }
+
+/* Responsive */
+@media (max-width: 900px) {
+    .stats-grid { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 560px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .mood-stats { grid-template-columns: 1fr; }
+}
+</style>

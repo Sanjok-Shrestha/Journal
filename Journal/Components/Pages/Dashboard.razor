@@ -1,6 +1,9 @@
-﻿@page "/dashboard"
+@page "/dashboard"
 @using JournalApp.Services
 @using JournalApp.Models
+@using System.Diagnostics
+@using System.Text.RegularExpressions
+@using System.Net
 @inject NavigationManager Navigation
 @inject JournalService JournalService
 @inject MoodService MoodService
@@ -10,54 +13,60 @@
     <h1>Dashboard</h1>
     <div class="ds-dashboard-date">@DateTime.Today.ToString("dddd, MMMM dd, yyyy")</div>
 
-    <div class="ds-dashboard-stats-row">
-        <div class="ds-dashboard-stat">
-            <div class="ds-dashboard-stat-label">Current Streak</div>
-            <div class="ds-dashboard-stat-value">@currentStreak days</div>
-        </div>
-        <div class="ds-dashboard-stat">
-            <div class="ds-dashboard-stat-label">Total Entries</div>
-            <div class="ds-dashboard-stat-value">@totalEntries</div>
-        </div>
-        <div class="ds-dashboard-stat">
-            <div class="ds-dashboard-stat-label">Words Written</div>
-            <div class="ds-dashboard-stat-value">@totalWords.ToString("N0")</div>
-        </div>
-    </div>
-
-    <h2 class="ds-dashboard-section">Quick Actions</h2>
-    <div class="ds-dashboard-quick-actions">
-        <button class="ds-dashboard-primary" @onclick="GoToJournal">
-            Write Today's Entry
-        </button>
-        <div class="ds-dashboard-secondary-actions">
-            <button @onclick="GoToEntries">
-                View All Entries
-            </button>
-            <button @onclick="GoToAnalytics">
-                View Statistics
-            </button>
-        </div>
-    </div>
-
-    @if (recentEntry != null)
+    @if (isLoading)
     {
-        <h2 class="ds-dashboard-section">Recent Entry</h2>
-        <div class="ds-dashboard-recent-entry clickable" @onclick="HandleViewRecentEntry">
-            <div class="ds-dashboard-recent-entry-date"><b>@recentEntry.Date.ToString("MMMM dd, yyyy")</b></div>
-            <div class="ds-dashboard-recent-entry-title">
-                @recentEntry.Title
-                <span class="ds-mini-mood">@recentEntry.PrimaryMoodName</span>
-            </div>
-            <div class="ds-dashboard-recent-entry-meta">@GetWordCount(recentEntry.Content) words</div>
-        </div>
+        <p style="text-align:center; color:#666;">Loading...</p>
     }
     else
     {
-        <h2 class="ds-dashboard-section">Recent Entry</h2>
-        <div class="ds-dashboard-recent-entry">
-            <p style="text-align: center; color: #888;">No entries yet. Start writing your first journal entry!</p>
+        <div class="ds-dashboard-stats-row">
+            <div class="ds-dashboard-stat">
+                <div class="ds-dashboard-stat-label">Current Streak</div>
+                <div class="ds-dashboard-stat-value">@currentStreak days</div>
+            </div>
+            <div class="ds-dashboard-stat">
+                <div class="ds-dashboard-stat-label">Total Entries</div>
+                <div class="ds-dashboard-stat-value">@totalEntries</div>
+            </div>
+            <div class="ds-dashboard-stat">
+                <div class="ds-dashboard-stat-label">Words Written</div>
+                <div class="ds-dashboard-stat-value">@totalWords.ToString("N0")</div>
+            </div>
         </div>
+
+        <h2 class="ds-dashboard-section">Quick Actions</h2>
+        <div class="ds-dashboard-quick-actions">
+            <button class="ds-dashboard-primary" @onclick="GoToJournal">
+                Write Today's Entry
+            </button>
+            <div class="ds-dashboard-secondary-actions">
+                <button @onclick="GoToEntries">
+                    View All Entries
+                </button>
+                <button @onclick="GoToAnalytics">
+                    View Statistics
+                </button>
+            </div>
+        </div>
+
+        <h2 class="ds-dashboard-section">Recent Entry</h2>
+        @if (recentEntry != null)
+        {
+            <div class="ds-dashboard-recent-entry clickable" @onclick="HandleViewRecentEntry">
+                <div class="ds-dashboard-recent-entry-date"><b>@recentEntry.Date.ToString("MMMM dd, yyyy")</b></div>
+                <div class="ds-dashboard-recent-entry-title">
+                    @recentEntry.Title
+                    <span class="ds-mini-mood">@recentEntry.PrimaryMoodName</span>
+                </div>
+                <div class="ds-dashboard-recent-entry-meta">@GetWordCount(recentEntry.Content) words</div>
+            </div>
+        }
+        else
+        {
+            <div class="ds-dashboard-recent-entry">
+                <p style="text-align: center; color: #888;">No entries yet. Start writing your first journal entry!</p>
+            </div>
+        }
     }
 </div>
 
@@ -67,65 +76,74 @@
     private int currentStreak = 0;
     private JournalEntry? recentEntry;
     private List<Mood> allMoods = new();
+    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadDashboardData();
+        isLoading = true;
+        try
+        {
+            await LoadDashboardData();
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private async Task LoadDashboardData()
     {
         try
         {
-            allMoods = await MoodService.GetAllMoodsAsync();
-            var entries = await JournalService.GetEntriesAsync();
-            
+            // fetch in parallel
+            var moodsTask = MoodService.GetAllMoodsAsync();
+            var entriesTask = JournalService.GetEntriesAsync();
+
+            await Task.WhenAll(moodsTask, entriesTask);
+
+            allMoods = await moodsTask;
+            var entries = (await entriesTask) ?? new List<JournalEntry>();
+
             totalEntries = entries.Count;
             totalWords = entries.Sum(e => GetWordCount(e.Content));
             currentStreak = CalculateStreak(entries);
-            
+
             recentEntry = entries.OrderByDescending(e => e.Date)
                 .ThenByDescending(e => e.CreatedAt)
                 .FirstOrDefault();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading dashboard data: {ex.Message}");
+            Debug.WriteLine($"Error loading dashboard data: {ex.Message}");
         }
     }
 
     private int CalculateStreak(List<JournalEntry> entries)
     {
-        if (!entries.Any()) return 0;
+        if (entries == null || !entries.Any()) return 0;
 
+        // Normalize to local date, ignore future dates, and get distinct dates
         var sortedDates = entries
-            .Select(e => e.Date.Date)
+            .Select(e => e.Date.ToLocalTime().Date)
+            .Where(d => d <= DateTime.Today)
             .Distinct()
             .OrderByDescending(d => d)
             .ToList();
 
         if (!sortedDates.Any()) return 0;
 
-        var today = DateTime.Today;
         var mostRecent = sortedDates.First();
-        
-        if (mostRecent < today.AddDays(-1))
+        if (mostRecent < DateTime.Today.AddDays(-1))
             return 0;
 
+        var dateSet = new HashSet<DateTime>(sortedDates);
         int streak = 0;
-        var currentDate = today;
+        var current = mostRecent;
 
-        foreach (var date in sortedDates)
+        while (dateSet.Contains(current))
         {
-            if (date == currentDate || date == currentDate.AddDays(-1))
-            {
-                streak++;
-                currentDate = date.AddDays(-1);
-            }
-            else
-            {
-                break;
-            }
+            streak++;
+            current = current.AddDays(-1);
         }
 
         return streak;
@@ -136,19 +154,16 @@
         if (string.IsNullOrWhiteSpace(content))
             return 0;
 
-        var text = System.Text.RegularExpressions.Regex.Replace(content, "<.*?>", " ");
-        return text.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries).Length;
-    }
-
-    private void HandleViewRecentEntry()
-    {
-        if (recentEntry != null)
+        try
         {
-            Navigation.NavigateTo($"/journal/{recentEntry.Id}");
+            // remove script/style blocks
+            var text = Regex.Replace(content, @"<(script|style)[^>]*>.*?</\1>", " ", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            // strip remaining tags
+            text = Regex.Replace(text, "<.*?>", " ");
+            // decode entities
+            text = WebUtility.HtmlDecode(text);
+            // count Unicode-aware word tokens
+            var matches = Regex.Matches(text, @"\p{L}+[\p{L}\p{Mn}\p{Pd}'’]*", RegexOptions.Multiline);
+            return matches.Count;
         }
-    }
-
-    private void GoToJournal() => Navigation.NavigateTo("/journal");
-    private void GoToEntries() => Navigation.NavigateTo("/entries");
-    private void GoToAnalytics() => Navigation.NavigateTo("/analytics");
-}
+        catch (Exception

@@ -1,4 +1,4 @@
-﻿@page "/export"
+@page "/export"
 @using System
 @using JournalApp.Services
 @using JournalApp.Models
@@ -6,44 +6,53 @@
 @using Microsoft.JSInterop
 @inject IJSRuntime JS
 
-<div style="max-width: 900px; margin: 0 auto; padding: 1rem;">
+<div class="export-container">
     <h2>Export Journal Entries</h2>
-    <p>Select a single entry to export, or choose a date range.</p>
+    <p class="subtitle">Select a single entry to export, or choose a date range.</p>
 
-    <div class="card mb-3 p-3">
-        <label>Export single entry</label>
-        <select class="form-select" @bind="selectedEntryId">
-            <option value="0">-- Select entry --</option>
-            @foreach (var e in allEntries)
-            {
-                <option value="@e.Id">@e.Date.ToString("yyyy-MM-dd") - @e.Title</option>
-            }
-        </select>
-        <div class="mt-2">
-            <button class="btn btn-primary" @onclick="ExportSelected">Export Selected</button>
+    <div class="card export-card">
+        <label class="form-label">Export single entry</label>
+        <div class="form-row">
+            <select class="form-select" @bind="selectedEntryId" aria-label="Select entry to export">
+                <option value="0">-- Select entry --</option>
+                @foreach (var e in allEntries)
+                {
+                    <option value="@e.Id">@FormatEntryLabel(e)</option>
+                }
+            </select>
+            <button class="btn btn-primary" @onclick="ExportSelected" disabled="@isExporting || selectedEntryId <= 0">
+                @(isExporting ? "Exporting..." : "Export Selected")
+            </button>
         </div>
     </div>
 
-    <div class="card p-3">
-        <label>Export by date range</label>
-        <div class="d-flex gap-2 align-items-end">
-            <div>
-                <label class="form-label">Start (yyyy-MM-dd)</label>
-                <input type="text" class="form-control" @bind="startDateText" placeholder="2024-01-01" />
+    <div class="card export-card">
+        <label class="form-label">Export by date range</label>
+        <div class="form-row range-row">
+            <div class="date-col">
+                <label class="form-label small">Start</label>
+                <input type="date" class="form-control" @bind="startDateText" aria-label="Start date" />
             </div>
-            <div>
-                <label class="form-label">End (yyyy-MM-dd)</label>
-                <input type="text" class="form-control" @bind="endDateText" placeholder="2024-12-31" />
+            <div class="date-col">
+                <label class="form-label small">End</label>
+                <input type="date" class="form-control" @bind="endDateText" aria-label="End date" />
             </div>
-            <div>
-                <button class="btn btn-primary" @onclick="ExportRange">Export Range</button>
+            <div class="btn-col">
+                <button class="btn btn-primary" @onclick="ExportRange" disabled="@isExporting">
+                    @(isExporting ? "Exporting..." : "Export Range")
+                </button>
             </div>
         </div>
+        <div class="helper-text">Dates are inclusive. If you leave either field empty, it will default to the nearest available date.</div>
     </div>
 
     @if (!string.IsNullOrEmpty(message))
     {
-        <div class="alert alert-info mt-3">@message</div>
+        <div class="alert alert-info mt-3" role="status">@message</div>
+    }
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger mt-3" role="alert">@error</div>
     }
 </div>
 
@@ -51,83 +60,233 @@
     private List<JournalEntry> allEntries = new();
     private int selectedEntryId = 0;
     private string message = "";
+    private string error = "";
     private string startDateText = "";
     private string endDateText = "";
+    private bool isExporting = false;
 
     protected override async Task OnInitializedAsync()
     {
-        allEntries = await JournalService.GetEntriesAsync();
+        // Load entries (sorted newest first)
+        allEntries = (await JournalService.GetEntriesAsync())?.OrderByDescending(e => e.Date).ThenByDescending(e => e.CreatedAt).ToList()
+                     ?? new List<JournalEntry>();
     }
 
     private async Task ExportSelected()
     {
-        message = "";
+        ResetStatus();
         if (selectedEntryId <= 0)
         {
-            message = "Please select an entry.";
+            error = "Please select an entry to export.";
             return;
         }
 
         var entry = await JournalService.GetEntryAsync(selectedEntryId);
         if (entry == null)
         {
-            message = "Entry not found.";
+            error = "Selected entry not found.";
             return;
         }
 
-        var html = BuildHtml(entry);
-        var filename = $"journal-{entry.Date:yyyy-MM-dd}.html";
-        await JS.InvokeVoidAsync("downloadFile", filename, html, "text/html");
-        message = "Export started.";
+        isExporting = true;
+        try
+        {
+            var html = BuildDocumentHtml(entry);
+            var filename = $"journal-{entry.Date:yyyy-MM-dd}.html";
+            await JS.InvokeVoidAsync("downloadFile", filename, html, "text/html");
+            message = "Export started — check your downloads.";
+        }
+        catch (Exception ex)
+        {
+            error = $"Export failed: {ex.Message}";
+        }
+        finally
+        {
+            isExporting = false;
+        }
     }
 
     private async Task ExportRange()
     {
-        message = "";
-        
-        if (!DateTime.TryParse(startDateText, out var startDate))
+        ResetStatus();
+
+        // Parse date inputs (type="date" yields yyyy-MM-dd format)
+        DateTime? start = null;
+        DateTime? end = null;
+
+        if (!string.IsNullOrWhiteSpace(startDateText))
         {
-            message = "Please enter a valid start date (yyyy-MM-dd).";
+            if (!DateTime.TryParse(startDateText, out var s)) { error = "Invalid start date."; return; }
+            start = s.Date;
+        }
+
+        if (!string.IsNullOrWhiteSpace(endDateText))
+        {
+            if (!DateTime.TryParse(endDateText, out var e)) { error = "Invalid end date."; return; }
+            end = e.Date;
+        }
+
+        // Default bounds if missing
+        if (!start.HasValue && allEntries.Any()) start = allEntries.Min(x => x.Date.Date);
+        if (!end.HasValue && allEntries.Any()) end = allEntries.Max(x => x.Date.Date);
+
+        if (!start.HasValue || !end.HasValue)
+        {
+            error = "No entries available to export.";
             return;
         }
 
-        if (!DateTime.TryParse(endDateText, out var endDate))
+        if (end < start)
         {
-            message = "Please enter a valid end date (yyyy-MM-dd).";
+            error = "End date must be the same as or after the start date.";
             return;
         }
 
-        if (endDate < startDate)
+        isExporting = true;
+        try
         {
-            message = "End date must be after start date.";
-            return;
-        }
+            var entries = await JournalService.GetEntriesByDateRangeAsync(start.Value, end.Value);
+            if (entries == null || !entries.Any())
+            {
+                message = "No entries found in the selected range.";
+                return;
+            }
 
-        var entries = await JournalService.GetEntriesByDateRangeAsync(startDate, endDate);
-        if (!entries.Any())
+            // Build a single HTML document with all selected entries
+            var combined = "<html><head><meta charset=\"utf-8\"><title>Journal Export</title></head><body>";
+            foreach (var e in entries.OrderBy(e => e.Date).ThenBy(e => e.CreatedAt))
+            {
+                combined += BuildSectionHtml(e);
+                combined += "<hr/>";
+            }
+            combined += "</body></html>";
+
+            var filename = $"journal-{start:yyyy-MM-dd}_to_{end:yyyy-MM-dd}.html";
+            await JS.InvokeVoidAsync("downloadFile", filename, combined, "text/html");
+            message = "Export started — check your downloads.";
+        }
+        catch (Exception ex)
         {
-            message = "No entries in the selected range.";
-            return;
+            error = $"Export failed: {ex.Message}";
         }
-
-        // Build combined HTML
-        var combined = "<html><head><meta charset=\"utf-8\"><title>Journal Export</title></head><body>";
-        foreach (var e in entries.OrderBy(e => e.Date))
+        finally
         {
-            combined += BuildHtml(e);
-            combined += "<hr/>";
+            isExporting = false;
         }
-        combined += "</body></html>";
-
-        var filename = $"journal-{startDate:yyyy-MM-dd}_to_{endDate:yyyy-MM-dd}.html";
-        await JS.InvokeVoidAsync("downloadFile", filename, combined, "text/html");
-        message = "Export started.";
     }
 
-    private string BuildHtml(JournalEntry entry)
+    private string BuildDocumentHtml(JournalEntry entry)
     {
-        return $"<section><h2>{System.Net.WebUtility.HtmlEncode(entry.Title)}</h2><p><em>{entry.Date:dddd, MMMM dd, yyyy}</em></p><p><strong>Mood:</strong> {System.Net.WebUtility.HtmlEncode(entry.PrimaryMood)}" +
-               (!string.IsNullOrWhiteSpace(entry.SecondaryMoods) ? $" (Secondary: {System.Net.WebUtility.HtmlEncode(entry.SecondaryMoods)})" : "") +
-               $"</p><div>{entry.Content}</div></section>";
+        return $"<html><head><meta charset=\"utf-8\"><title>{System.Net.WebUtility.HtmlEncode(entry.Title)}</title></head><body>{BuildSectionHtml(entry)}</body></html>";
+    }
+
+    private string BuildSectionHtml(JournalEntry entry)
+    {
+        // entry.Content typically contains HTML (from the editor) — include it as-is.
+        var secondary = !string.IsNullOrWhiteSpace(entry.SecondaryMoods) ? $" (Secondary: {System.Net.WebUtility.HtmlEncode(entry.SecondaryMoods)})" : "";
+        var mood = System.Net.WebUtility.HtmlEncode(entry.PrimaryMood ?? "");
+        return $"<section style=\"margin-bottom:1.25rem;\"><h2>{System.Net.WebUtility.HtmlEncode(entry.Title)}</h2>" +
+               $"<p><em>{entry.Date:dddd, MMMM dd, yyyy}</em></p>" +
+               $"<p><strong>Mood:</strong> {mood}{secondary}</p>" +
+               $"<div>{entry.Content ?? ""}</div></section>";
+    }
+
+    private string FormatEntryLabel(JournalEntry e)
+    {
+        var title = string.IsNullOrWhiteSpace(e.Title) ? "(no title)" : e.Title;
+        if (title.Length > 60) title = title.Substring(0, 57) + "...";
+        return $"{e.Date:yyyy-MM-dd} — {title}";
+    }
+
+    private void ResetStatus()
+    {
+        message = "";
+        error = "";
     }
 }
+<style>
+/* Export page styles */
+.export-container {
+    max-width: 900px;
+    margin: 1.25rem auto;
+    padding: 1rem;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+.subtitle {
+    margin-top: -0.25rem;
+    color: #6b7280;
+    margin-bottom: 1rem;
+}
+
+.export-card {
+    padding: 1rem;
+    margin-bottom: 0.9rem;
+    border-radius: 10px;
+    background: linear-gradient(180deg,#ffffff,#fbfdff);
+    border: 1px solid rgba(0,0,0,0.04);
+    box-shadow: 0 6px 16px rgba(22,33,62,0.03);
+}
+
+.form-row {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    margin-top: 0.6rem;
+}
+
+.form-select {
+    flex: 1 1 auto;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #dfe7ef;
+}
+
+.form-control {
+    padding: 0.45rem;
+    border-radius: 6px;
+    border: 1px solid #dfe7ef;
+}
+
+.range-row {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-end;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.date-col {
+    min-width: 160px;
+    flex: 1 1 160px;
+}
+
+.btn-col {
+    display:flex;
+    align-items:flex-end;
+}
+
+.helper-text {
+    margin-top: 0.5rem;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+/* Buttons */
+.btn {
+    padding: 0.45rem 0.75rem;
+    border-radius: 6px;
+}
+
+/* Alerts */
+.alert {
+    border-radius: 8px;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+    .form-row { flex-direction: column; align-items: stretch; }
+    .range-row { flex-direction: column; align-items: stretch; }
+    .btn-col { justify-content: flex-start; }
+}
+</style>
